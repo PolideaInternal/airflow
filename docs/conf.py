@@ -100,6 +100,8 @@ os.environ['BUILDING_AIRFLOW_DOCS'] = 'TRUE'
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
+sys.path.append(os.path.join(os.path.dirname(__file__), 'exts'))
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -115,6 +117,7 @@ extensions = [
     'sphinxarg.ext',
     'sphinxcontrib.httpdomain',
     'sphinx.ext.intersphinx',
+    'exampleinclude',
 ]
 
 autodoc_default_flags = ['show-inheritance', 'members']
@@ -363,3 +366,6 @@ texinfo_documents = [(
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 # texinfo_no_detailmenu = False
+
+# -- Options for examole include ------------------------------------------
+exampleinclude_sourceroot = os.path.abspath('..')
