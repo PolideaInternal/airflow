@@ -871,6 +871,8 @@ Cloud Functions Operators
 
 - :ref:`GcfFunctionDeployOperator` : deploy Google Cloud Function to Google Cloud Platform
 - :ref:`GcfFunctionDeleteOperator` : delete Google Cloud Function in Google Cloud Platform
+- :ref:`GcfFunctionInvokeOperator` : invoke an HTTP-triggered, IAM-protected Cloud
+Function
 
 .. autoclass:: airflow.contrib.operators.gcp_operator.GCP
 
@@ -890,6 +892,14 @@ GcfFunctionDeleteOperator
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: airflow.contrib.operators.gcp_function_operator.GcfFunctionDeleteOperator
+
+
+.. _GcfFunctionInvokeOperator:
+
+GcfFunctionInvokeOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: airflow.contrib.operators.gcp_function_operator.GcfFunctionInvokeOperator
 
 
 .. _GcfHook:

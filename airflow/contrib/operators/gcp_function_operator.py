@@ -81,6 +81,7 @@ CLOUD_FUNCTION_VALIDATION = [
 class GcfFunctionDeployOperator(BaseOperator):
     """
     Creates a function in Google Cloud Functions.
+    If a function with this name already exists, it will be updated.
 
     :param project_id: Google Cloud Platform Project ID where the function should
         be created.
@@ -105,9 +106,9 @@ class GcfFunctionDeployOperator(BaseOperator):
     :param validate_body: If set to False, body validation is not performed.
     :type validate_body: bool
     """
-    # [START gce_function_deploy_template_operator_template_fields]
+    # [START gcf_function_deploy_template_fields]
     template_fields = ('project_id', 'location', 'gcp_conn_id', 'api_version')
-    # [END gce_function_deploy_template_operator_template_fields]
+    # [END gcf_function_deploy_template_fields]
 
     @apply_defaults
     def __init__(self,
@@ -279,9 +280,9 @@ class GcfFunctionDeleteOperator(BaseOperator):
     :param api_version: API version used (for example v1 or v1beta1).
     :type api_version: str
     """
-    # [START gce_function_delete_template_operator_template_fields]
+    # [START gcf_function_delete_template_fields]
     template_fields = ('name', 'gcp_conn_id', 'api_version')
-    # [END gce_function_delete_template_operator_template_fields]
+    # [END gcf_function_delete_template_fields]
 
     @apply_defaults
     def __init__(self,
@@ -315,3 +316,71 @@ class GcfFunctionDeleteOperator(BaseOperator):
             else:
                 self.log.error('An error occurred. Exiting.')
                 raise e
+
+
+class GcfFunctionInvokeOperator(BaseOperator):
+    """
+    Invokes an HTTP-triggered, IAM-protected Cloud Function under a given URL.
+    Credentials used to authorize to the IAM Function are the credentials provided
+    for the GCP connection.
+
+    :param project_id: The Google Developers Console [project ID or project number].
+    :type project_id: str
+    :param location: The Google Cloud Platform region where the function is located.
+    :type location: string
+    :param function_name: The name of the Cloud Function (short name, e.g. 'function-1').
+    :type function_name: string
+    :param gcp_conn_id: The connection ID to use connecting to Google Cloud Platform.
+    :type gcp_conn_id: str
+    """
+
+    # [START gcf_function_invoke_template_fields]
+    template_fields = ('project_id', 'location', 'function_name', 'gcp_conn_id')
+    # [END gcf_function_invoke_template_fields]
+
+    @apply_defaults
+    def __init__(self,
+                 project_id,
+                 location,
+                 function_name,
+                 gcp_conn_id='google_cloud_default',
+                 api_version='v1',
+                 *args, **kwargs):
+        self._validate_inputs(project_id, location, function_name)
+        self.project_id = project_id
+        self.location = location
+        self.function_name = function_name
+        self.gcp_conn_id = gcp_conn_id
+        self.api_version = api_version
+        super(GcfFunctionInvokeOperator, self).__init__(*args, **kwargs)
+
+    @staticmethod
+    def _validate_inputs(project_id, location, function_name):
+        if not project_id:
+            raise AirflowException("The required parameter 'project_id' is missing")
+        if not location:
+            raise AirflowException("The required parameter 'location' is missing")
+        if not function_name:
+            raise AirflowException("The required parameter 'function_name' is missing")
+
+    @staticmethod
+    def _create_function_url(location, project_id, entrypoint):
+        return 'https://{}-{}.cloudfunctions.net/{}'.format(location, project_id,
+                                                            entrypoint)
+
+    def execute(self, context):
+        hook = GcfHook(gcp_conn_id=self.gcp_conn_id, api_version=self.api_version)
+        resp = hook.invoke_function(
+            url=self._create_function_url(
+                self.location, self.project_id, self.function_name)
+        )
+        if resp.status_code == 403:
+            raise AirflowException(
+                'Service account does not have permission to access the '
+                'IAP-protected application.')
+        elif resp.status_code != 200:
+            raise AirflowException(
+                'Bad response from application: {!r} / {!r} / {!r}'.format(
+                    resp.status_code, resp.headers, resp.text))
+        else:
+            return resp.text
