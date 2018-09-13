@@ -139,3 +139,22 @@ the code below adds different combination of arguments based on local variables 
     :language: python
     :start-after: [START howto_operator_gcf_deploy_args]
     :end-before: [END howto_operator_gcf_deploy_args]
+
+GCFFunctionInvokeOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Use the :class:`~airflow.contrib.operators.gcf_function_invoke_operator
+.GCFFunctionInvokeOperator` to invoke a function from Google Cloud Functions.
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcf_function_deploy_invoke_delete.py
+    :language: python
+    :dedent: 4
+    :start-after: [START howto_operator_gcf_invoke]
+    :end-before: [END howto_operator_gcf_invoke]
+
+Use the ``default_args`` dict to pass additional arguments to the operator.
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcf_function_deploy_invoke_delete.py
+    :language: python
+    :start-after: [START howto_operator_gcf_invoke_args]
+    :end-before: [END howto_operator_gcf_invoke_args]
