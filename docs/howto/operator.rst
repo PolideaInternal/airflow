@@ -101,3 +101,41 @@ to execute a BigQuery load job.
     :dedent: 4
     :start-after: [START howto_operator_gcs_to_bq]
     :end-before: [END howto_operator_gcs_to_bq]
+
+GCFFunctionDeleteOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Use the :class:`~airflow.contrib.operators.gcf_function_delete_operator.GCFFunctionDeleteOperator`
+to delete a function from Google Cloud Functions.
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcf_function_delete_dag.py
+    :language: python
+    :start-after: [START howto_operator_gcf_delete]
+    :end-before: [END howto_operator_gcf_delete]
+
+Use the ``default_args`` dict to pass additional arguments to the operator.
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcf_function_delete_dag.py
+    :language: python
+    :start-after: [START howto_operator_gcf_delete_args]
+    :end-before: [END howto_operator_gcf_delete_args]
+
+GCFFunctionDeployOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Use the :class:`~airflow.contrib.operators.gcf_function_deploy_operator.GCFFunctionDeployOperator`
+to deploy a function from Google Cloud Functions. Note! the example below shows deploy followed by delete.
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcf_function_deploy_delete.py
+    :language: python
+    :start-after: [START howto_operator_gcf_deploy]
+    :end-before: [END howto_operator_gcf_deploy]
+
+
+Use the ``default_args`` dict for the DAG object created to pass additional arguments to the operator. Note that
+the code below adds different combination of arguments based on local variables defined
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcf_function_deploy_delete.py
+    :language: python
+    :start-after: [START howto_operator_gcf_deploy_args]
+    :end-before: [END howto_operator_gcf_deploy_args]
