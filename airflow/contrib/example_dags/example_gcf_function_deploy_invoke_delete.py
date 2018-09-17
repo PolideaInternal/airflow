@@ -45,9 +45,12 @@ import datetime
 
 import airflow
 from airflow import models
-from airflow.contrib.operators.gcf_function_delete_operator import GCFFunctionDeleteOperator  # nopep8
-from airflow.contrib.operators.gcf_function_deploy_operator import GCFFunctionDeployOperator  # nopep8
-from airflow.contrib.operators.gcf_function_invoke_operator import GCFFunctionInvokeOperator  # nopep8
+from airflow.contrib.operators.gcf_function_delete_operator import \
+    GCFFunctionDeleteOperator
+from airflow.contrib.operators.gcf_function_deploy_operator import \
+    GCFFunctionDeployOperator
+from airflow.contrib.operators.gcf_function_invoke_operator import \
+    GCFFunctionInvokeOperator
 
 PROJECT_ID = models.Variable.get('PROJECT_ID', '')
 REGION = models.Variable.get('REGION', '')

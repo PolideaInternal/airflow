@@ -23,7 +23,8 @@ from parameterized import parameterized
 from requests import Response
 
 from airflow import AirflowException
-from airflow.contrib.operators.gcf_function_invoke_operator import GCFFunctionInvokeOperator  # nopep8
+from airflow.contrib.operators.gcf_function_invoke_operator import \
+    GCFFunctionInvokeOperator
 
 try:
     from unittest import mock
