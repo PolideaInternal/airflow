@@ -27,7 +27,7 @@ from airflow.utils.decorators import apply_defaults
 SETTINGS = 'settings'
 SETTINGS_VERSION = 'settingsVersion'
 
-CLOUD_SQL_VALIDATION = [
+CLOUD_SQL_CREATE_VALIDATION = [
     dict(name="name", allow_empty=False),
     dict(name="settings", type="dict", fields=[
         dict(name="tier", allow_empty=False),
@@ -95,10 +95,10 @@ CLOUD_SQL_EXPORT_VALIDATION = [
     dict(name="exportContext", type="dict", fields=[
         dict(name="fileType", allow_empty=False),
         dict(name="uri", allow_empty=False),
-        dict(name="databases", type="list"),
+        dict(name="databases", optional=True, type="list"),
         dict(name="sqlExportOptions", type="dict", optional=True, fields=[
-            dict(name="tables", type="list"),
-            dict(name="schemaOnly")
+            dict(name="tables", optional=True, type="list"),
+            dict(name="schemaOnly", optional=True)
         ]),
         dict(name="csvExportOptions", type="dict", optional=True, fields=[
             dict(name="selectQuery")
@@ -117,7 +117,7 @@ CLOUD_SQL_IMPORT_VALIDATION = [
         ])
     ])
 ]
-CLOUD_SQL_DATABASE_INSERT_VALIDATION = [
+CLOUD_SQL_DATABASE_CREATE_VALIDATION = [
     dict(name="instance", allow_empty=False),
     dict(name="name", allow_empty=False),
     dict(name="project", allow_empty=False),
@@ -241,17 +241,23 @@ class CloudSqlInstanceCreateOperator(CloudSqlBaseOperator):
 
     def _validate_body_fields(self):
         if self.validate_body:
-            GcpBodyFieldValidator(CLOUD_SQL_VALIDATION,
+            GcpBodyFieldValidator(CLOUD_SQL_CREATE_VALIDATION,
                                   api_version=self.api_version).validate(self.body)
 
     def execute(self, context):
         self._validate_body_fields()
         if not self._check_if_instance_exists(self.instance):
-            return self._hook.create_instance(self.project_id, self.body)
+            self._hook.create_instance(self.project_id, self.body)
         else:
             self.log.info("Cloud SQL instance with ID {} already exists. "
                           "Aborting create.".format(self.instance))
-            return True
+
+        # TODO We should `get` the instance, extract the SA's email and return it
+        instance_resource = self._hook.get_instance(self.project_id, self.instance)
+        email_address_ = instance_resource["serviceAccountEmailAddress"]
+        self.log.info("SA EMAIL: " + email_address_)
+        # FIXME store email as different type of xcom than return_value
+        return email_address_
 
 
 class CloudSqlInstancePatchOperator(CloudSqlBaseOperator):
@@ -389,7 +395,7 @@ class CloudSqlInstanceDatabaseCreateOperator(CloudSqlBaseOperator):
 
     def _validate_body_fields(self):
         if self.validate_body:
-            GcpBodyFieldValidator(CLOUD_SQL_DATABASE_INSERT_VALIDATION,
+            GcpBodyFieldValidator(CLOUD_SQL_DATABASE_CREATE_VALIDATION,
                                   api_version=self.api_version).validate(self.body)
 
     def execute(self, context):
@@ -524,6 +530,112 @@ class CloudSqlInstanceDatabaseDeleteOperator(CloudSqlBaseOperator):
         else:
             return self._hook.delete_database(self.project_id, self.instance,
                                               self.database)
+
+
+class CloudSqlInstanceExportOperator(CloudSqlBaseOperator):
+    """
+    Exports data from a Cloud SQL instance to a Cloud Storage bucket as a SQL dump
+    or CSV file.
+
+    :param project_id: Project ID of the project that contains the instance to be
+        exported.
+    :type project_id: str
+    :param instance: Cloud SQL instance ID. This does not include the project ID.
+    :type instance: str
+    :param body: The request body, as described in
+        https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances/export#request-body
+    :type body: dict
+    :param gcp_conn_id: The connection ID used to connect to Google Cloud Platform.
+    :type gcp_conn_id: str
+    :param api_version: API version used (e.g. v1).
+    :type api_version: str
+    :param validate_body: Whether the body should be validated. Defaults to True.
+    :type validate_body: bool
+    """
+    # [START gcp_sql_export_template_fields]
+    template_fields = ('project_id', 'instance', 'gcp_conn_id', 'api_version')
+    # [END gcp_sql_export_template_fields]
+
+    @apply_defaults
+    def __init__(self,
+                 project_id,
+                 instance,
+                 body,
+                 gcp_conn_id='google_cloud_default',
+                 api_version='v1beta4',
+                 validate_body=True,
+                 *args, **kwargs):
+        self.body = body
+        self.validate_body = validate_body
+        super(CloudSqlInstanceExportOperator, self).__init__(
+            project_id=project_id, instance=instance, gcp_conn_id=gcp_conn_id,
+            api_version=api_version, *args, **kwargs)
+
+    def _validate_inputs(self):
+        super(CloudSqlInstanceExportOperator, self)._validate_inputs()
+        if not self.body:
+            raise AirflowException("The required parameter 'body' is empty")
+
+    def _validate_body_fields(self):
+        if self.validate_body:
+            GcpBodyFieldValidator(CLOUD_SQL_EXPORT_VALIDATION,
+                                  api_version=self.api_version).validate(self.body)
+
+    def execute(self, context):
+        self._validate_body_fields()
+        return self._hook.export_instance(self.project_id, self.body, self.instance)
+
+
+class CloudSqlInstanceImportOperator(CloudSqlBaseOperator):
+    """
+    Imports data into a Cloud SQL instance from a SQL dump or CSV file in Cloud Storage.
+
+    :param project_id: Project ID of the project that contains the instance.
+    :type project_id: str
+    :param instance: Cloud SQL instance ID. This does not include the project ID.
+    :type instance: str
+    :param body: The request body, as described in
+        https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances/export#request-body
+    :type body: dict
+    :param gcp_conn_id: The connection ID used to connect to Google Cloud Platform.
+    :type gcp_conn_id: str
+    :param api_version: API version used (e.g. v1).
+    :type api_version: str
+    :param validate_body: Whether the body should be validated. Defaults to True.
+    :type validate_body: bool
+    """
+    # [START gcp_sql_import_template_fields]
+    template_fields = ('project_id', 'instance', 'gcp_conn_id', 'api_version')
+    # [END gcp_sql_import_template_fields]
+
+    @apply_defaults
+    def __init__(self,
+                 project_id,
+                 instance,
+                 body,
+                 gcp_conn_id='google_cloud_default',
+                 api_version='v1beta4',
+                 validate_body=True,
+                 *args, **kwargs):
+        self.body = body
+        self.validate_body = validate_body
+        super(CloudSqlInstanceImportOperator, self).__init__(
+            project_id=project_id, instance=instance, gcp_conn_id=gcp_conn_id,
+            api_version=api_version, *args, **kwargs)
+
+    def _validate_inputs(self):
+        super(CloudSqlInstanceImportOperator, self)._validate_inputs()
+        if not self.body:
+            raise AirflowException("The required parameter 'body' is empty")
+
+    def _validate_body_fields(self):
+        if self.validate_body:
+            GcpBodyFieldValidator(CLOUD_SQL_IMPORT_VALIDATION,
+                                  api_version=self.api_version).validate(self.body)
+
+    def execute(self, context):
+        self._validate_body_fields()
+        return self._hook.import_instance(self.project_id, self.body, self.instance)
 
 
 class CloudSqlQueryOperator(BaseOperator):
