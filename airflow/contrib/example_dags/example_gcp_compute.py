@@ -21,15 +21,15 @@
 Example Airflow DAG that starts, stops and sets the machine type of a Google Compute
 Engine instance.
 
-This DAG relies on the following Airflow variables
-https://airflow.apache.org/concepts.html#variables
+This DAG relies on the following OS environment variables
+
 * PROJECT_ID - Google Cloud Platform project where the Compute Engine instance exists.
 * LOCATION - Google Cloud Platform zone where the instance exists.
 * INSTANCE - Name of the Compute Engine instance.
 * SHORT_MACHINE_TYPE_NAME - Machine type resource name to set, e.g. 'n1-standard-1'.
     See https://cloud.google.com/compute/docs/machine-types
 """
-
+import os
 import datetime
 
 import airflow
@@ -38,10 +38,10 @@ from airflow.contrib.operators.gcp_compute_operator import GceInstanceStartOpera
     GceInstanceStopOperator, GceSetMachineTypeOperator
 
 # [START howto_operator_gce_args]
-PROJECT_ID = models.Variable.get('PROJECT_ID', '')
-LOCATION = models.Variable.get('LOCATION', '')
-INSTANCE = models.Variable.get('INSTANCE', '')
-SHORT_MACHINE_TYPE_NAME = models.Variable.get('SHORT_MACHINE_TYPE_NAME', '')
+PROJECT_ID = os.environ.get('PROJECT_ID', 'example-project')
+LOCATION = os.environ.get('LOCATION', 'europe-west-1b')
+INSTANCE = os.environ.gefot('INSTANCE', 'testinstance')
+SHORT_MACHINE_TYPE_NAME = os.environ.get('SHORT_MACHINE_TYPE_NAME', 'n1-standard-1')
 SET_MACHINE_TYPE_BODY = {
     'machineType': 'zones/{}/machineTypes/{}'.format(LOCATION, SHORT_MACHINE_TYPE_NAME)
 }

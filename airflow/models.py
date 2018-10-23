@@ -667,6 +667,7 @@ class Connection(Base, LoggingMixin):
         ('azure_data_lake', 'Azure Data Lake'),
         ('cassandra', 'Cassandra',),
         ('qubole', 'Qubole'),
+        ('cloudsql', 'Google Cloud SQL',),
     ]
 
     def __init__(
@@ -807,6 +808,9 @@ class Connection(Base, LoggingMixin):
             elif self.conn_type == 'cassandra':
                 from airflow.contrib.hooks.cassandra_hook import CassandraHook
                 return CassandraHook(cassandra_conn_id=self.conn_id)
+            elif self.conn_type == 'cloudsql':
+                from airflow.contrib.hooks.gcp_sql_hook import CloudSqlDatabaseHook
+                return CloudSqlDatabaseHook(cloudsql_conn_id=self.conn_id)
         except Exception:
             pass
 
@@ -2506,7 +2510,7 @@ class BaseOperator(LoggingMixin):
                     c=self.__class__.__name__, a=args, k=kwargs),
                 category=PendingDeprecationWarning
             )
-
+            pass
         validate_key(task_id)
         self.task_id = task_id
         self.owner = owner

@@ -20,7 +20,7 @@
 """
 Example Airflow DAG that creates a Google Cloud Function and then deletes it.
 
-This DAG relies on the following Airflow variables
+This DAG relies on the following OS environment variables
 https://airflow.apache.org/concepts.html#variables
 * PROJECT_ID - Google Cloud Project to use for the Cloud Function.
 * LOCATION - Google Cloud Functions region where the function should be
@@ -37,6 +37,7 @@ https://cloud.google.com/functions/docs/reference/rest/v1/projects.locations.fun
 * ENTRYPOINT - Name of the executable function in the source code.
 """
 
+import os
 import datetime
 
 from airflow import models
@@ -45,17 +46,20 @@ from airflow.contrib.operators.gcp_function_operator \
 from airflow.utils import dates
 
 # [START howto_operator_gcf_deploy_variables]
-PROJECT_ID = models.Variable.get('PROJECT_ID', '')
-LOCATION = models.Variable.get('LOCATION', '')
-SOURCE_ARCHIVE_URL = models.Variable.get('SOURCE_ARCHIVE_URL', '')
-SOURCE_UPLOAD_URL = models.Variable.get('SOURCE_UPLOAD_URL', '')
-SOURCE_REPOSITORY = models.Variable.get('SOURCE_REPOSITORY', '')
-ZIP_PATH = models.Variable.get('ZIP_PATH', '')
-ENTRYPOINT = models.Variable.get('ENTRYPOINT', '')
+PROJECT_ID = os.environ.get('PROJECT_ID', 'example-project')
+LOCATION = os.environ.get('LOCATION', 'europe-west1')
+SOURCE_ARCHIVE_URL = os.environ.get('SOURCE_ARCHIVE_URL', '')
+SOURCE_UPLOAD_URL = os.environ.get('SOURCE_UPLOAD_URL', '')
+SOURCE_REPOSITORY = os.environ.get(
+    'SOURCE_REPOSITORY',
+    'https://source.developers.google.com/'
+    'projects/example-project/repos/hello-world/moveable-aliases/master')
+ZIP_PATH = os.environ.get('ZIP_PATH', '')
+ENTRYPOINT = os.environ.get('ENTRYPOINT', 'helloWorld')
 FUNCTION_NAME = 'projects/{}/locations/{}/functions/{}'.format(PROJECT_ID, LOCATION,
                                                                ENTRYPOINT)
 RUNTIME = 'nodejs6'
-VALIDATE_BODY = models.Variable.get('VALIDATE_BODY', True)
+VALIDATE_BODY = os.environ.get('VALIDATE_BODY', True)
 
 # [END howto_operator_gcf_deploy_variables]
 

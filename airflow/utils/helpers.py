@@ -234,7 +234,15 @@ def reap_process_group(pid, log, sig=signal.SIGTERM,
     children = parent.children(recursive=True)
     children.append(parent)
 
-    log.info("Sending %s to GPID %s", sig, os.getpgid(pid))
+    try:
+        pg = os.getpgid(pid)
+    except OSError as err:
+        # Skip if no such process - we experience a race and it just terminated
+        if err.errno == 3:
+            return
+        raise
+
+    log.info("Sending %s to GPID %s", sig, pg)
     os.killpg(os.getpgid(pid), sig)
 
     gone, alive = psutil.wait_procs(children, timeout=timeout, callback=on_terminate)
