@@ -111,7 +111,7 @@ with models.DAG(
     sql_instance_insert_task = CloudSqlInstanceInsertOperator(
         project_id=PROJECT_ID,
         body=body,
-        name=INSTANCE_NAME,
+        instance=INSTANCE_NAME,
         task_id='sql_instance_insert_task'
     )
     # [END howto_operator_cloudsql_insert]
@@ -119,14 +119,14 @@ with models.DAG(
     sql_instance_patch_task = CloudSqlInstancePatchOperator(
         project_id=PROJECT_ID,
         body=patch_body,
-        name=INSTANCE_NAME,
+        instance=INSTANCE_NAME,
         task_id='sql_instance_patch_task'
     )
     # [END howto_operator_cloudsql_patch]
     # [START howto_operator_cloudsql_delete]
     sql_instance_delete_task = CloudSqlInstanceDeleteOperator(
         project_id=PROJECT_ID,
-        name=INSTANCE_NAME,
+        instance=INSTANCE_NAME,
         task_id='sql_instance_delete_task'
     )
     # [END howto_operator_cloudsql_delete]

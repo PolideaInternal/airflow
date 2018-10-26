@@ -33,9 +33,9 @@ except ImportError:
         mock = None
 
 PROJECT_ID = "project-id"
-NAME = "test-name"
+INSTANCE_NAME = "test-name"
 INSERT_BODY = {
-    "name": NAME,
+    "name": INSTANCE_NAME,
     "settings": {
         "tier": "db-n1-standard-1",
         "backupConfiguration": {
@@ -102,7 +102,7 @@ INSERT_BODY = {
     }
 }
 PATCH_BODY = {
-    "name": NAME,
+    "name": INSTANCE_NAME,
     "settings": {
         "tier": "db-n1-standard-2",
         "dataDiskType": "PD_HDD"
@@ -120,7 +120,7 @@ class CloudSqlTest(unittest.TestCase):
         mock_hook.return_value.insert_instance.return_value = True
         op = CloudSqlInstanceInsertOperator(
             project_id=PROJECT_ID,
-            name=NAME,
+            instance=INSTANCE_NAME,
             body=INSERT_BODY,
             task_id="id"
         )
@@ -140,7 +140,7 @@ class CloudSqlTest(unittest.TestCase):
         mock_hook.return_value.insert_instance.return_value = True
         op = CloudSqlInstanceInsertOperator(
             project_id=PROJECT_ID,
-            name=NAME,
+            instance=INSTANCE_NAME,
             body=INSERT_BODY,
             task_id="id"
         )
@@ -156,7 +156,7 @@ class CloudSqlTest(unittest.TestCase):
             op = CloudSqlInstanceInsertOperator(
                 project_id="",
                 body=INSERT_BODY,
-                name=NAME,
+                instance=INSTANCE_NAME,
                 task_id="id"
             )
             op.execute(None)
@@ -170,7 +170,7 @@ class CloudSqlTest(unittest.TestCase):
             op = CloudSqlInstanceInsertOperator(
                 project_id=PROJECT_ID,
                 body={},
-                name=NAME,
+                instance=INSTANCE_NAME,
                 task_id="id"
             )
             op.execute(None)
@@ -179,23 +179,23 @@ class CloudSqlTest(unittest.TestCase):
         mock_hook.assert_not_called()
 
     @mock.patch("airflow.contrib.operators.gcp_sql_operator.CloudSqlHook")
-    def test_insert_should_throw_ex_when_empty_name(self, mock_hook):
+    def test_insert_should_throw_ex_when_empty_instance(self, mock_hook):
         with self.assertRaises(AirflowException) as cm:
             op = CloudSqlInstanceInsertOperator(
                 project_id=PROJECT_ID,
                 body=INSERT_BODY,
-                name="",
+                instance="",
                 task_id="id"
             )
             op.execute(None)
         err = cm.exception
-        self.assertIn("The required parameter 'name' is empty", str(err))
+        self.assertIn("The required parameter 'instance' is empty", str(err))
         mock_hook.assert_not_called()
 
     @mock.patch("airflow.contrib.operators.gcp_sql_operator.CloudSqlHook")
     def test_insert_should_validate_list_type(self, mock_hook):
         wrong_list_type_body = {
-            "name": NAME,
+            "name": INSTANCE_NAME,
             "settings": {
                 "tier": "db-n1-standard-1",
                 "ipConfiguration": {
@@ -208,7 +208,7 @@ class CloudSqlTest(unittest.TestCase):
             op = CloudSqlInstanceInsertOperator(
                 project_id=PROJECT_ID,
                 body=wrong_list_type_body,
-                name=NAME,
+                instance=INSTANCE_NAME,
                 task_id="id"
             )
             op.execute(None)
@@ -221,7 +221,7 @@ class CloudSqlTest(unittest.TestCase):
     @mock.patch("airflow.contrib.operators.gcp_sql_operator.CloudSqlHook")
     def test_insert_should_validate_non_empty_fields(self, mock_hook):
         empty_tier_body = {
-            "name": NAME,
+            "name": INSTANCE_NAME,
             "settings": {
                 "tier": "",  # Field can't be empty (defined in CLOUD_SQL_VALIDATION).
                              # Testing if the validation catches this.
@@ -231,7 +231,7 @@ class CloudSqlTest(unittest.TestCase):
             op = CloudSqlInstanceInsertOperator(
                 project_id=PROJECT_ID,
                 body=empty_tier_body,
-                name=NAME,
+                instance=INSTANCE_NAME,
                 task_id="id"
             )
             op.execute(None)
@@ -247,14 +247,14 @@ class CloudSqlTest(unittest.TestCase):
         op = CloudSqlInstancePatchOperator(
             project_id=PROJECT_ID,
             body=PATCH_BODY,
-            name=NAME,
+            instance=INSTANCE_NAME,
             task_id="id"
         )
         result = op.execute(None)
         mock_hook.assert_called_once_with(api_version="v1beta4",
                                           gcp_conn_id="google_cloud_default")
         mock_hook.return_value.patch_instance.assert_called_once_with(
-            PROJECT_ID, PATCH_BODY, NAME
+            PROJECT_ID, PATCH_BODY, INSTANCE_NAME
         )
         self.assertTrue(result)
 
@@ -268,7 +268,7 @@ class CloudSqlTest(unittest.TestCase):
             op = CloudSqlInstancePatchOperator(
                 project_id=PROJECT_ID,
                 body=PATCH_BODY,
-                name=NAME,
+                instance=INSTANCE_NAME,
                 task_id="id"
             )
             op.execute(None)
@@ -285,7 +285,7 @@ class CloudSqlTest(unittest.TestCase):
         _check_if_instance_exists.return_value = True
         op = CloudSqlInstanceDeleteOperator(
             project_id=PROJECT_ID,
-            name=NAME,
+            instance=INSTANCE_NAME,
             task_id="id"
         )
         result = op.execute(None)
@@ -293,7 +293,7 @@ class CloudSqlTest(unittest.TestCase):
         mock_hook.assert_called_once_with(api_version="v1beta4",
                                           gcp_conn_id="google_cloud_default")
         mock_hook.return_value.delete_instance.assert_called_once_with(
-            PROJECT_ID, NAME
+            PROJECT_ID, INSTANCE_NAME
         )
 
     @mock.patch("airflow.contrib.operators.gcp_sql_operator"
@@ -304,7 +304,7 @@ class CloudSqlTest(unittest.TestCase):
         _check_if_instance_exists.return_value = False
         op = CloudSqlInstanceDeleteOperator(
             project_id=PROJECT_ID,
-            name=NAME,
+            instance=INSTANCE_NAME,
             task_id="id"
         )
         result = op.execute(None)

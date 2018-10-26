@@ -100,12 +100,12 @@ class CloudSqlBaseOperator(BaseOperator):
     @apply_defaults
     def __init__(self,
                  project_id,
-                 name,
+                 instance,
                  gcp_conn_id='google_cloud_default',
                  api_version='v1beta4',
                  *args, **kwargs):
         self.project_id = project_id
-        self.name = name
+        self.instance = instance
         self.gcp_conn_id = gcp_conn_id
         self.api_version = api_version
         self._validate_inputs()
@@ -116,12 +116,12 @@ class CloudSqlBaseOperator(BaseOperator):
     def _validate_inputs(self):
         if not self.project_id:
             raise AirflowException("The required parameter 'project_id' is empty")
-        if not self.name:
-            raise AirflowException("The required parameter 'name' is empty")
+        if not self.instance:
+            raise AirflowException("The required parameter 'instance' is empty")
 
-    def _check_if_instance_exists(self, name):
+    def _check_if_instance_exists(self, instance):
         try:
-            return self._hook.get_instance(self.project_id, name)
+            return self._hook.get_instance(self.project_id, instance)
         except HttpError as e:
             status = e.resp.status
             if status == 404:
@@ -142,15 +142,15 @@ class CloudSqlInstanceInsertOperator(CloudSqlBaseOperator):
     If an instance with the same name exists, no action will be taken and
     the operator will succeed.
 
-    :param project_id: Google Cloud Platform project where the Cloud SQL
-        instance is to be created.
+    :param project_id: Project ID of the project to which the newly created Cloud SQL
+        instances should belong.
     :type project_id: str
     :param body: Body required by the Cloud SQL insert API, as described in
         https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances/insert
         #request-body
     :type body: dict
-    :param name: Name of the Cloud SQL instance. This does not include the project ID.
-    :type name: str
+    :param instance: Cloud SQL instance ID. This does not include the project ID.
+    :type instance: str
     :param gcp_conn_id: The connection ID used to connect to Google Cloud Platform.
     :type gcp_conn_id: str
     :param api_version: API version used (e.g. v1).
@@ -159,14 +159,14 @@ class CloudSqlInstanceInsertOperator(CloudSqlBaseOperator):
     :type validate_body: bool
     """
     # [START gcp_sql_insert_template_fields]
-    template_fields = ('project_id', 'name', 'gcp_conn_id', 'api_version')
+    template_fields = ('project_id', 'instance', 'gcp_conn_id', 'api_version')
     # [END gcp_sql_insert_template_fields]
 
     @apply_defaults
     def __init__(self,
                  project_id,
                  body,
-                 name,
+                 instance,
                  gcp_conn_id='google_cloud_default',
                  api_version='v1beta4',
                  validate_body=True,
@@ -174,7 +174,7 @@ class CloudSqlInstanceInsertOperator(CloudSqlBaseOperator):
         self.body = body
         self.validate_body = validate_body
         super(CloudSqlInstanceInsertOperator, self).__init__(
-            project_id=project_id, name=name, gcp_conn_id=gcp_conn_id,
+            project_id=project_id, instance=instance, gcp_conn_id=gcp_conn_id,
             api_version=api_version, *args, **kwargs)
 
     def _validate_inputs(self):
@@ -189,11 +189,11 @@ class CloudSqlInstanceInsertOperator(CloudSqlBaseOperator):
 
     def execute(self, context):
         self._validate_body_fields()
-        if not self._check_if_instance_exists(self.name):
+        if not self._check_if_instance_exists(self.instance):
             return self._hook.insert_instance(self.project_id, self.body)
         else:
-            self.log.info("Cloud SQL with name {} already exists. Aborting insert."
-                          .format(self.name))
+            self.log.info("Cloud SQL instance with ID {} already exists. "
+                          "Aborting insert.".format(self.instance))
             return True
 
 
@@ -208,33 +208,33 @@ class CloudSqlInstancePatchOperator(CloudSqlBaseOperator):
     to the rules of patch semantics.
     https://cloud.google.com/sql/docs/mysql/admin-api/how-tos/performance#patch
 
-    :param project_id: Google Cloud Platform project where the Cloud SQL instance exists.
+    :param project_id: Project ID of the project that contains the instance.
     :type project_id: str
     :param body: Body required by the Cloud SQL patch API, as described in
         https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances/patch#request-body
     :type body: dict
-    :param name: Name of the Cloud SQL instance. This does not include the project ID.
-    :type name: str
+    :param instance: Cloud SQL instance ID. This does not include the project ID.
+    :type instance: str
     :param gcp_conn_id: The connection ID used to connect to Google Cloud Platform.
     :type gcp_conn_id: str
     :param api_version: API version used (e.g. v1).
     :type api_version: str
     """
     # [START gcp_sql_patch_template_fields]
-    template_fields = ('project_id', 'name', 'gcp_conn_id', 'api_version')
+    template_fields = ('project_id', 'instance', 'gcp_conn_id', 'api_version')
     # [END gcp_sql_patch_template_fields]
 
     @apply_defaults
     def __init__(self,
                  project_id,
                  body,
-                 name,
+                 instance,
                  gcp_conn_id='google_cloud_default',
                  api_version='v1beta4',
                  *args, **kwargs):
         self.body = body
         super(CloudSqlInstancePatchOperator, self).__init__(
-            project_id=project_id, name=name, gcp_conn_id=gcp_conn_id,
+            project_id=project_id, instance=instance, gcp_conn_id=gcp_conn_id,
             api_version=api_version, *args, **kwargs)
 
     def _validate_inputs(self):
@@ -243,46 +243,46 @@ class CloudSqlInstancePatchOperator(CloudSqlBaseOperator):
             raise AirflowException("The required parameter 'body' is empty")
 
     def execute(self, context):
-        if not self._check_if_instance_exists(self.name):
-            raise AirflowException('Cloud SQL instance {} does not exist. Please '
-                                   'specify another instance to patch.'
-                                   .format(self.name))
+        if not self._check_if_instance_exists(self.instance):
+            raise AirflowException('Cloud SQL instance with ID {} does not exist. '
+                                   'Please specify another instance to patch.'
+                                   .format(self.instance))
         else:
-            return self._hook.patch_instance(self.project_id, self.body, self.name)
+            return self._hook.patch_instance(self.project_id, self.body, self.instance)
 
 
 class CloudSqlInstanceDeleteOperator(CloudSqlBaseOperator):
     """
     Deletes a Cloud SQL instance.
 
-    :param project_id: Google Cloud Platform project where the Cloud SQL instance exists.
+    :param project_id: Project ID of the project that contains the instance to be deleted.
     :type project_id: str
-    :param name: Name of the Cloud SQL instance. This does not include the project ID.
-    :type name: str
+    :param instance: Cloud SQL instance ID. This does not include the project ID.
+    :type instance: str
     :param gcp_conn_id: The connection ID used to connect to Google Cloud Platform.
     :type gcp_conn_id: str
     :param api_version: API version used (e.g. v1).
     :type api_version: str
     """
     # [START gcp_sql_delete_template_fields]
-    template_fields = ('project_id', 'name', 'gcp_conn_id', 'api_version')
+    template_fields = ('project_id', 'instance', 'gcp_conn_id', 'api_version')
     # [END gcp_sql_delete_template_fields]
 
     @apply_defaults
     def __init__(self,
                  project_id,
-                 name,
+                 instance,
                  gcp_conn_id='google_cloud_default',
                  api_version='v1beta4',
                  *args, **kwargs):
         super(CloudSqlInstanceDeleteOperator, self).__init__(
-            project_id=project_id, name=name, gcp_conn_id=gcp_conn_id,
+            project_id=project_id, instance=instance, gcp_conn_id=gcp_conn_id,
             api_version=api_version, *args, **kwargs)
 
     def execute(self, context):
-        if not self._check_if_instance_exists(self.name):
-            print("Cloud SQL instance {} does not exist. Aborting delete."
-                  .format(self.name))
+        if not self._check_if_instance_exists(self.instance):
+            print("Cloud SQL instance with ID {} does not exist. Aborting delete."
+                  .format(self.instance))
             return True
         else:
-            return self._hook.delete_instance(self.project_id, self.name)
+            return self._hook.delete_instance(self.project_id, self.instance)
