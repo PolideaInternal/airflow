@@ -1,3 +1,4 @@
+
 ..  Licensed to the Apache Software Foundation (ASF) under one
     or more contributor license agreements.  See the NOTICE file
     distributed with this work for additional information
@@ -798,6 +799,69 @@ Cloud SQL Hooks
 .. autoclass:: airflow.contrib.hooks.gcp_sql_hook.CloudSqlProxyRunner
     :members:
 
+
+Cloud BigTable
+''''''''''''''
+
+Cloud BigTable Operators
+""""""""""""""""""
+
+- :ref:`BigTableInstanceCreateOperator` : crates a Cloud BigTable Instance.
+- :ref:`BigTableInstanceDeleteOperator` : deletes an Instance of Google Cloud BigTable.
+- :ref:`BigTableClusterUpdateOperator` : updates number of nodes in Google Cloud BigTable cluster.
+- :ref:`BigTableTableCreateOperator` : creates a Table in Instance of Google Cloud BigTable.
+- :ref:`BigTableTableDeleteOperator` : deletes a Table in Instance of Google Cloud BigTable.
+- :ref:`BigTableTableWaitForReplicationSensor` : (sensor) waits for Table to be fully replicated.
+
+.. _BigTableInstanceCreateOperator:
+
+BigTableClusterUpdateOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: airflow.contrib.operators.gcp_bigtable_operator.BigTableClusterUpdateOperator
+
+.. _BigTableInstanceDeleteOperator:
+
+BigTableInstanceDeleteOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: airflow.contrib.operators.gcp_bigtable_operator.BigTableInstanceDeleteOperator
+
+.. _BigTableClusterUpdateOperator:
+
+BigTableClusterUpdateOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: airflow.contrib.operators.gcp_bigtable_operator.BigTableClusterUpdateOperator
+
+.. _BigTableTableCreateOperator:
+
+BigTableTableCreateOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: airflow.contrib.operators.gcp_bigtable_operator.BigTableTableCreateOperator
+
+.. _BigTableTableDeleteOperator:
+
+BigTableTableDeleteOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: airflow.contrib.operators.gcp_bigtable_operator.BigTableTableDeleteOperator
+
+.. _BigTableTableWaitForReplicationSensor:
+
+BigTableTableWaitForReplicationSensor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: airflow.contrib.operators.gcp_bigtable_operator.BigTableTableWaitForReplicationSensor
+
+.. _BigTableHook:
+
+Cloud BigTable Hook
+""""""""""""""""""""
+
+.. autoclass:: airflow.contrib.hooks.gcp_bigtable_hook.BigTableHook
+    :members:
 
 Compute Engine
 ''''''''''''''
