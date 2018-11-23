@@ -25,13 +25,12 @@ from airflow.operators.bash_operator import BashOperator
 from airflow.operators.email_operator import EmailOperator
 from airflow.operators.python_operator import PythonOperator
 
-gcp_services = [
+GCP_SERVICES = [
     ('sql', 'Cloud SQL'),
     ('spanner', 'Spanner'),
     ('bigtable', 'BigTable'),
     ('compute', 'Compute Engine'),
 ]
-
 INSTANCES_IN_PROJECT_TITLE = "Instances in `polidea-airflow`:"
 
 
@@ -40,10 +39,9 @@ def send_slack_msg(**context):
     with_instances_label = INSTANCES_IN_PROJECT_TITLE
     no_instances = []
 
-    for gcp_service in gcp_services:
+    for gcp_service in GCP_SERVICES:
         result = context['task_instance'].\
             xcom_pull(task_ids='gcp_service_list_instances_{}'.format(gcp_service[0]))
-        print("result: {}".format(result))
 
         if result == "Listed 0 items.":
             field = {
@@ -91,20 +89,19 @@ def prepare_email(**context):
     with_instances = []
     no_instances = []
 
-    for gcp_service in gcp_services:
+    for gcp_service in GCP_SERVICES:
         result = context['task_instance']. \
             xcom_pull(task_ids='gcp_service_list_instances_{}'.format(gcp_service[0]))
-        print("result: {}".format(result))
 
         if result == "Listed 0 items.":
             value = "-<br>"
-            field = '<b>' + gcp_service[1] + '</b>' + ':<br>' + value + '<br>'
+            field = '<b>{}</b>:<br>{}<br>'.format(gcp_service[1], value)
             no_instances.append(field)
         else:
             value = ""
             for word in result.split(' '):
                 value += word + '<br>'
-            field = '<b>' + gcp_service[1] + '</b>' + ':<br>' + value + '<br>'
+            field = '<b>{}</b>:<br>{}<br>'.format(gcp_service[1], value)
             with_instances.append(field)
 
     html_content = ""
@@ -120,7 +117,7 @@ dag = DAG(dag_id='gcp_spy',
           default_args={
               'start_date': utils.dates.days_ago(0)
           },
-          schedule_interval='0 16 * * *')
+          schedule_interval='@hourly')
 
 send_slack_msg = PythonOperator(
     python_callable=send_slack_msg,
@@ -145,7 +142,7 @@ send_email = EmailOperator(
 )
 prepare_email >> send_email
 
-for gcp_service in gcp_services:
+for gcp_service in GCP_SERVICES:
     bash = BashOperator(
         xcom_push=True,
         bash_command=
