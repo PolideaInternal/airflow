@@ -183,13 +183,15 @@ class CloudSqlTest(unittest.TestCase):
             body=CREATE_BODY,
             task_id="id"
         )
-        result = op.execute(None)
+        result = op.execute(context={
+            'task_instance': mock.Mock()
+        })
         mock_hook.assert_called_once_with(api_version="v1beta4",
                                           gcp_conn_id="google_cloud_default")
         mock_hook.return_value.create_instance.assert_called_once_with(
             PROJECT_ID, CREATE_BODY
         )
-        self.assertTrue(result)
+        self.assertIsNone(result)
 
     @mock.patch("airflow.contrib.operators.gcp_sql_operator"
                 ".CloudSqlInstanceCreateOperator._check_if_instance_exists")
@@ -203,11 +205,13 @@ class CloudSqlTest(unittest.TestCase):
             body=CREATE_BODY,
             task_id="id"
         )
-        result = op.execute(None)
+        result = op.execute(context={
+            'task_instance': mock.Mock()
+        })
         mock_hook.assert_called_once_with(api_version="v1beta4",
                                           gcp_conn_id="google_cloud_default")
         mock_hook.return_value.create_instance.assert_not_called()
-        self.assertTrue(result)
+        self.assertIsNone(result)
 
     @mock.patch("airflow.contrib.operators.gcp_sql_operator.CloudSqlHook")
     def test_create_should_throw_ex_when_empty_project_id(self, mock_hook):
