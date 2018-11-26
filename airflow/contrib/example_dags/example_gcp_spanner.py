@@ -18,7 +18,7 @@
 # under the License.
 
 """
-Example Airflow DAG that creates, updates and deletes a Cloud Spanner instance.
+Example Airflow DAG that creates, updates, queries and deletes a Cloud Spanner instance.
 
 This DAG relies on the following environment variables
 * GCP_PROJECT_ID - Google Cloud Platform project for the Cloud Spanner instance.

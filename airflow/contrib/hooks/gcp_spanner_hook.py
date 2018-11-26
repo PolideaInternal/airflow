@@ -16,12 +16,12 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-from google.longrunning.operations_grpc_pb2 import Operation  # noqa: F401
-from typing import Optional, Callable  # noqa: F401
-
 from google.api_core.exceptions import GoogleAPICallError
 from google.cloud.spanner_v1.client import Client
+from google.cloud.spanner_v1.database import Database
 from google.cloud.spanner_v1.instance import Instance  # noqa: F401
+from google.longrunning.operations_grpc_pb2 import Operation  # noqa: F401
+from typing import Optional, Callable  # noqa: F401
 
 from airflow import AirflowException
 from airflow.contrib.hooks.gcp_api_base_hook import GoogleCloudBaseHook
