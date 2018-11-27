@@ -523,7 +523,7 @@ class CloudSqlTest(unittest.TestCase):
         mock_hook.assert_called_once_with(api_version="v1beta4",
                                           gcp_conn_id="google_cloud_default")
         mock_hook.return_value.export_instance.assert_called_once_with(
-            PROJECT_ID, EXPORT_BODY, INSTANCE_NAME
+            PROJECT_ID, INSTANCE_NAME, EXPORT_BODY
         )
         self.assertTrue(result)
 
@@ -540,7 +540,7 @@ class CloudSqlTest(unittest.TestCase):
         mock_hook.assert_called_once_with(api_version="v1beta4",
                                           gcp_conn_id="google_cloud_default")
         mock_hook.return_value.import_instance.assert_called_once_with(
-            PROJECT_ID, IMPORT_BODY, INSTANCE_NAME
+            PROJECT_ID, INSTANCE_NAME, IMPORT_BODY
         )
         self.assertTrue(result)
 

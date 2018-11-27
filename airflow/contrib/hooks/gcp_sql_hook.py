@@ -254,19 +254,19 @@ class CloudSqlHook(GoogleCloudBaseHook):
         operation_name = response["name"]
         return self._wait_for_operation_to_complete(project, operation_name)
 
-    def export_instance(self, project_id, body, instance_id):
+    def export_instance(self, project_id, instance_id, body):
         """
         Exports data from a Cloud SQL instance to a Cloud Storage bucket as a SQL dump
         or CSV file.
 
         :param project_id: Project ID of the project where the instance exists.
         :type project_id: str
-        :param body: The request body, as described in
-            https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances/export#request-body
-        :type body: dict
         :param instance_id: Name of the Cloud SQL instance. This does not include the
             project ID.
         :type instance_id: str
+        :param body: The request body, as described in
+            https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances/export#request-body
+        :type body: dict
         :return: True if the operation succeeded, raises an error otherwise
         :rtype: bool
         """
@@ -278,19 +278,19 @@ class CloudSqlHook(GoogleCloudBaseHook):
         operation_name = response["name"]
         return self._wait_for_operation_to_complete(project_id, operation_name)
 
-    def import_instance(self, project_id, body, instance_id):
+    def import_instance(self, project_id, instance_id, body):
         """
         Imports data into a Cloud SQL instance from a SQL dump or CSV file in
         Cloud Storage.
 
         :param project_id: Project ID of the project where the instance exists.
         :type project_id: str
-        :param body: The request body, as described in
-            https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances/export#request-body
-        :type body: dict
         :param instance_id: Name of the Cloud SQL instance. This does not include the
             project ID.
         :type instance_id: str
+        :param body: The request body, as described in
+            https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances/export#request-body
+        :type body: dict
         :return: True if the operation succeeded, raises an error otherwise
         :rtype: bool
         """

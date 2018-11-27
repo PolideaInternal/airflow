@@ -578,7 +578,8 @@ class GoogleCloudStorageHook(GoogleCloudBaseHook):
         :type bucket: str
         :param entity: The entity holding the permission, in one of the following forms:
             user-userId, user-email, group-groupId, group-email, domain-domain,
-            project-team-projectId, allUsers, allAuthenticatedUsers
+            project-team-projectId, allUsers, allAuthenticatedUsers.
+            See: https://cloud.google.com/storage/docs/access-control/lists#scopes
         :type entity: str
         :param role: The access permission for the entity.
             Acceptable values are: "OWNER", "READER", "WRITER".
@@ -621,6 +622,7 @@ class GoogleCloudStorageHook(GoogleCloudBaseHook):
         :param entity: The entity holding the permission, in one of the following forms:
             user-userId, user-email, group-groupId, group-email, domain-domain,
             project-team-projectId, allUsers, allAuthenticatedUsers
+            See: https://cloud.google.com/storage/docs/access-control/lists#scopes
         :type entity: str
         :param role: The access permission for the entity.
             Acceptable values are: "OWNER", "READER".

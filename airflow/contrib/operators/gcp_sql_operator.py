@@ -142,7 +142,7 @@ class CloudSqlBaseOperator(BaseOperator):
     :type instance: str
     :param gcp_conn_id: The connection ID used to connect to Google Cloud Platform.
     :type gcp_conn_id: str
-    :param api_version: API version used (e.g. v1).
+    :param api_version: API version used (e.g. v1beta4).
     :type api_version: str
     """
     @apply_defaults
@@ -535,6 +535,9 @@ class CloudSqlInstanceExportOperator(CloudSqlBaseOperator):
     Exports data from a Cloud SQL instance to a Cloud Storage bucket as a SQL dump
     or CSV file.
 
+    Note: This operator is idempotent. If executed multiple times with the same
+    export file URI, the export file in GCS will simply be overridden.
+
     :param project_id: Project ID of the project that contains the instance to be
         exported.
     :type project_id: str
@@ -545,7 +548,7 @@ class CloudSqlInstanceExportOperator(CloudSqlBaseOperator):
     :type body: dict
     :param gcp_conn_id: The connection ID used to connect to Google Cloud Platform.
     :type gcp_conn_id: str
-    :param api_version: API version used (e.g. v1).
+    :param api_version: API version used (e.g. v1beta4).
     :type api_version: str
     :param validate_body: Whether the body should be validated. Defaults to True.
     :type validate_body: bool
@@ -581,12 +584,31 @@ class CloudSqlInstanceExportOperator(CloudSqlBaseOperator):
 
     def execute(self, context):
         self._validate_body_fields()
-        return self._hook.export_instance(self.project_id, self.body, self.instance)
+        return self._hook.export_instance(self.project_id, self.instance, self.body)
 
 
 class CloudSqlInstanceImportOperator(CloudSqlBaseOperator):
     """
     Imports data into a Cloud SQL instance from a SQL dump or CSV file in Cloud Storage.
+
+    CSV IMPORT:
+
+    This operator is NOT idempotent for a CSV import. If the same file is imported
+    multiple times, the imported data will be duplicated in the database.
+    Moreover, if there are any unique constraints the duplicate import may result in an
+    error.
+
+    To ensure idempotence you can use the CloudSqlQueryOperator in your DAG before
+    the import to delete the table(s) which may be imported again.
+
+    SQL IMPORT:
+
+    This operator is idempotent for a SQL import if it was also exported by Cloud SQL.
+    The exported SQL contains 'DROP TABLE IF EXISTS' statements for all tables
+    to be imported.
+
+    If the import file was generated in a different way, idempotence is not guaranteed.
+    It has to be ensured on the SQL file level.
 
     :param project_id: Project ID of the project that contains the instance.
     :type project_id: str
@@ -597,7 +619,7 @@ class CloudSqlInstanceImportOperator(CloudSqlBaseOperator):
     :type body: dict
     :param gcp_conn_id: The connection ID used to connect to Google Cloud Platform.
     :type gcp_conn_id: str
-    :param api_version: API version used (e.g. v1).
+    :param api_version: API version used (e.g. v1beta4).
     :type api_version: str
     :param validate_body: Whether the body should be validated. Defaults to True.
     :type validate_body: bool
@@ -633,7 +655,7 @@ class CloudSqlInstanceImportOperator(CloudSqlBaseOperator):
 
     def execute(self, context):
         self._validate_body_fields()
-        return self._hook.import_instance(self.project_id, self.body, self.instance)
+        return self._hook.import_instance(self.project_id, self.instance, self.body)
 
 
 class CloudSqlQueryOperator(BaseOperator):
