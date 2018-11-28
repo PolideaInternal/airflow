@@ -598,9 +598,6 @@ class CloudSqlInstanceImportOperator(CloudSqlBaseOperator):
     Moreover, if there are any unique constraints the duplicate import may result in an
     error.
 
-    To ensure idempotence you can use the CloudSqlQueryOperator in your DAG before
-    the import to delete the table(s) which may be imported again.
-
     SQL IMPORT:
 
     This operator is idempotent for a SQL import if it was also exported by Cloud SQL.
