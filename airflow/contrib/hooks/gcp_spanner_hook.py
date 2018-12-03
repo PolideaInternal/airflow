@@ -23,6 +23,7 @@ from google.api_core.exceptions import GoogleAPICallError
 from google.cloud.spanner_v1.client import Client
 from google.cloud.spanner_v1.instance import Instance  # noqa: F401
 
+from airflow import AirflowException
 from airflow.contrib.hooks.gcp_api_base_hook import GoogleCloudBaseHook
 
 
@@ -43,7 +44,7 @@ class CloudSpannerHook(GoogleCloudBaseHook):
         """
         Provides a client for interacting with Cloud Spanner API.
 
-        :param project_id: The ID of the project which owns the instances, tables and data.
+        :param project_id: The ID of the project which owns the Cloud Spanner Database.
         :type project_id: str
         :return: Client for interacting with Cloud Spanner API. See:
             https://googleapis.github.io/google-cloud-python/latest/spanner/client-api.html#google.cloud.spanner_v1.client.Client
@@ -58,7 +59,7 @@ class CloudSpannerHook(GoogleCloudBaseHook):
         """
         Gets information about a particular instance.
 
-        :param project_id: The ID of the project which owns the instances, tables and data.
+        :param project_id: The ID of the project which owns the Cloud Spanner Database.
         :type project_id: str
         :param instance_id: The ID of the instance.
         :type instance_id: str
@@ -78,8 +79,7 @@ class CloudSpannerHook(GoogleCloudBaseHook):
         """
         Creates a new Cloud Spanner instance.
 
-        :param project_id: The ID of the project which owns the instances, tables and
-            data.
+        :param project_id: The ID of the project which owns the Cloud Spanner Database.
         :type project_id: str
         :param instance_id: The ID of the instance.
         :type instance_id: str
@@ -104,8 +104,7 @@ class CloudSpannerHook(GoogleCloudBaseHook):
         """
         Updates an existing Cloud Spanner instance.
 
-        :param project_id: The ID of the project which owns the instances, tables and
-            data.
+        :param project_id: The ID of the project which owns the Cloud Spanner Database.
         :type project_id: str
         :param instance_id: The ID of the instance.
         :type instance_id: str
@@ -130,8 +129,7 @@ class CloudSpannerHook(GoogleCloudBaseHook):
         """
         Invokes a method on a given instance by applying a specified Callable.
 
-        :param project_id: The ID of the project which owns the instances, tables and
-            data.
+        :param project_id: The ID of the project which owns the Cloud Spanner Database.
         :type project_id: str
         :param instance_id: The ID of the instance.
         :type instance_id: str
@@ -155,7 +153,7 @@ class CloudSpannerHook(GoogleCloudBaseHook):
         try:
             operation = func(instance)  # type: Operation
         except GoogleAPICallError as e:
-            self.log.error('An error occurred: %s. Aborting.', e.message)
+            self.log.error('An error occurred: %s. Exiting.', e.message)
             raise e
 
         if operation:
@@ -168,7 +166,7 @@ class CloudSpannerHook(GoogleCloudBaseHook):
         """
         Deletes an existing Cloud Spanner instance.
 
-        :param project_id: The ID of the project which owns the instances, tables and data.
+        :param project_id: The ID of the project which owns the Cloud Spanner Database.
         :type project_id: str
         :param instance_id: The ID of the instance.
         :type instance_id: str
@@ -179,5 +177,154 @@ class CloudSpannerHook(GoogleCloudBaseHook):
             instance.delete()
             return True
         except GoogleAPICallError as e:
-            self.log.error('An error occurred: %s. Aborting.', e.message)
+            self.log.error('An error occurred: %s. Exiting.'.format(e.message))
             raise e
+
+    def get_database(self, project_id, instance_id, database_id):
+        # type: (str, str, str) -> Optional[Database]
+        """
+        Retrieves a database in Cloud Spanner. If the database does not exist
+        in the specified instance, it returns None.
+
+        :param project_id: The ID of the project which owns the Cloud Spanner Database.
+        :type project_id: str
+        :param instance_id: The ID of the instance.
+        :type instance_id: str
+        :param database_id: The ID of the database.
+        :type database_id: str
+        :return:
+        """
+
+        client = self.get_client(project_id=project_id)
+        instance = client.instance(instance_id=instance_id)
+        if not instance.exists():
+            raise AirflowException("The instance {} does not exist in project {} !".
+                                   format(instance_id, project_id))
+        database = instance.database(database_id=database_id)
+        if not database.exists():
+            return None
+        else:
+            return database
+
+    def create_database(self, project_id, instance_id, database_id, ddl_statements):
+        # type: (str, str, str, [str]) -> bool
+        """
+        Creates a database in Cloud Spanner.
+
+        :param project_id: The ID of the project which owns the Cloud Spanner Database.
+        :type project_id: str
+        :param instance_id: The ID of the instance.
+        :type instance_id: str
+        :param database_id: The ID of the database.
+        :type database_id: str
+        :param ddl_statements: String list containing DDL for the new database
+        :type ddl_statements: [str]
+        :return:
+        """
+
+        client = self.get_client(project_id=project_id)
+        instance = client.instance(instance_id=instance_id)
+        if not instance.exists():
+            raise AirflowException("The instance {} does not exist in project {} !".
+                                   format(instance_id, project_id))
+        database = instance.database(database_id=database_id,
+                                     ddl_statements=ddl_statements)
+        try:
+            operation = database.create()  # type: Operation
+        except GoogleAPICallError as e:
+            self.log.error('An error occurred: {}. Exiting.'.format(e.message))
+            raise e
+
+        if operation:
+            result = operation.result()
+            self.log.info(result)
+        return True
+
+    def update_database(self, project_id, instance_id, database_id, ddl_statements):
+        # type: (str, str, str, [str]) -> bool
+        """
+        Updates DDL of a database in Cloud Spanner.
+
+        :param project_id: The ID of the project which owns the Cloud Spanner Database.
+        :type project_id: str
+        :param instance_id: The ID of the instance.
+        :type instance_id: str
+        :param database_id: The ID of the database.
+        :type database_id: str
+        :param ddl_statements: String list containing DDL for the new database
+        :type ddl_statements: [str]
+        :return:
+        """
+
+        client = self.get_client(project_id=project_id)
+        instance = client.instance(instance_id=instance_id)
+        if not instance.exists():
+            raise AirflowException("The instance {} does not exist in project {} !".
+                                   format(instance_id, project_id))
+        database = instance.database(database_id=database_id)
+        try:
+            operation = database.update_ddl(ddl_statements)  # type: Operation
+        except GoogleAPICallError as e:
+            self.log.error('An error occurred: {}. Exiting.'.format(e.message))
+            raise e
+
+        if operation:
+            result = operation.result()
+            self.log.info(result)
+        return True
+
+    def delete_database(self, project_id, instance_id, database_id):
+        # type: (str, str, str) -> bool
+        """
+        Drops a database in Cloud Spanner.
+
+        :param project_id: The ID of the project which owns the Cloud Spanner Database.
+        :type project_id: str
+        :param instance_id: The ID of the instance.
+        :type instance_id: str
+        :param database_id: The ID of the database.
+        :type database_id: str
+        :return:
+        """
+
+        client = self.get_client(project_id=project_id)
+        instance = client.instance(instance_id=instance_id)
+        if not instance.exists():
+            raise AirflowException("The instance {} does not exist in project {} !".
+                                   format(instance_id, project_id))
+        database = instance.database(database_id=database_id)
+        try:
+            operation = database.drop()  # type: Operation
+        except GoogleAPICallError as e:
+            self.log.error('An error occurred: {}. Exiting.', e.message)
+            raise e
+
+        if operation:
+            result = operation.result()
+            self.log.info(result)
+        return True
+
+    def execute_dml(self, project_id, instance_id, database_id, queries):
+        # type: (str, str, str, str) -> None
+        """
+        Executes an arbitrary DML query (INSERT, UPDATE, DELETE).
+
+        :param project_id: The ID of the project which owns the instances, tables and data.
+        :type project_id: str
+        :param instance_id: The ID of the instance.
+        :type instance_id: str
+        :param database_id: The ID of the database.
+        :type database_id: str
+        :param queries: The queries to be executed.
+        :type queries: str
+        """
+        client = self.get_client(project_id)
+        instance = client.instance(instance_id)
+        database = Database(database_id, instance)
+        database.run_in_transaction(lambda transaction:
+                                    self._execute_sql_in_transaction(transaction, queries))
+
+    @staticmethod
+    def _execute_sql_in_transaction(transaction, queries):
+        for sql in queries:
+            transaction.execute_update(sql)
