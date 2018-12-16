@@ -15,8 +15,8 @@
 # limitations under the License.
 import random
 import time
-from apiclient import errors
-from apiclient.discovery import build
+from googleapiclient import errors
+from googleapiclient.discovery import build
 
 from airflow.contrib.hooks.gcp_api_base_hook import GoogleCloudBaseHook
 from airflow.utils.log.logging_mixin import LoggingMixin
@@ -126,7 +126,7 @@ class MLEngineHook(GoogleCloudBaseHook):
         :rtype: dict
 
         Raises:
-            apiclient.errors.HttpError: if HTTP error is returned from server
+            googleapiclient.errors.HttpError: if HTTP error is returned from server
         """
         job_name = 'projects/{}/jobs/{}'.format(project_id, job_id)
         request = self._mlengine.projects().jobs().get(name=job_name)
@@ -149,7 +149,7 @@ class MLEngineHook(GoogleCloudBaseHook):
         a terminal state.
 
         Raises:
-            apiclient.errors.HttpError: if HTTP error is returned when getting
+            googleapiclient.errors.HttpError: if HTTP error is returned when getting
             the job
         """
         if interval <= 0:

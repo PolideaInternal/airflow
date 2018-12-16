@@ -23,7 +23,6 @@ Example Airflow DAG that creates, updates, queries and deletes a Cloud Spanner i
 This DAG relies on the following environment variables
 * GCP_PROJECT_ID - Google Cloud Platform project for the Cloud Spanner instance.
 * GCP_SPANNER_INSTANCE_ID - Cloud Spanner instance ID.
-* GCP_SPANNER_DATABASE_ID - Cloud Spanner database ID.
 * GCP_SPANNER_CONFIG_NAME - The name of the instance's configuration. Values are of the form
     projects/<project>/instanceConfigs/<configuration>.
     See also:

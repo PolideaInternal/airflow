@@ -22,7 +22,7 @@ import datetime
 import unittest
 
 import httplib2
-from apiclient import errors
+from googleapiclient import errors
 from mock import ANY, patch
 
 from airflow import DAG, configuration

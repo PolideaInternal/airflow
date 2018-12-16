@@ -42,7 +42,6 @@ https://airflow.apache.org/concepts.html#variables
 """
 
 import os
-import datetime
 
 from airflow import models
 from airflow.contrib.operators.gcp_function_operator \
@@ -52,7 +51,8 @@ from airflow.utils import dates
 # [START howto_operator_gcf_common_variables]
 GCP_PROJECT_ID = os.environ.get('GCP_PROJECT_ID', 'example-project')
 GCP_LOCATION = os.environ.get('GCP_LOCATION', 'europe-west1')
-GCF_SHORT_FUNCTION_NAME = os.environ.get('GCF_SHORT_FUNCTION_NAME', 'hello')
+GCF_SHORT_FUNCTION_NAME = os.environ.get('GCF_SHORT_FUNCTION_NAME', 'hello').\
+    replace("-", "_")  # make sure there are no dashes in function name (!)
 FUNCTION_NAME = 'projects/{}/locations/{}/functions/{}'.format(GCP_PROJECT_ID,
                                                                GCP_LOCATION,
                                                                GCF_SHORT_FUNCTION_NAME)
@@ -105,13 +105,11 @@ else:
 with models.DAG(
     'example_gcp_function',
     default_args=default_args,
-    schedule_interval=datetime.timedelta(days=1),
-    catchup=False
+    schedule_interval=None  # Override to match your needs
 ) as dag:
     # [START howto_operator_gcf_deploy]
     deploy_task = GcfFunctionDeployOperator(
         task_id="gcf_deploy_task",
-        name=FUNCTION_NAME,
         project_id=GCP_PROJECT_ID,
         location=GCP_LOCATION,
         body=body,

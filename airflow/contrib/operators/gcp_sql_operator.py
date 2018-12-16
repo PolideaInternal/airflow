@@ -705,6 +705,7 @@ class CloudSqlQueryOperator(BaseOperator):
         self.database_hook = None
 
     def pre_execute(self, context):
+        self.cloudsql_db_hook.validate_ssl_certs()
         self.cloudsql_db_hook.create_connection()
         self.database_hook = self.cloudsql_db_hook.get_database_hook()
         if self.cloudsql_db_hook.use_proxy:

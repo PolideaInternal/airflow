@@ -27,7 +27,7 @@ Example Airflow DAG that creates and performs following operations on Cloud Bigt
 - deletes the Instance
 
 This DAG relies on the following environment variables
-* CBT_PROJECT_ID - Google Cloud Platform project
+* GCP_PROJECT_ID - Google Cloud Platform project
 * CBT_INSTANCE_ID - desired ID of a Cloud Bigtable instance
 * CBT_INSTANCE_DISPLAY_NAME - desired human-readable display name of the Instance
 * CBT_INSTANCE_TYPE - type of the Instance, e.g. 1 for DEVELOPMENT
@@ -57,7 +57,7 @@ from airflow.contrib.operators.gcp_bigtable_operator import BigtableInstanceCrea
     BigtableTableWaitForReplicationSensor, BigtableTableDeleteOperator
 
 # [START howto_operator_gcp_bigtable_args]
-CBT_PROJECT_ID = getenv('CBT_PROJECT_ID', 'example-project')
+GCP_PROJECT_ID = getenv('GCP_PROJECT_ID', 'example-project')
 CBT_INSTANCE_ID = getenv('CBT_INSTANCE_ID', 'some-instance-id')
 CBT_INSTANCE_DISPLAY_NAME = getenv('CBT_INSTANCE_DISPLAY_NAME', 'Human-readable name')
 CBT_INSTANCE_TYPE = getenv('CBT_INSTANCE_TYPE', '2')
@@ -78,11 +78,11 @@ default_args = {
 with models.DAG(
     'example_gcp_bigtable_operators',
     default_args=default_args,
-    schedule_interval=datetime.timedelta(days=1)
+    schedule_interval=None  # Override to match your needs
 ) as dag:
     # [START howto_operator_gcp_bigtable_instance_create]
     create_instance_task = BigtableInstanceCreateOperator(
-        project_id=CBT_PROJECT_ID,
+        project_id=GCP_PROJECT_ID,
         instance_id=CBT_INSTANCE_ID,
         main_cluster_id=CBT_CLUSTER_ID,
         main_cluster_zone=CBT_CLUSTER_ZONE,
@@ -97,7 +97,7 @@ with models.DAG(
 
     # [START howto_operator_gcp_bigtable_cluster_update]
     cluster_update_task = BigtableClusterUpdateOperator(
-        project_id=CBT_PROJECT_ID,
+        project_id=GCP_PROJECT_ID,
         instance_id=CBT_INSTANCE_ID,
         cluster_id=CBT_CLUSTER_ID,
         nodes=int(CBT_CLUSTER_NODES_UPDATED),
@@ -107,7 +107,7 @@ with models.DAG(
 
     # [START howto_operator_gcp_bigtable_instance_delete]
     delete_instance_task = BigtableInstanceDeleteOperator(
-        project_id=CBT_PROJECT_ID,
+        project_id=GCP_PROJECT_ID,
         instance_id=CBT_INSTANCE_ID,
         task_id='delete_instance',
     )
@@ -115,7 +115,7 @@ with models.DAG(
 
     # [START howto_operator_gcp_bigtable_table_create]
     create_table_task = BigtableTableCreateOperator(
-        project_id=CBT_PROJECT_ID,
+        project_id=GCP_PROJECT_ID,
         instance_id=CBT_INSTANCE_ID,
         table_id=CBT_TABLE_ID,
         task_id='create_table',
@@ -124,17 +124,18 @@ with models.DAG(
 
     # [START howto_operator_gcp_bigtable_table_wait_for_replication]
     wait_for_table_replication_task = BigtableTableWaitForReplicationSensor(
-        project_id=CBT_PROJECT_ID,
+        project_id=GCP_PROJECT_ID,
         instance_id=CBT_INSTANCE_ID,
         table_id=CBT_TABLE_ID,
         poke_interval=int(CBT_POKE_INTERVAL),
+        timeout=180,
         task_id='wait_for_table_replication',
     )
     # [END howto_operator_gcp_bigtable_table_wait_for_replication]
 
     # [START howto_operator_gcp_bigtable_table_delete]
     delete_table_task = BigtableTableDeleteOperator(
-        project_id=CBT_PROJECT_ID,
+        project_id=GCP_PROJECT_ID,
         instance_id=CBT_INSTANCE_ID,
         table_id=CBT_TABLE_ID,
         task_id='delete_table',
