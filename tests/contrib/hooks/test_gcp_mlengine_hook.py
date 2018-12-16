@@ -25,9 +25,9 @@ except ImportError:  # python 3
     from urllib.parse import urlparse, parse_qsl
 
 from airflow.contrib.hooks import gcp_mlengine_hook as hook
-from apiclient import errors
-from apiclient.discovery import build_from_document
-from apiclient.http import HttpMockSequence
+from googleapiclient import errors
+from googleapiclient.discovery import build_from_document
+from googleapiclient.http import HttpMockSequence
 from google.auth.exceptions import GoogleAuthError
 import requests
 

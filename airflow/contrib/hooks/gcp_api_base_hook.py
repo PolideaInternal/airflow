@@ -37,7 +37,7 @@ class GoogleCloudBaseHook(BaseHook, LoggingMixin):
     A base hook for Google cloud-related hooks. Google cloud has a shared REST
     API client that is built in the same way no matter which service you use.
     This class helps construct and authorize the credentials needed to then
-    call apiclient.discovery.build() to actually discover and build a client
+    call googleapiclient.discovery.build() to actually discover and build a client
     for a Google cloud service.
 
     The class also contains some miscellaneous helper functions.

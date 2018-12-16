@@ -19,8 +19,8 @@
 
 from uuid import uuid4
 
-from apiclient.discovery import build
-from apiclient import errors
+from googleapiclient.discovery import build
+from googleapiclient import errors
 
 from airflow.contrib.hooks.gcp_api_base_hook import GoogleCloudBaseHook
 
@@ -50,7 +50,7 @@ class PubSubHook(GoogleCloudBaseHook):
     def get_conn(self):
         """Returns a Pub/Sub service object.
 
-        :rtype: apiclient.discovery.Resource
+        :rtype: googleapiclient.discovery.Resource
         """
         http_authorized = self._authorize()
         return build(

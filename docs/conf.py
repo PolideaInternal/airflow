@@ -36,9 +36,9 @@ import sys
 import mock
 
 MOCK_MODULES = [
-    'apiclient',
-    'apiclient.discovery',
-    'apiclient.http',
+    'googleapiclient',
+    'googleapiclient.discovery',
+    'googleapiclient.http',
     'mesos',
     'mesos.interface',
     'mesos.native',

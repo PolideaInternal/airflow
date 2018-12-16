@@ -33,7 +33,7 @@ from airflow import AirflowException
 from airflow.contrib.hooks.gcp_api_base_hook import GoogleCloudBaseHook
 from airflow.hooks.dbapi_hook import DbApiHook
 from airflow.utils.log.logging_mixin import LoggingMixin
-from apiclient.discovery import HttpError, build
+from googleapiclient.discovery import HttpError, build
 from googleapiclient import errors
 from pandas_gbq.gbq import \
     _check_google_client_version as gbq_check_google_client_version

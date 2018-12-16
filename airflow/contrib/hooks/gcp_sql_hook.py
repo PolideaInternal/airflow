@@ -750,6 +750,8 @@ class CloudSqlDatabaseHook(BaseHook):
             raise AirflowException("Cloud SQL Proxy does not support SSL connections."
                                    " SSL is not needed as Cloud SQL Proxy "
                                    "provides encryption on its own")
+
+    def validate_ssl_certs(self):
         if self.use_ssl:
             self._check_ssl_file(self.sslcert, "sslcert")
             self._check_ssl_file(self.sslkey, "sslkey")

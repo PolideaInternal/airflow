@@ -15,7 +15,7 @@
 # limitations under the License.
 import re
 
-from apiclient import errors
+from googleapiclient import errors
 
 from airflow.contrib.hooks.gcp_mlengine_hook import MLEngineHook
 from airflow.exceptions import AirflowException

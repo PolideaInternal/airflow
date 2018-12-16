@@ -78,7 +78,7 @@ default_args = {
 with models.DAG(
     'example_gcp_bigtable_operators',
     default_args=default_args,
-    schedule_interval=datetime.timedelta(days=1)
+    schedule_interval=None  # Override to match your needs
 ) as dag:
     # [START howto_operator_gcp_bigtable_instance_create]
     create_instance_task = BigtableInstanceCreateOperator(
