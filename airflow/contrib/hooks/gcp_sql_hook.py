@@ -19,8 +19,11 @@
 import errno
 import json
 import os
+import random
 import re
 import shutil
+import string
+
 import socket
 import platform
 import subprocess
@@ -44,6 +47,8 @@ from airflow.hooks.mysql_hook import MySqlHook
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import Connection
 from airflow.utils.db import provide_session
+
+UNIX_PATH_MAX = 108
 
 NUM_RETRIES = 5
 
@@ -749,18 +754,39 @@ class CloudSqlDatabaseHook(BaseHook):
             self._check_ssl_file(self.sslcert, "sslcert")
             self._check_ssl_file(self.sslkey, "sslkey")
             self._check_ssl_file(self.sslrootcert, "sslrootcert")
+        if self.use_proxy and not self.sql_proxy_use_tcp:
+            if self.database_type == 'postgres':
+                suffix = "/.s.PGSQL.5432"
+            else:
+                suffix = ""
+            expected_path = "{}{}:{}:{}{}".format(
+                self._generate_unique_path(),
+                self.project_id, self.instance,
+                self.database, suffix)
+            if len(expected_path) > UNIX_PATH_MAX:
+                self.log.info("Too long ({}) path: {}".format(len(expected_path),
+                                                              expected_path))
+                raise AirflowException(
+                    "The UNIX socket path length cannot exceed {} characters "
+                    "on Linux system. Either use shorter instance/database "
+                    "name or switch to TCP connection. "
+                    "The socket path for Cloud SQL proxy is now:"
+                    "{}".format(
+                        UNIX_PATH_MAX, expected_path))
 
-    def _generate_unique_path(self):
+    @staticmethod
+    def _generate_unique_path():
         # We are not using mkdtemp here as the path generated with mkdtemp
         # can be close to 60 characters and there is a limitation in
         # length of socket path to around 100 characters in total.
         # We append project/location/instance to it later and postgres
-        # appends its own prefix, so we chose a shorter "/tmp/{uuid1}" - based
-        # on host name and clock + clock sequence. This should be fairly
-        # sufficient for our needs and should even work if the time is set back.
-        # We are using db_conn_id generated with uuid1 so that connection
-        # id matches the folder - for easier debugging.
-        return "/tmp/" + self.db_conn_id
+        # appends its own prefix, so we chose a shorter "/tmp/[8 random characters]" -
+        random.seed()
+        while True:
+            candidate = "/tmp/" + ''.join(
+                random.choice(string.ascii_letters + string.digits) for _ in range(8))
+            if not os.path.exists(candidate):
+                return candidate
 
     @staticmethod
     def _quote(value):
