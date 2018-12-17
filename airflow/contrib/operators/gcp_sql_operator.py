@@ -170,26 +170,14 @@ class CloudSqlBaseOperator(BaseOperator):
             raise AirflowException("The required parameter 'instance' is empty or None")
 
     def _check_if_instance_exists(self, instance):
-        try:
-            return self._hook.get_instance(project_id=self.project_id,
-                                           instance=instance)
-        except HttpError as e:
-            status = e.resp.status
-            if status == 404:
-                return False
-            raise e
+        return self._hook.get_instance(project_id=self.project_id,
+                                       instance=instance)
 
     def _check_if_db_exists(self, db_name):
-        try:
-            return self._hook.get_database(
-                project_id=self.project_id,
-                instance=self.instance,
-                database=db_name)
-        except HttpError as e:
-            status = e.resp.status
-            if status == 404:
-                return False
-            raise e
+        return self._hook.get_database(
+            project_id=self.project_id,
+            instance=self.instance,
+            database=db_name)
 
     def execute(self, context):
         pass

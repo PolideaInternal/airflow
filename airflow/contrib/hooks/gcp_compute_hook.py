@@ -19,6 +19,7 @@
 
 import time
 from googleapiclient.discovery import build
+from googleapiclient import errors
 
 from airflow import AirflowException
 from airflow.contrib.hooks.gcp_api_base_hook import GoogleCloudBaseHook
@@ -84,21 +85,24 @@ class GceHook(GoogleCloudBaseHook):
         :type project_id: str
         :return: None
         """
-        response = self.get_conn().instances().start(
-            project=project_id,
-            zone=zone,
-            instance=resource_id
-        ).execute(num_retries=NUM_RETRIES)
         try:
+            response = self.get_conn().instances().start(
+                project=project_id,
+                zone=zone,
+                instance=resource_id
+            ).execute(num_retries=NUM_RETRIES)
             operation_name = response["name"]
         except KeyError:
             raise AirflowException(
                 "Wrong response '{}' returned - it should contain "
                 "'name' field".format(response))
-        self._wait_for_operation_to_complete(project_id=project_id,
-                                             operation_name=operation_name,
-                                             zone=zone)
-
+        except errors.HttpError as ex:
+            raise AirflowException(
+                'Starting instance {} failed: {}'.format(resource_id, ex.content)
+            )
+        return self._wait_for_operation_to_complete(project_id=project_id,
+                                                    operation_name=operation_name,
+                                                    zone=zone)
     @GoogleCloudBaseHook.fallback_to_default_project_id
     def stop_instance(self, zone, resource_id, project_id=None):
         """
@@ -115,21 +119,24 @@ class GceHook(GoogleCloudBaseHook):
         :type project_id: str
         :return: None
         """
-        response = self.get_conn().instances().stop(
-            project=project_id,
-            zone=zone,
-            instance=resource_id
-        ).execute(num_retries=NUM_RETRIES)
         try:
+            response = self.get_conn().instances().stop(
+                project=project_id,
+                zone=zone,
+                instance=resource_id
+            ).execute(num_retries=NUM_RETRIES)
             operation_name = response["name"]
         except KeyError:
             raise AirflowException(
                 "Wrong response '{}' returned - it should contain "
                 "'name' field".format(response))
-        self._wait_for_operation_to_complete(project_id=project_id,
-                                             operation_name=operation_name,
-                                             zone=zone)
-
+        except errors.HttpError as ex:
+            raise AirflowException(
+                'Stopping instance {} failed: {}'.format(resource_id, ex.content)
+            )
+        return self._wait_for_operation_to_complete(project_id=project_id,
+                                                    operation_name=operation_name,
+                                                    zone=zone)
     @GoogleCloudBaseHook.fallback_to_default_project_id
     def set_machine_type(self, zone, resource_id, body, project_id=None):
         """
@@ -162,9 +169,15 @@ class GceHook(GoogleCloudBaseHook):
                                              zone=zone)
 
     def _execute_set_machine_type(self, zone, resource_id, body, project_id):
-        return self.get_conn().instances().setMachineType(
-            project=project_id, zone=zone, instance=resource_id, body=body)\
-            .execute(num_retries=NUM_RETRIES)
+        try:
+            return self.get_conn().instances().setMachineType(
+                project=project_id, zone=zone, instance=resource_id, body=body)\
+                .execute(num_retries=NUM_RETRIES)
+        except errors.HttpError as ex:
+            raise AirflowException(
+                'Setting machine type for instance {} failed: {}'
+                .format(resource_id, ex.content)
+            )
 
     @GoogleCloudBaseHook.fallback_to_default_project_id
     def get_instance_template(self, resource_id, project_id=None):
@@ -182,10 +195,18 @@ class GceHook(GoogleCloudBaseHook):
             https://cloud.google.com/compute/docs/reference/rest/v1/instanceTemplates
         :rtype: dict
         """
-        response = self.get_conn().instanceTemplates().get(
-            project=project_id,
-            instanceTemplate=resource_id
-        ).execute(num_retries=NUM_RETRIES)
+        try:
+            response = self.get_conn().instanceTemplates().get(
+                project=project_id,
+                instanceTemplate=resource_id
+            ).execute(num_retries=NUM_RETRIES)
+        except errors.HttpError as ex:
+            status = ex.resp.status
+            if status == 404:
+                return None
+            raise AirflowException(
+                'Getting instance template {} failed: {}'.format(resource_id, ex.content)
+            )
         return response
 
     @GoogleCloudBaseHook.fallback_to_default_project_id
@@ -208,19 +229,24 @@ class GceHook(GoogleCloudBaseHook):
         :type project_id: str
         :return: None
         """
-        response = self.get_conn().instanceTemplates().insert(
-            project=project_id,
-            body=body,
-            requestId=request_id
-        ).execute(num_retries=NUM_RETRIES)
         try:
+            response = self.get_conn().instanceTemplates().insert(
+                project=project_id,
+                body=body,
+                requestId=request_id
+            ).execute(num_retries=NUM_RETRIES)
             operation_name = response["name"]
         except KeyError:
             raise AirflowException(
                 "Wrong response '{}' returned - it should contain "
                 "'name' field".format(response))
-        self._wait_for_operation_to_complete(project_id=project_id,
-                                             operation_name=operation_name)
+        except errors.HttpError as ex:
+            raise AirflowException(
+                'Inserting instance template for project {} failed: {}'
+                .format(project_id, ex.content)
+            )
+        return self._wait_for_operation_to_complete(project_id=project_id,
+                                                    operation_name=operation_name)
 
     @GoogleCloudBaseHook.fallback_to_default_project_id
     def get_instance_group_manager(self, zone, resource_id, project_id=None):
@@ -240,11 +266,17 @@ class GceHook(GoogleCloudBaseHook):
             https://cloud.google.com/compute/docs/reference/rest/beta/instanceGroupManagers
         :rtype: dict
         """
-        response = self.get_conn().instanceGroupManagers().get(
-            project=project_id,
-            zone=zone,
-            instanceGroupManager=resource_id
-        ).execute(num_retries=NUM_RETRIES)
+        try:
+            response = self.get_conn().instanceGroupManagers().get(
+                project=project_id,
+                zone=zone,
+                instanceGroupManager=resource_id
+            ).execute(num_retries=NUM_RETRIES)
+        except errors.HttpError as ex:
+            raise AirflowException(
+                'Getting instance group manager {} failed: {}'
+                .format(resource_id, ex.content)
+            )
         return response
 
     @GoogleCloudBaseHook.fallback_to_default_project_id
@@ -273,22 +305,27 @@ class GceHook(GoogleCloudBaseHook):
         :type project_id: str
         :return None
         """
-        response = self.get_conn().instanceGroupManagers().patch(
-            project=project_id,
-            zone=zone,
-            instanceGroupManager=resource_id,
-            body=body,
-            requestId=request_id
-        ).execute(num_retries=NUM_RETRIES)
         try:
+            response = self.get_conn().instanceGroupManagers().patch(
+                project=project_id,
+                zone=zone,
+                instanceGroupManager=resource_id,
+                body=body,
+                requestId=request_id
+            ).execute(num_retries=NUM_RETRIES)
             operation_name = response["name"]
         except KeyError:
             raise AirflowException(
                 "Wrong response '{}' returned - it should contain "
                 "'name' field".format(response))
-        self._wait_for_operation_to_complete(project_id=project_id,
-                                             operation_name=operation_name,
-                                             zone=zone)
+        except errors.HttpError as ex:
+            raise AirflowException(
+                'Patching instance group manager {} failed: {}'
+                .format(resource_id, ex.content)
+            )
+        return self._wait_for_operation_to_complete(project_id=project_id,
+                                                    operation_name=operation_name,
+                                                    zone=zone)
 
     def _wait_for_operation_to_complete(self, project_id, operation_name, zone=None):
         """
