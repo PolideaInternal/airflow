@@ -30,7 +30,7 @@ import subprocess
 import time
 import uuid
 from os.path import isfile
-from googleapiclient import errors
+from googleapiclient.errors import HttpError
 from subprocess import Popen, PIPE
 from six.moves.urllib.parse import quote_plus
 
@@ -101,10 +101,18 @@ class CloudSqlHook(GoogleCloudBaseHook):
         :return: A Cloud SQL instance resource.
         :rtype: dict
         """
-        return self.get_conn().instances().get(
-            project=project_id,
-            instance=instance
-        ).execute(num_retries=NUM_RETRIES)
+        try:
+            return self.get_conn().instances().get(
+                project=project_id,
+                instance=instance
+            ).execute(num_retries=NUM_RETRIES)
+        except HttpError as ex:
+            status = ex.resp.status
+            if status == 404:
+                return None
+            raise AirflowException(
+                'Getting instance {} failed: {}'.format(instance, ex.content)
+            )
 
     def create_instance(self, project_id, body):
         """
@@ -119,12 +127,19 @@ class CloudSqlHook(GoogleCloudBaseHook):
         :return: True if the operation succeeded otherwise raises an error.
         :rtype: bool
         """
-        response = self.get_conn().instances().insert(
-            project=project_id,
-            body=body
-        ).execute(num_retries=NUM_RETRIES)
-        operation_name = response["name"]
-        return self._wait_for_operation_to_complete(project_id, operation_name)
+
+        try:
+            response = self.get_conn().instances().insert(
+                project=project_id,
+                body=body
+            ).execute(num_retries=NUM_RETRIES)
+            operation_name = response["name"]
+            return self._wait_for_operation_to_complete(project_id, operation_name)
+        except HttpError as ex:
+            raise AirflowException(
+                'Creating instance for project {} failed: {}'
+                .format(project_id, ex.content)
+            )
 
     def patch_instance(self, project_id, body, instance):
         """
@@ -143,13 +158,18 @@ class CloudSqlHook(GoogleCloudBaseHook):
         :return: True if the operation succeeded otherwise raises an error.
         :rtype: bool
         """
-        response = self.get_conn().instances().patch(
-            project=project_id,
-            instance=instance,
-            body=body
-        ).execute(num_retries=NUM_RETRIES)
-        operation_name = response["name"]
-        return self._wait_for_operation_to_complete(project_id, operation_name)
+        try:
+            response = self.get_conn().instances().patch(
+                project=project_id,
+                instance=instance,
+                body=body
+            ).execute(num_retries=NUM_RETRIES)
+            operation_name = response["name"]
+            return self._wait_for_operation_to_complete(project_id, operation_name)
+        except HttpError as ex:
+            raise AirflowException(
+                'Patching instance {} failed: {}'.format(instance, ex.content)
+            )
 
     def delete_instance(self, project_id, instance):
         """
@@ -162,12 +182,17 @@ class CloudSqlHook(GoogleCloudBaseHook):
         :return: True if the operation succeeded otherwise raises an error.
         :rtype: bool
         """
-        response = self.get_conn().instances().delete(
-            project=project_id,
-            instance=instance,
-        ).execute(num_retries=NUM_RETRIES)
-        operation_name = response["name"]
-        return self._wait_for_operation_to_complete(project_id, operation_name)
+        try:
+            response = self.get_conn().instances().delete(
+                project=project_id,
+                instance=instance,
+            ).execute(num_retries=NUM_RETRIES)
+            operation_name = response["name"]
+            return self._wait_for_operation_to_complete(project_id, operation_name)
+        except HttpError as ex:
+            raise AirflowException(
+                'Deleting instance {} failed: {}'.format(instance, ex.content)
+            )
 
     def get_database(self, project_id, instance, database):
         """
@@ -183,11 +208,19 @@ class CloudSqlHook(GoogleCloudBaseHook):
             https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/databases#resource.
         :rtype: dict
         """
-        return self.get_conn().databases().get(
-            project=project_id,
-            instance=instance,
-            database=database
-        ).execute(num_retries=NUM_RETRIES)
+        try:
+            return self.get_conn().databases().get(
+                project=project_id,
+                instance=instance,
+                database=database
+            ).execute(num_retries=NUM_RETRIES)
+        except HttpError as ex:
+            status = ex.resp.status
+            if status == 404:
+                return None
+            raise AirflowException(
+                'Getting database {} failed: {}'.format(database, ex.content)
+            )
 
     def create_database(self, project, instance, body):
         """
@@ -203,13 +236,20 @@ class CloudSqlHook(GoogleCloudBaseHook):
         :return: True if the operation succeeded otherwise raises an error.
         :rtype: bool
         """
-        response = self.get_conn().databases().insert(
-            project=project,
-            instance=instance,
-            body=body
-        ).execute(num_retries=NUM_RETRIES)
-        operation_name = response["name"]
-        return self._wait_for_operation_to_complete(project, operation_name)
+
+        try:
+            response = self.get_conn().databases().insert(
+                project=project,
+                instance=instance,
+                body=body
+            ).execute(num_retries=NUM_RETRIES)
+            operation_name = response["name"]
+            return self._wait_for_operation_to_complete(project, operation_name)
+        except HttpError as ex:
+            raise AirflowException(
+                'Creating database for instance {} failed: {}'
+                .format(instance, ex.content)
+            )
 
     def patch_database(self, project, instance, database, body):
         """
@@ -230,14 +270,19 @@ class CloudSqlHook(GoogleCloudBaseHook):
         :return: True if the operation succeeded otherwise raises an error.
         :rtype: bool
         """
-        response = self.get_conn().databases().patch(
-            project=project,
-            instance=instance,
-            database=database,
-            body=body
-        ).execute(num_retries=NUM_RETRIES)
-        operation_name = response["name"]
-        return self._wait_for_operation_to_complete(project, operation_name)
+        try:
+            response = self.get_conn().databases().patch(
+                project=project,
+                instance=instance,
+                database=database,
+                body=body
+            ).execute(num_retries=NUM_RETRIES)
+            operation_name = response["name"]
+            return self._wait_for_operation_to_complete(project, operation_name)
+        except HttpError as ex:
+            raise AirflowException(
+                'Patching database {} failed: {}'.format(database, ex.content)
+            )
 
     def delete_database(self, project, instance, database):
         """
@@ -252,13 +297,18 @@ class CloudSqlHook(GoogleCloudBaseHook):
         :return: True if the operation succeeded otherwise raises an error.
         :rtype: bool
         """
-        response = self.get_conn().databases().delete(
-            project=project,
-            instance=instance,
-            database=database
-        ).execute(num_retries=NUM_RETRIES)
-        operation_name = response["name"]
-        return self._wait_for_operation_to_complete(project, operation_name)
+        try:
+            response = self.get_conn().databases().delete(
+                project=project,
+                instance=instance,
+                database=database
+            ).execute(num_retries=NUM_RETRIES)
+            operation_name = response["name"]
+            return self._wait_for_operation_to_complete(project, operation_name)
+        except HttpError as ex:
+            raise AirflowException(
+                'Deleting database {} failed: {}'.format(database, ex.content)
+            )
 
     def export_instance(self, project_id, instance_id, body):
         """
@@ -284,7 +334,7 @@ class CloudSqlHook(GoogleCloudBaseHook):
             ).execute(num_retries=NUM_RETRIES)
             operation_name = response["name"]
             return self._wait_for_operation_to_complete(project_id, operation_name)
-        except errors.HttpError as ex:
+        except HttpError as ex:
             raise AirflowException(
                 'Exporting instance {} failed: {}'.format(instance_id, ex.content)
             )
@@ -313,7 +363,7 @@ class CloudSqlHook(GoogleCloudBaseHook):
             ).execute(num_retries=NUM_RETRIES)
             operation_name = response["name"]
             return self._wait_for_operation_to_complete(project_id, operation_name)
-        except errors.HttpError as ex:
+        except HttpError as ex:
             raise AirflowException(
                 'Importing instance {} failed: {}'.format(instance_id, ex.content)
             )

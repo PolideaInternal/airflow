@@ -33,16 +33,93 @@ except ImportError:
         mock = None
 
 
+def _prepare_mocked_hook():
+    hook = CloudSqlHook(None, None)
+    # Simulating HttpError in get_conn
+    hook.get_conn = mock.Mock(
+        side_effect=HttpError(resp={'status': '400'},
+                              content='Error content'.encode('utf-8'))
+    )
+    return hook
+
+
 class TestGcpSqlHook(unittest.TestCase):
+    def test_getting_instance(self):
+        # Mocking __init__ with an empty anonymous function
+        with mock.patch.object(CloudSqlHook, "__init__", lambda x, y, z: None):
+            hook = _prepare_mocked_hook()
+            with self.assertRaises(AirflowException) as cm:
+                hook.get_instance(None, None)
+            err = cm.exception
+            self.assertIn("Getting instance ", str(err))
+
+    def test_creating_instance(self):
+        # Mocking __init__ with an empty anonymous function
+        with mock.patch.object(CloudSqlHook, "__init__", lambda x, y, z: None):
+            hook = _prepare_mocked_hook()
+            with self.assertRaises(AirflowException) as cm:
+                hook.create_instance(None, None)
+            err = cm.exception
+            self.assertIn("Creating instance ", str(err))
+
+    def test_patching_instance(self):
+        # Mocking __init__ with an empty anonymous function
+        with mock.patch.object(CloudSqlHook, "__init__", lambda x, y, z: None):
+            hook = _prepare_mocked_hook()
+            with self.assertRaises(AirflowException) as cm:
+                hook.patch_instance(None, None, None)
+            err = cm.exception
+            self.assertIn("Patching instance ", str(err))
+
+    def test_deleting_instance(self):
+        # Mocking __init__ with an empty anonymous function
+        with mock.patch.object(CloudSqlHook, "__init__", lambda x, y, z: None):
+            hook = _prepare_mocked_hook()
+            with self.assertRaises(AirflowException) as cm:
+                hook.delete_instance(None, None)
+            err = cm.exception
+            self.assertIn("Deleting instance ", str(err))
+
+    def test_getting_database(self):
+        # Mocking __init__ with an empty anonymous function
+        with mock.patch.object(CloudSqlHook, "__init__", lambda x, y, z: None):
+            hook = _prepare_mocked_hook()
+            with self.assertRaises(AirflowException) as cm:
+                hook.get_database(None, None, None)
+            err = cm.exception
+            self.assertIn("Getting database ", str(err))
+
+    def test_creating_database(self):
+        # Mocking __init__ with an empty anonymous function
+        with mock.patch.object(CloudSqlHook, "__init__", lambda x, y, z: None):
+            hook = _prepare_mocked_hook()
+            with self.assertRaises(AirflowException) as cm:
+                hook.create_database(None, None, None)
+            err = cm.exception
+            self.assertIn("Creating database ", str(err))
+
+    def test_patching_database(self):
+        # Mocking __init__ with an empty anonymous function
+        with mock.patch.object(CloudSqlHook, "__init__", lambda x, y, z: None):
+            hook = _prepare_mocked_hook()
+            with self.assertRaises(AirflowException) as cm:
+                hook.patch_database(None, None, None, None)
+            err = cm.exception
+            self.assertIn("Patching database ", str(err))
+
+    def test_deleting_database(self):
+        # Mocking __init__ with an empty anonymous function
+        with mock.patch.object(CloudSqlHook, "__init__", lambda x, y, z: None):
+            hook = _prepare_mocked_hook()
+            with self.assertRaises(AirflowException) as cm:
+                hook.delete_database(None, None, None)
+            err = cm.exception
+            self.assertIn("Deleting database ", str(err))
+
     def test_instance_import_ex(self):
         # Mocking __init__ with an empty anonymous function
         with mock.patch.object(CloudSqlHook, "__init__", lambda x, y, z: None):
-            hook = CloudSqlHook(None, None)
-            # Simulating HttpError inside import_instance
-            hook.get_conn = mock.Mock(
-                side_effect=HttpError(resp={'status': '400'},
-                                      content='Error content'.encode('utf-8'))
-            )
+            hook = _prepare_mocked_hook()
             with self.assertRaises(AirflowException) as cm:
                 hook.import_instance(None, None, None)
             err = cm.exception
@@ -50,13 +127,8 @@ class TestGcpSqlHook(unittest.TestCase):
 
     def test_instance_export_ex(self):
         # Mocking __init__ with an empty anonymous function
-        with mock.patch.object(CloudSqlHook, "__init__", lambda x, y, z: None):
-            hook = CloudSqlHook(None, None)
-            # Simulating HttpError inside export_instance
-            hook.get_conn = mock.Mock(
-                side_effect=HttpError(resp={'status': '400'},
-                                      content='Error content'.encode('utf-8'))
-            )
+        with mock.patch.object(CloudSqlHook, '__init__', lambda x, y, z: None):
+            hook = _prepare_mocked_hook()
             with self.assertRaises(AirflowException) as cm:
                 hook.export_instance(None, None, None)
             err = cm.exception
