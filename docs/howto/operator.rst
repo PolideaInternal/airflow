@@ -394,7 +394,7 @@ Using the operator
     :end-before: [END howto_operator_gcp_bigtable_instance_create]
 
 
-GcpBigTableInstanceDeleteOperator
+BigTableInstanceDeleteOperator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Use the :class:`~airflow.contrib.operators.gcp_bigtable_operator.BigTableInstanceDeleteOperator`
@@ -425,7 +425,7 @@ Using the operator
     :end-before: [END howto_operator_gcp_bigtable_cluster_update]
 
 
-GcpBigTableTableCreateOperator
+BigTableTableCreateOperator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Creates a table in Cloud BigTable instance.
@@ -452,7 +452,7 @@ Please refer to Python Client for Google Cloud BigTable documentation
 Families <https://googleapis.github.io/google-cloud-python/latest/bigtable/column-family.html>`_.
 
 
-GcpBigTableTableDeleteOperator
+BigTableTableDeleteOperator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Use the :class:`~airflow.contrib.operators.gcp_bigtable_operator.BigTableTableDeleteOperator`
@@ -467,7 +467,7 @@ Using the operator
     :start-after: [START howto_operator_gcp_bigtable_table_delete]
     :end-before: [END howto_operator_gcp_bigtable_table_delete]
 
-GcpBigTableTableWaitForReplicationSensor
+BigTableTableWaitForReplicationSensor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Use the :class:`~airflow.contrib.operators.gcp_bigtable_operator.BigTableTableWaitForReplicationSensor`
