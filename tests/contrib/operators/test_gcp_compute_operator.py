@@ -108,7 +108,7 @@ class GceInstanceStartTest(unittest.TestCase):
             )
             op.execute(None)
         err = cm.exception
-        self.assertIn("The required parameter 'project_id' is missing", str(err))
+        self.assertIn("The required parameter 'project_id' is empty", str(err))
         mock_hook.assert_not_called()
 
     @mock.patch('airflow.contrib.operators.gcp_compute_operator.GceHook')
@@ -131,7 +131,7 @@ class GceInstanceStartTest(unittest.TestCase):
             )
             op.execute(None)
         err = cm.exception
-        self.assertIn("The required parameter 'zone' is missing", str(err))
+        self.assertIn("The required parameter 'zone' is empty", str(err))
         mock_hook.assert_not_called()
 
     @mock.patch('airflow.contrib.operators.gcp_compute_operator.GceHook')
@@ -145,7 +145,7 @@ class GceInstanceStartTest(unittest.TestCase):
             )
             op.execute(None)
         err = cm.exception
-        self.assertIn("The required parameter 'resource_id' is missing", str(err))
+        self.assertIn("The required parameter 'resource_id' is empty", str(err))
         mock_hook.assert_not_called()
 
 
@@ -203,7 +203,7 @@ class GceInstanceStopTest(unittest.TestCase):
             )
             op.execute(None)
         err = cm.exception
-        self.assertIn("The required parameter 'project_id' is missing", str(err))
+        self.assertIn("The required parameter 'project_id' is empty", str(err))
         mock_hook.assert_not_called()
 
     @mock.patch('airflow.contrib.operators.gcp_compute_operator.GceHook')
@@ -231,7 +231,7 @@ class GceInstanceStopTest(unittest.TestCase):
             )
             op.execute(None)
         err = cm.exception
-        self.assertIn("The required parameter 'zone' is missing", str(err))
+        self.assertIn("The required parameter 'zone' is empty", str(err))
         mock_hook.assert_not_called()
 
     @mock.patch('airflow.contrib.operators.gcp_compute_operator.GceHook')
@@ -245,7 +245,7 @@ class GceInstanceStopTest(unittest.TestCase):
             )
             op.execute(None)
         err = cm.exception
-        self.assertIn("The required parameter 'resource_id' is missing", str(err))
+        self.assertIn("The required parameter 'resource_id' is empty", str(err))
         mock_hook.assert_not_called()
 
 
@@ -310,7 +310,7 @@ class GceInstanceSetMachineTypeTest(unittest.TestCase):
             )
             op.execute(None)
         err = cm.exception
-        self.assertIn("The required parameter 'project_id' is missing", str(err))
+        self.assertIn("The required parameter 'project_id' is empty", str(err))
         mock_hook.assert_not_called()
 
     @mock.patch('airflow.contrib.operators.gcp_compute_operator.GceHook')
@@ -343,7 +343,7 @@ class GceInstanceSetMachineTypeTest(unittest.TestCase):
             )
             op.execute(None)
         err = cm.exception
-        self.assertIn("The required parameter 'zone' is missing", str(err))
+        self.assertIn("The required parameter 'zone' is empty", str(err))
         mock_hook.assert_not_called()
 
     @mock.patch('airflow.contrib.operators.gcp_compute_operator.GceHook')
@@ -358,7 +358,7 @@ class GceInstanceSetMachineTypeTest(unittest.TestCase):
             )
             op.execute(None)
         err = cm.exception
-        self.assertIn("The required parameter 'resource_id' is missing", str(err))
+        self.assertIn("The required parameter 'resource_id' is empty", str(err))
         mock_hook.assert_not_called()
 
     @mock.patch('airflow.contrib.operators.gcp_compute_operator.GceHook')

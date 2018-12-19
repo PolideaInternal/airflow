@@ -24,15 +24,19 @@ from airflow import AirflowException
 from airflow.contrib.hooks.gcp_compute_hook import GceHook
 from airflow.contrib.utils.gcp_field_sanitizer import GcpBodyFieldSanitizer
 from airflow.contrib.utils.gcp_field_validator import GcpBodyFieldValidator
+from airflow.contrib.utils.input_validator import InputValidationMixin
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from json_merge_patch import merge
 
 
-class GceBaseOperator(BaseOperator):
+class GceBaseOperator(BaseOperator, InputValidationMixin):
     """
     Abstract base operator for Google Compute Engine operators to inherit from.
     """
+
+    REQUIRED_ATTRIBUTES = ['zone', 'resource_id']
+    REQUIRED_NOT_EMPTY_ATTRIBUTES = ['project_id']
 
     @apply_defaults
     def __init__(self,
@@ -50,14 +54,6 @@ class GceBaseOperator(BaseOperator):
         self._validate_inputs()
         self._hook = GceHook(gcp_conn_id=self.gcp_conn_id, api_version=self.api_version)
         super(GceBaseOperator, self).__init__(*args, **kwargs)
-
-    def _validate_inputs(self):
-        if self.project_id == '':
-            raise AirflowException("The required parameter 'project_id' is missing")
-        if not self.zone:
-            raise AirflowException("The required parameter 'zone' is missing")
-        if not self.resource_id:
-            raise AirflowException("The required parameter 'resource_id' is missing")
 
     def execute(self, context):
         pass
