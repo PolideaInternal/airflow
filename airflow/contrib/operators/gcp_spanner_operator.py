@@ -18,13 +18,13 @@
 # under the License.
 import six
 
-from airflow import AirflowException
 from airflow.contrib.hooks.gcp_spanner_hook import CloudSpannerHook
+from airflow.contrib.utils.input_validator import InputValidationMixin
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
 
-class CloudSpannerInstanceDeployOperator(BaseOperator):
+class CloudSpannerInstanceDeployOperator(BaseOperator, InputValidationMixin):
     """
     Creates a new Cloud Spanner instance or, if an instance with the same instance_id
     exists in the specified project, updates it.
@@ -50,6 +50,8 @@ class CloudSpannerInstanceDeployOperator(BaseOperator):
                        'gcp_conn_id')
     # [END gcp_spanner_deploy_template_fields]
 
+    REQUIRED_ATTRIBUTES = ['project_id', 'instance_id']
+
     @apply_defaults
     def __init__(self,
                  project_id,
@@ -69,12 +71,6 @@ class CloudSpannerInstanceDeployOperator(BaseOperator):
         self._hook = CloudSpannerHook(gcp_conn_id=gcp_conn_id)
         super(CloudSpannerInstanceDeployOperator, self).__init__(*args, **kwargs)
 
-    def _validate_inputs(self):
-        if not self.project_id:
-            raise AirflowException("The required parameter 'project_id' is empty")
-        if not self.instance_id:
-            raise AirflowException("The required parameter 'instance_id' is empty")
-
     def execute(self, context):
         if not self._hook.get_instance(self.project_id, self.instance_id):
             self.log.info("Creating Cloud Spanner instance '%s'", self.instance_id)
@@ -89,7 +85,7 @@ class CloudSpannerInstanceDeployOperator(BaseOperator):
                     self.display_name)
 
 
-class CloudSpannerInstanceDeleteOperator(BaseOperator):
+class CloudSpannerInstanceDeleteOperator(BaseOperator, InputValidationMixin):
     """
     Deletes a Cloud Spanner instance.
     If an instance does not exist, no action will be taken and the operator will succeed.
@@ -105,6 +101,8 @@ class CloudSpannerInstanceDeleteOperator(BaseOperator):
     template_fields = ('project_id', 'instance_id', 'gcp_conn_id')
     # [END gcp_spanner_delete_template_fields]
 
+    REQUIRED_ATTRIBUTES = ['project_id', 'instance_id']
+
     @apply_defaults
     def __init__(self,
                  project_id,
@@ -118,12 +116,6 @@ class CloudSpannerInstanceDeleteOperator(BaseOperator):
         self._hook = CloudSpannerHook(gcp_conn_id=gcp_conn_id)
         super(CloudSpannerInstanceDeleteOperator, self).__init__(*args, **kwargs)
 
-    def _validate_inputs(self):
-        if not self.project_id:
-            raise AirflowException("The required parameter 'project_id' is empty")
-        if not self.instance_id:
-            raise AirflowException("The required parameter 'instance_id' is empty")
-
     def execute(self, context):
         if self._hook.get_instance(self.project_id, self.instance_id):
             return self._hook.delete_instance(self.project_id,
@@ -134,7 +126,7 @@ class CloudSpannerInstanceDeleteOperator(BaseOperator):
             return True
 
 
-class CloudSpannerInstanceDatabaseQueryOperator(BaseOperator):
+class CloudSpannerInstanceDatabaseQueryOperator(BaseOperator, InputValidationMixin):
     """
     Executes an arbitrary DML query (INSERT, UPDATE, DELETE).
 
@@ -154,6 +146,8 @@ class CloudSpannerInstanceDatabaseQueryOperator(BaseOperator):
     template_ext = ('.sql',)
     # [END gcp_spanner_query_template_fields]
 
+    REQUIRED_ATTRIBUTES = ['project_id', 'instance_id', 'database_id', 'query']
+
     @apply_defaults
     def __init__(self,
                  project_id,
@@ -170,16 +164,6 @@ class CloudSpannerInstanceDatabaseQueryOperator(BaseOperator):
         self._validate_inputs()
         self._hook = CloudSpannerHook(gcp_conn_id=gcp_conn_id)
         super(CloudSpannerInstanceDatabaseQueryOperator, self).__init__(*args, **kwargs)
-
-    def _validate_inputs(self):
-        if not self.project_id:
-            raise AirflowException("The required parameter 'project_id' is empty")
-        if not self.instance_id:
-            raise AirflowException("The required parameter 'instance_id' is empty")
-        if not self.database_id:
-            raise AirflowException("The required parameter 'database_id' is empty")
-        if not self.query:
-            raise AirflowException("The required parameter 'query' is empty")
 
     def execute(self, context):
         queries = self.query
