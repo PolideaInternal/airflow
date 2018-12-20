@@ -52,6 +52,8 @@ GCP_SPANNER_CONFIG_NAME = os.environ.get('GCP_SPANNER_CONFIG_NAME',
                                          'projects/example-project/instanceConfigs/eur3')
 GCP_SPANNER_NODE_COUNT = os.environ.get('GCP_SPANNER_NODE_COUNT', '1')
 GCP_SPANNER_DISPLAY_NAME = os.environ.get('GCP_SPANNER_DISPLAY_NAME', 'Test Instance')
+# OPERATION_ID should be unique per operation
+OPERATION_ID = 'unique_operation_id'
 # [END howto_operator_spanner_arguments]
 
 default_args = {
@@ -110,6 +112,29 @@ with models.DAG(
     )
     # [END howto_operator_spanner_database_update]
 
+    # [START howto_operator_spanner_database_update_idempotent]
+    spanner_database_update_idempotent1_task = CloudSpannerInstanceDatabaseUpdateOperator(
+        project_id=GCP_PROJECT_ID,
+        instance_id=GCP_SPANNER_INSTANCE_ID,
+        database_id=GCP_SPANNER_DATABASE_ID,
+        operation_id=OPERATION_ID,
+        ddl_statements=[
+            "CREATE TABLE my_table_unique (id INT64, name STRING(MAX)) PRIMARY KEY (id)",
+        ],
+        task_id='spanner_database_update_idempotent1_task'
+    )
+    spanner_database_update_idempotent2_task = CloudSpannerInstanceDatabaseUpdateOperator(
+        project_id=GCP_PROJECT_ID,
+        instance_id=GCP_SPANNER_INSTANCE_ID,
+        database_id=GCP_SPANNER_DATABASE_ID,
+        operation_id=OPERATION_ID,
+        ddl_statements=[
+            "CREATE TABLE my_table_unique (id INT64, name STRING(MAX)) PRIMARY KEY (id)",
+        ],
+        task_id='spanner_database_update_idempotent2_task'
+    )
+    # [END howto_operator_spanner_database_update_idempotent]
+
     # [START howto_operator_spanner_query]
     spanner_instance_query_task = CloudSpannerInstanceDatabaseQueryOperator(
         project_id=GCP_PROJECT_ID,
@@ -149,6 +174,8 @@ with models.DAG(
         >> spanner_instance_update_task \
         >> spanner_database_deploy_task \
         >> spanner_database_update_task \
+        >> spanner_database_update_idempotent1_task \
+        >> spanner_database_update_idempotent2_task \
         >> spanner_instance_query_task \
         >> spanner_instance_query2_task \
         >> spanner_database_delete_task \

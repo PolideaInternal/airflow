@@ -146,7 +146,8 @@ class CloudSpannerInstanceDatabaseQueryOperator(BaseOperator):
     :type instance_id: str
     :param database_id: The Cloud Spanner database ID.
     :type database_id: str
-    :param query: The query or list of queries to be executed. Can be a path to a SQL file.
+    :param query: The query or list of queries to be executed. Can be a path to a SQL
+       file.
     :type query: str or list
     :param gcp_conn_id: The connection ID used to connect to Google Cloud Platform.
     :type gcp_conn_id: str
@@ -282,6 +283,9 @@ class CloudSpannerInstanceDatabaseUpdateOperator(BaseOperator):
     :type database_id: str
     :param ddl_statements: The string list containing DDL to apply to the database.
     :type ddl_statements: [str]
+    :param operation_id: (Optional) Unique per database operation id that can
+           be specified to implement idempotency check.
+    :type operation_id: [str]
     :param gcp_conn_id: The connection ID used to connect to Google Cloud Platform.
     :type gcp_conn_id: str
     """
@@ -297,13 +301,15 @@ class CloudSpannerInstanceDatabaseUpdateOperator(BaseOperator):
                  instance_id,
                  database_id,
                  ddl_statements,
+                 operation_id=None,
                  gcp_conn_id='google_cloud_default',
                  *args, **kwargs):
-        # type: (str, str, str, [str], str, object, object) -> None
+        # type: (str, str, str, [str], str, str, object, object) -> None
         self.instance_id = instance_id
         self.project_id = project_id
         self.database_id = database_id
         self.ddl_statements = ddl_statements
+        self.operation_id = operation_id
         self.gcp_conn_id = gcp_conn_id
         self._validate_inputs()
         self._hook = CloudSpannerHook(gcp_conn_id=gcp_conn_id)
@@ -333,7 +339,8 @@ class CloudSpannerInstanceDatabaseUpdateOperator(BaseOperator):
             return self._hook.update_database(project_id=self.project_id,
                                               instance_id=self.instance_id,
                                               database_id=self.database_id,
-                                              ddl_statements=self.ddl_statements)
+                                              ddl_statements=self.ddl_statements,
+                                              operation_id=self.operation_id)
 
 
 class CloudSpannerInstanceDatabaseDeleteOperator(BaseOperator):

@@ -312,7 +312,7 @@ class CloudSpannerTest(unittest.TestCase):
         mock_hook.assert_called_once_with(gcp_conn_id="google_cloud_default")
         mock_hook.return_value.update_database.assert_called_once_with(
             project_id=PROJECT_ID, instance_id=INSTANCE_ID, database_id=DB_ID,
-            ddl_statements=DDL_STATEMENTS
+            ddl_statements=DDL_STATEMENTS, operation_id=None
         )
         self.assertTrue(result)
 

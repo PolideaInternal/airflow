@@ -16,7 +16,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-from google.api_core.exceptions import GoogleAPICallError
+from google.api_core.exceptions import GoogleAPICallError, AlreadyExists
 from google.cloud.spanner_v1.client import Client
 from google.cloud.spanner_v1.database import Database
 from google.cloud.spanner_v1.instance import Instance  # noqa: F401
@@ -228,7 +228,7 @@ class CloudSpannerHook(GoogleCloudBaseHook):
         try:
             operation = database.create()  # type: Operation
         except GoogleAPICallError as e:
-            self.log.error('An error occurred: %s. Exiting.'.format(e.message))
+            self.log.error('An error occurred: %s. Exiting.', e.message)
             raise e
 
         if operation:
@@ -236,8 +236,9 @@ class CloudSpannerHook(GoogleCloudBaseHook):
             self.log.info(result)
         return True
 
-    def update_database(self, project_id, instance_id, database_id, ddl_statements):
-        # type: (str, str, str, [str]) -> bool
+    def update_database(self, project_id, instance_id, database_id, ddl_statements,
+                        operation_id=None):
+        # type: (str, str, str, [str], str) -> bool
         """
         Updates DDL of a database in Cloud Spanner.
 
@@ -249,6 +250,9 @@ class CloudSpannerHook(GoogleCloudBaseHook):
         :type database_id: str
         :param ddl_statements: String list containing DDL for the new database.
         :type ddl_statements: [str]
+        :param operation_id: (Optional) Unique per database operation id that can
+           be specified to implement idempotency check.
+        :type operation_id: [str]
         :return:
         """
 
@@ -259,15 +263,20 @@ class CloudSpannerHook(GoogleCloudBaseHook):
                                    format(instance_id, project_id))
         database = instance.database(database_id=database_id)
         try:
-            operation = database.update_ddl(ddl_statements)  # type: Operation
+            operation = database.update_ddl(
+                ddl_statements, operation_id=operation_id)
+            if operation:
+                result = operation.result()
+                self.log.info(result)
+            return True
+        except AlreadyExists as e:
+            if e.code == 409 and operation_id in e.message:
+                self.log.info("Replayed update_ddl message - the operation id {} "
+                              "was already done before.".format(operation_id))
+                return True
         except GoogleAPICallError as e:
-            self.log.error('An error occurred: %s. Exiting.'.format(e.message))
+            self.log.error('An error occurred: {}. Exiting.', e.message)
             raise e
-
-        if operation:
-            result = operation.result()
-            self.log.info(result)
-        return True
 
     def delete_database(self, project_id, instance_id, database_id):
         # type: (str, str, str) -> bool
