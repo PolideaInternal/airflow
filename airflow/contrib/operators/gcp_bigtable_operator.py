@@ -22,15 +22,15 @@ import google.api_core.exceptions
 from airflow import AirflowException
 from airflow.models import BaseOperator
 from airflow.sensors.base_sensor_operator import BaseSensorOperator
-from airflow.contrib.hooks.gcp_bigtable_hook import BigTableHook
+from airflow.contrib.hooks.gcp_bigtable_hook import BigtableHook
 from airflow.utils.decorators import apply_defaults
 from google.cloud.bigtable_admin_v2 import enums
 from google.cloud.bigtable.table import ClusterState
 
 
-class BigTableValidationMixin(object):
+class BigtableValidationMixin(object):
     """
-    Common class for BigTable operators for validating required fields.
+    Common class for Cloud Bigtable operators for validating required fields.
     """
 
     REQUIRED_ATTRIBUTES = []
@@ -41,39 +41,40 @@ class BigTableValidationMixin(object):
                 raise AirflowException('Empty parameter: {}'.format(attr_name))
 
 
-class BigTableInstanceCreateOperator(BaseOperator, BigTableValidationMixin):
+class BigtableInstanceCreateOperator(BaseOperator, BigtableValidationMixin):
     """
-    Creates the BigTable Instance.
-    If Instance with given ID already exists, operator will succeed.
+    Creates a new Cloud Bigtable instance.
+    If the Cloud Bigtable instance with the given ID exists, the operator does not compare its configuration
+    and immediately succeeds. No changes are made to the existing instance.
 
-    For more details about Instance creation have a look at the reference:
-    https://googleapis.github.io/google-cloud-python/latest/bigtable/instance.html#google.cloud.bigtable.instance.Instance.create # noqa: E501
+    For more details about instance creation have a look at the reference:
+    https://googleapis.github.io/google-cloud-python/latest/bigtable/instance.html#google.cloud.bigtable.instance.Instance.create
 
     :type project_id: str
-    :param project_id: The ID of the GCP Project.
+    :param project_id: The ID of the GCP project.
     :type instance_id: str
-    :param instance_id: The ID for the new Instance.
+    :param instance_id: The ID of the Cloud Bigtable instance to create.
     :type main_cluster_id: str
-    :param main_cluster_id: The ID for main Cluster for the new Instance.
+    :param main_cluster_id: The ID for main cluster for the new instance.
     :type main_cluster_zone: str
-    :param main_cluster_zone: The zone for main Cluster
+    :param main_cluster_zone: The zone for main cluster
         See https://cloud.google.com/bigtable/docs/locations for more details.
     :type replica_cluster_id: str
-    :param replica_cluster_id: (optional) The ID for replica Cluster for the new Instance.
+    :param replica_cluster_id: (optional) The ID for replica cluster for the new instance.
     :type replica_cluster_zone: str
-    :param replica_cluster_zone: (optional)  The zone for replica Cluster.
+    :param replica_cluster_zone: (optional)  The zone for replica cluster.
     :type instance_type: IntEnum
-    :param instance_type: (optional) The type of the Instance.
+    :param instance_type: (optional) The type of the instance.
     :type instance_display_name: str
-    :param instance_display_name: (optional) Human-readable name of the Instance. Defaults to ``instance_id``. # noqa: E501
+    :param instance_display_name: (optional) Human-readable name of the instance. Defaults to ``instance_id``.
     :type instance_labels: dict
-    :param instance_labels: (optional) Dictionary of labels to associate with the Instance.
+    :param instance_labels: (optional) Dictionary of labels to associate with the instance.
     :type cluster_nodes: int
-    :param cluster_nodes: (optional) Number of nodes for Cluster.
+    :param cluster_nodes: (optional) Number of nodes for cluster.
     :type cluster_storage_type: IntEnum
     :param cluster_storage_type: (optional) The type of storage.
     :type timeout: int
-    :param timeout: (optional) timeout (in seconds) for Instance creation.
+    :param timeout: (optional) timeout (in seconds) for instance creation.
                     If None is not specified, Operator will wait indefinitely.
     """
 
@@ -108,15 +109,15 @@ class BigTableInstanceCreateOperator(BaseOperator, BigTableValidationMixin):
         self.cluster_storage_type = cluster_storage_type
         self.timeout = timeout
         self._validate_inputs()
-        self.hook = BigTableHook()
-        super(BigTableInstanceCreateOperator, self).__init__(*args, **kwargs)
+        self.hook = BigtableHook()
+        super(BigtableInstanceCreateOperator, self).__init__(*args, **kwargs)
 
     def execute(self, context):
         instance = self.hook.get_instance(self.project_id, self.instance_id)
         if instance:
             # Based on Instance.__eq__ instance with the same ID and client is considered as equal.
             self.log.info(
-                "The Instance '%s' already exists in this project. Consider it as created",
+                "The instance '%s' already exists in this project. Consider it as created",
                 self.instance_id
             )
             return
@@ -140,17 +141,17 @@ class BigTableInstanceCreateOperator(BaseOperator, BigTableValidationMixin):
             raise e
 
 
-class BigTableInstanceDeleteOperator(BaseOperator, BigTableValidationMixin):
+class BigtableInstanceDeleteOperator(BaseOperator, BigtableValidationMixin):
     """
-    Deletes the BigTable Instance, including its Clusters and all related Tables.
+    Deletes the Cloud Bigtable instance, including its clusters and all related tables.
 
-    For more details about deleting Instance have a look at the reference:
-    https://googleapis.github.io/google-cloud-python/latest/bigtable/instance.html#google.cloud.bigtable.instance.Instance.delete # noqa: E501
+    For more details about deleting instance have a look at the reference:
+    https://googleapis.github.io/google-cloud-python/latest/bigtable/instance.html#google.cloud.bigtable.instance.Instance.delete
 
     :type project_id: str
-    :param project_id: The ID of the GCP Project.
+    :param project_id: The ID of the GCP project.
     :type instance_id: str
-    :param instance_id: The ID of the Instance to delete.
+    :param instance_id: The ID of the Cloud Bigtable instance to delete.
     """
     REQUIRED_ATTRIBUTES = ('project_id', 'instance_id')
     template_fields = ['project_id', 'instance_id']
@@ -163,15 +164,15 @@ class BigTableInstanceDeleteOperator(BaseOperator, BigTableValidationMixin):
         self.project_id = project_id
         self.instance_id = instance_id
         self._validate_inputs()
-        self.hook = BigTableHook()
-        super(BigTableInstanceDeleteOperator, self).__init__(*args, **kwargs)
+        self.hook = BigtableHook()
+        super(BigtableInstanceDeleteOperator, self).__init__(*args, **kwargs)
 
     def execute(self, context):
         try:
             self.hook.delete_instance(self.project_id, self.instance_id)
         except google.api_core.exceptions.NotFound:
             self.log.info(
-                "The Instance '%s' does not exist in project '%s'. Consider it as deleted",
+                "The instance '%s' does not exist in project '%s'. Consider it as deleted",
                 self.instance_id, self.project_id
             )
         except google.api_core.exceptions.GoogleAPICallError as e:
@@ -179,19 +180,19 @@ class BigTableInstanceDeleteOperator(BaseOperator, BigTableValidationMixin):
             raise e
 
 
-class BigTableTableCreateOperator(BaseOperator, BigTableValidationMixin):
+class BigtableTableCreateOperator(BaseOperator, BigtableValidationMixin):
     """
-    Creates the Table in BigTable Instance.
+    Creates the table in the Cloud Bigtable instance.
 
-    For more details about creating Table have a look at the reference:
+    For more details about creating table have a look at the reference:
     https://googleapis.github.io/google-cloud-python/latest/bigtable/table.html#google.cloud.bigtable.table.Table.create
 
     :type project_id: str
-    :param project_id: The ID of the GCP Project.
+    :param project_id: The ID of the GCP project.
     :type instance_id: str
-    :param instance_id: The ID of the Instance that will hold the new Table.
+    :param instance_id: The ID of the Cloud Bigtable instance that will hold the new table.
     :type table_id: str
-    :param table_id: The ID of the Table to be created.
+    :param table_id: The ID of the table to be created.
     """
     REQUIRED_ATTRIBUTES = ('project_id', 'instance_id', 'table_id')
     template_fields = ['project_id', 'instance_id', 'table_id']
@@ -210,9 +211,9 @@ class BigTableTableCreateOperator(BaseOperator, BigTableValidationMixin):
         self.initial_split_keys = initial_split_keys or list()
         self.column_families = column_families or dict()
         self._validate_inputs()
-        self.hook = BigTableHook()
+        self.hook = BigtableHook()
         self.instance = None
-        super(BigTableTableCreateOperator, self).__init__(*args, **kwargs)
+        super(BigtableTableCreateOperator, self).__init__(*args, **kwargs)
 
     def _compare_column_families(self):
         table_column_families = self.hook.get_column_families_for_table(self.instance, self.table_id)
@@ -226,14 +227,14 @@ class BigTableTableCreateOperator(BaseOperator, BigTableValidationMixin):
             # there is difference in structure between local Column Families and remote ones
             # the local ones are kept in `gc_rule` property of remote ones.
             if table_column_families[key].gc_rule != self.column_families[key]:
-                self.log.error("Column Family '%s' differs for Table '%s'.", key, self.table_id)
+                self.log.error("Column Family '%s' differs for table '%s'.", key, self.table_id)
                 return False
         return True
 
     def execute(self, context):
         self.instance = self.hook.get_instance(self.project_id, self.instance_id)
         if not self.instance:
-            raise AirflowException("Dependency: Instance '{}' does not exist in project '{}'.".format(
+            raise AirflowException("Dependency: instance '{}' does not exist in project '{}'.".format(
                 self.instance_id, self.project_id))
         try:
             self.hook.create_table(
@@ -246,22 +247,22 @@ class BigTableTableCreateOperator(BaseOperator, BigTableValidationMixin):
             if not self._compare_column_families():
                 raise AirflowException(
                     "Table '{}' already exists with different Column Families.".format(self.table_id))
-            self.log.info("The Table '{}' already exists. Consider it as created", self.table_id)
+            self.log.info("The table '{}' already exists. Consider it as created", self.table_id)
 
 
-class BigTableTableDeleteOperator(BaseOperator, BigTableValidationMixin):
+class BigtableTableDeleteOperator(BaseOperator, BigtableValidationMixin):
     """
-    Deletes the BigTable Table.
+    Deletes the Cloud Bigtable table.
 
-    For more details about deleting Table have a look at the reference:
-    https://googleapis.github.io/google-cloud-python/latest/bigtable/table.html#google.cloud.bigtable.table.Table.delete # noqa: E501
+    For more details about deleting table have a look at the reference:
+    https://googleapis.github.io/google-cloud-python/latest/bigtable/table.html#google.cloud.bigtable.table.Table.delete
 
     :type project_id: str
-    :param project_id: The ID of the GCP Project.
+    :param project_id: The ID of the GCP project.
     :type instance_id: str
-    :param instance_id: The ID of the Instance.
+    :param instance_id: The ID of the Cloud Bigtable instance.
     :type table_id: str
-    :param table_id: The ID of the Table to be deleted.
+    :param table_id: The ID of the table to be deleted.
     """
     REQUIRED_ATTRIBUTES = ('project_id', 'instance_id', 'table_id')
     template_fields = ['project_id', 'instance_id', 'table_id']
@@ -278,13 +279,13 @@ class BigTableTableDeleteOperator(BaseOperator, BigTableValidationMixin):
         self.table_id = table_id
         self.app_profile_id = app_profile_id
         self._validate_inputs()
-        self.hook = BigTableHook()
-        super(BigTableTableDeleteOperator, self).__init__(*args, **kwargs)
+        self.hook = BigtableHook()
+        super(BigtableTableDeleteOperator, self).__init__(*args, **kwargs)
 
     def execute(self, context):
         instance = self.hook.get_instance(self.project_id, self.instance_id)
         if not instance:
-            raise AirflowException("Dependency: Instance '{}' does not exist.".format(self.instance_id))
+            raise AirflowException("Dependency: instance '{}' does not exist.".format(self.instance_id))
 
         try:
             self.hook.delete_table(
@@ -294,27 +295,27 @@ class BigTableTableDeleteOperator(BaseOperator, BigTableValidationMixin):
             )
         except google.api_core.exceptions.NotFound:
             # It's OK if table doesn't exists.
-            self.log.info("The Table '%s' no longer exists. Consider it as deleted", self.table_id)
+            self.log.info("The table '%s' no longer exists. Consider it as deleted", self.table_id)
         except google.api_core.exceptions.GoogleAPICallError as e:
             self.log.error('An error occurred. Exiting.')
             raise e
 
 
-class BigTableClusterUpdateOperator(BaseOperator, BigTableValidationMixin):
+class BigtableClusterUpdateOperator(BaseOperator, BigtableValidationMixin):
     """
-    Updates a BigTable Cluster.
+    Updates a Cloud Bigtable cluster.
 
-    For more details about updating Cluster have a look at the reference:
-    https://googleapis.github.io/google-cloud-python/latest/bigtable/cluster.html#google.cloud.bigtable.cluster.Cluster.update # noqa: E501
+    For more details about updating a Cloud Bigtable cluster, have a look at the reference:
+    https://googleapis.github.io/google-cloud-python/latest/bigtable/cluster.html#google.cloud.bigtable.cluster.Cluster.update
 
     :type project_id: str
-    :param project_id: The ID of the GCP Project.
+    :param project_id: The ID of the GCP project.
     :type instance_id: str
-    :param instance_id: The ID of the Instance.
+    :param instance_id: The ID of the Cloud Bigtable instance.
     :type cluster_id: str
-    :param cluster_id: The ID of the Cluster to update.
+    :param cluster_id: The ID of the Cloud Bigtable cluster to update.
     :type nodes: int
-    :param nodes: Desired number of nodes for the Cluster.
+    :param nodes: The desired number of nodes for the Cloud Bigtable cluster.
     """
     REQUIRED_ATTRIBUTES = ('project_id', 'instance_id', 'cluster_id', 'nodes')
     template_fields = ['project_id', 'instance_id', 'cluster_id', 'nodes']
@@ -331,13 +332,13 @@ class BigTableClusterUpdateOperator(BaseOperator, BigTableValidationMixin):
         self.cluster_id = cluster_id
         self.nodes = nodes
         self._validate_inputs()
-        self.hook = BigTableHook()
-        super(BigTableClusterUpdateOperator, self).__init__(*args, **kwargs)
+        self.hook = BigtableHook()
+        super(BigtableClusterUpdateOperator, self).__init__(*args, **kwargs)
 
     def execute(self, context):
         instance = self.hook.get_instance(self.project_id, self.instance_id)
         if not instance:
-            raise AirflowException("Dependency: Instance '{}' does not exist.".format(self.instance_id))
+            raise AirflowException("Dependency: instance '{}' does not exist.".format(self.instance_id))
 
         try:
             self.hook.update_cluster(
@@ -346,7 +347,7 @@ class BigTableClusterUpdateOperator(BaseOperator, BigTableValidationMixin):
                 self.nodes
             )
         except google.api_core.exceptions.NotFound:
-            raise AirflowException("Dependency: Cluster '{}' does not exist for Instance '{}'.".format(
+            raise AirflowException("Dependency: cluster '{}' does not exist for instance '{}'.".format(
                 self.cluster_id,
                 self.instance_id
             ))
@@ -355,20 +356,20 @@ class BigTableClusterUpdateOperator(BaseOperator, BigTableValidationMixin):
             raise e
 
 
-class BigTableTableWaitForReplicationSensor(BaseSensorOperator, BigTableValidationMixin):
+class BigtableTableWaitForReplicationSensor(BaseSensorOperator, BigtableValidationMixin):
     """
-    Sensor that waits for BigTable Table to be fully replicated to its Clusters.
-    No exception will be raised if the Instance or the Table does not exist.
+    Sensor that waits for Cloud Bigtable table to be fully replicated to its clusters.
+    No exception will be raised if the instance or the table does not exist.
 
-    For more details about Cluster states for a Table have a look at the reference:
-    https://googleapis.github.io/google-cloud-python/latest/bigtable/table.html#google.cloud.bigtable.table.Table.get_cluster_states # noqa: E501
+    For more details about cluster states for a table, have a look at the reference:
+    https://googleapis.github.io/google-cloud-python/latest/bigtable/table.html#google.cloud.bigtable.table.Table.get_cluster_states
 
     :type project_id: str
-    :param project_id: The ID of the GCP Project.
+    :param project_id: The ID of the GCP project.
     :type instance_id: str
-    :param instance_id: The ID of the Instance.
+    :param instance_id: The ID of the Cloud Bigtable instance.
     :type table_id: str
-    :param table_id: The ID of the Table to check replication status.
+    :param table_id: The ID of the table to check replication status.
     """
     REQUIRED_ATTRIBUTES = ('project_id', 'instance_id', 'table_id')
     template_fields = ['project_id', 'instance_id', 'table_id']
@@ -383,20 +384,20 @@ class BigTableTableWaitForReplicationSensor(BaseSensorOperator, BigTableValidati
         self.instance_id = instance_id
         self.table_id = table_id
         self._validate_inputs()
-        self.hook = BigTableHook()
-        super(BigTableTableWaitForReplicationSensor, self).__init__(*args, **kwargs)
+        self.hook = BigtableHook()
+        super(BigtableTableWaitForReplicationSensor, self).__init__(*args, **kwargs)
 
     def poke(self, context):
         instance = self.hook.get_instance(self.project_id, self.instance_id)
         if not instance:
-            self.log.info("Dependency: Instance '%s' does not exist.", self.instance_id)
+            self.log.info("Dependency: instance '%s' does not exist.", self.instance_id)
             return False
 
         try:
             cluster_states = self.hook.get_cluster_states_for_table(instance, self.table_id)
         except google.api_core.exceptions.NotFound:
             self.log.info(
-                "Dependency: Table '%s' does not exist in Instance '%s'.", self.table_id, self.instance_id)
+                "Dependency: table '%s' does not exist in instance '%s'.", self.table_id, self.instance_id)
             return False
 
         ready_state = ClusterState(enums.Table.ClusterState.ReplicationState.READY)
@@ -404,7 +405,7 @@ class BigTableTableWaitForReplicationSensor(BaseSensorOperator, BigTableValidati
         is_table_replicated = True
         for cluster_id in cluster_states.keys():
             if cluster_states[cluster_id] != ready_state:
-                self.log.info("Table '%s' is not yet replicated on Cluster '%s'.", self.table_id, cluster_id)
+                self.log.info("Table '%s' is not yet replicated on cluster '%s'.", self.table_id, cluster_id)
                 is_table_replicated = False
 
         if not is_table_replicated:

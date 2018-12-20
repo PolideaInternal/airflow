@@ -26,9 +26,9 @@ from airflow.contrib.hooks.gcp_api_base_hook import GoogleCloudBaseHook
 
 
 # noinspection PyAbstractClass
-class BigTableHook(GoogleCloudBaseHook):
+class BigtableHook(GoogleCloudBaseHook):
     """
-    Hook for Google Cloud BigTable APIs.
+    Hook for Google Cloud Bigtable APIs.
     """
 
     _client = None
@@ -36,7 +36,7 @@ class BigTableHook(GoogleCloudBaseHook):
     def __init__(self,
                  gcp_conn_id='google_cloud_default',
                  delegate_to=None):
-        super(BigTableHook, self).__init__(gcp_conn_id, delegate_to)
+        super(BigtableHook, self).__init__(gcp_conn_id, delegate_to)
 
     def get_client(self, project_id):
         if not self._client:
@@ -45,12 +45,12 @@ class BigTableHook(GoogleCloudBaseHook):
 
     def get_instance(self, project_id, instance_id):
         """
-        Retrieves and returns the specified BigTable Instance if it exists.
-        Otherwise returns None.
+        Retrieves and returns the specified Cloud Bigtable instance if it exists.
+        Otherwise, returns None.
 
-        :param project_id: ID of the GCP Project.
+        :param project_id: The ID of the GCP project.
         :type project_id: str
-        :param instance_id: ID of the BigTable Instance.
+        :param instance_id: The ID of the Cloud Bigtable instance.
         :type instance_id: str
         """
 
@@ -63,12 +63,12 @@ class BigTableHook(GoogleCloudBaseHook):
 
     def delete_instance(self, project_id, instance_id):
         """
-        Deletes the specified BigTable Instance.
-        Raises google.api_core.exceptions.NotFound if the Instance does not exist.
+        Deletes the specified Cloud Bigtable instance.
+        Raises google.api_core.exceptions.NotFound if the Cloud Bigtable instance does not exist.
 
-        :param project_id: ID of the GCP Project.
+        :param project_id: The ID of the GCP project.
         :type project_id: str
-        :param instance_id: ID of the BigTable Instance.
+        :param instance_id: The ID of the Cloud Bigtable instance.
         :type instance_id: str
         """
         instance = Instance(instance_id, self.get_client(project_id))
@@ -91,31 +91,31 @@ class BigTableHook(GoogleCloudBaseHook):
         Creates new instance.
 
         :type project_id: str
-        :param project_id: The ID of the GCP Project.
+        :param project_id: The ID of the GCP project.
         :type instance_id: str
-        :param instance_id: The ID for the new Instance.
+        :param instance_id: The ID for the new instance.
         :type main_cluster_id: str
-        :param main_cluster_id: The ID for main Cluster for the new Instance.
+        :param main_cluster_id: The ID for main cluster for the new instance.
         :type main_cluster_zone: str
-        :param main_cluster_zone: The zone for main Cluster.
+        :param main_cluster_zone: The zone for main cluster.
             See https://cloud.google.com/bigtable/docs/locations for more details.
         :type replica_cluster_id: str
-        :param replica_cluster_id: (optional) The ID for replica Cluster for the new Instance.
+        :param replica_cluster_id: (optional) The ID for replica cluster for the new instance.
         :type replica_cluster_zone: str
-        :param replica_cluster_zone: (optional)  The zone for replica Cluster.
+        :param replica_cluster_zone: (optional)  The zone for replica cluster.
         :type instance_type: enums.Instance.Type
-        :param instance_type: (optional) The type of the Instance.
+        :param instance_type: (optional) The type of the instance.
         :type instance_display_name: str
-        :param instance_display_name: (optional) Human-readable name of the Instance.
+        :param instance_display_name: (optional) Human-readable name of the instance.
                 Defaults to ``instance_id``.
         :type instance_labels: dict
-        :param instance_labels: (optional) Dictionary of labels to associate with the Instance.
+        :param instance_labels: (optional) Dictionary of labels to associate with the instance.
         :type cluster_nodes: int
-        :param cluster_nodes: (optional) Number of nodes for Cluster.
+        :param cluster_nodes: (optional) Number of nodes for cluster.
         :type cluster_storage_type: enums.StorageType
         :param cluster_storage_type: (optional) The type of storage.
         :type timeout: int
-        :param timeout: (optional) timeout (in seconds) for Instance creation.
+        :param timeout: (optional) timeout (in seconds) for instance creation.
                         If None is not specified, Operator will wait indefinitely.
         """
         cluster_storage_type = enums.StorageType(cluster_storage_type)
@@ -153,34 +153,33 @@ class BigTableHook(GoogleCloudBaseHook):
     # noinspection PyMethodMayBeStatic
     def create_table(self, instance, table_id, initial_split_keys, column_families):
         """
-        Creates the specified BigTable Table.
-        Raises google.api_core.exceptions.AlreadyExists if the Table already exists.
+        Creates the specified Cloud Bigtable table.
+        Raises google.api_core.exceptions.AlreadyExists if the table exists.
 
         :type instance: Instance
-        :param instance: The Instance that owns the Table.
+        :param instance: The Cloud Bigtable instance that owns the table.
         :type table_id: str
-        :param table_id: ID of the BigTable Table to create.
+        :param table_id: The ID of the table to create in Cloud Bigtable.
         :type initial_split_keys: list
-        :param initial_split_keys: (Optional) list of row keys in bytes that will be used to
-                initially split the Table.
+        :param initial_split_keys: (Optional) A list of row keys in bytes to use to initially split the table.
         :type column_families: dict
-        :param column_families: (Optional) A map columns to create. The key is the column_id str and
-            the value is a GarbageCollectionRule.
+        :param column_families: (Optional) A map of columns to create. The key is the column_id str, and the
+        value is a GarbageCollectionRule.
         """
         table = Table(table_id, instance)
         table.create(initial_split_keys, column_families)
 
     def delete_table(self, project_id, instance_id, table_id):
         """
-        Deletes the specified BigTable Table.
-        Raises google.api_core.exceptions.NotFound if the Table does not exist.
+        Deletes the specified table in Cloud Bigtable.
+        Raises google.api_core.exceptions.NotFound if the table does not exist.
 
         :type project_id: str
-        :param project_id: ID of the GCP Project.
+        :param project_id: The ID of the GCP project.
         :type instance_id: str
-        :param instance_id: ID of the BigTable Instance.
+        :param instance_id: The ID of the Cloud Bigtable instance.
         :type table_id: str
-        :param table_id: ID of the BigTable Table.
+        :param table_id: The ID of the table in Cloud Bigtable.
         """
         instance = Instance(instance_id, self.get_client(project_id))
         table = Table(table_id, instance)
@@ -189,15 +188,15 @@ class BigTableHook(GoogleCloudBaseHook):
     # noinspection PyMethodMayBeStatic
     def update_cluster(self, instance, cluster_id, nodes):
         """
-        Updates number of nodes in specified Cluster.
-        Raises google.api_core.exceptions.NotFound if the Cluster does not exist.
+        Updates number of nodes in the specified Cloud Bigtable cluster.
+        Raises google.api_core.exceptions.NotFound if the cluster does not exist.
 
         :type instance: Instance
-        :param instance: The Instance that owns the Cluster.
+        :param instance: The Cloud Bigtable instance that owns the cluster.
         :type cluster_id: str
-        :param cluster_id: ID of the Cluster.
+        :param cluster_id: The ID of the cluster.
         :type nodes: int
-        :param nodes: Number of desired nodes.
+        :param nodes: The desired number of nodes.
         """
         cluster = Cluster(cluster_id, instance)
         cluster.serve_nodes = nodes
@@ -206,12 +205,12 @@ class BigTableHook(GoogleCloudBaseHook):
     # noinspection PyMethodMayBeStatic
     def get_column_families_for_table(self, instance, table_id):
         """
-        Fetches Column Families for the specified BigTable Table.
+        Fetches Column Families for the specified table in Cloud Bigtable.
 
         :type instance: Instance
-        :param instance: The Instance that owns the Table.
+        :param instance: The Cloud Bigtable instance that owns the table.
         :type table_id: str
-        :param table_id: ID of the BigTable Table to fetch Column Families.
+        :param table_id: The ID of the table in Cloud Bigtable to fetch Column Families from.
         """
 
         table = Table(table_id, instance)
@@ -220,13 +219,13 @@ class BigTableHook(GoogleCloudBaseHook):
     # noinspection PyMethodMayBeStatic
     def get_cluster_states_for_table(self, instance, table_id):
         """
-        Fetches ClusterStates for the specified BigTable Table.
-        Raises google.api_core.exceptions.NotFound if the Table does not exist.
+        Fetches Cluster States for the specified table in Cloud Bigtable.
+        Raises google.api_core.exceptions.NotFound if the table does not exist.
 
         :type instance: Instance
-        :param instance: The Instance that owns the Table.
+        :param instance: The Cloud Bigtable instance that owns the table.
         :type table_id: str
-        :param table_id: ID of the BigTable Table to fetch Column Families.
+        :param table_id: The ID of the table in Cloud Bigtable to fetch Cluster States from.
         """
 
         table = Table(table_id, instance)

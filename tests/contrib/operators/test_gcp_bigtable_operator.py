@@ -25,9 +25,9 @@ from google.cloud.bigtable.table import ClusterState
 from parameterized import parameterized
 
 from airflow import AirflowException
-from airflow.contrib.operators.gcp_bigtable_operator import BigTableInstanceDeleteOperator, \
-    BigTableTableDeleteOperator, BigTableTableCreateOperator, BigTableTableWaitForReplicationSensor, \
-    BigTableClusterUpdateOperator, BigTableInstanceCreateOperator
+from airflow.contrib.operators.gcp_bigtable_operator import BigtableInstanceDeleteOperator, \
+    BigtableTableDeleteOperator, BigtableTableCreateOperator, BigtableTableWaitForReplicationSensor, \
+    BigtableClusterUpdateOperator, BigtableInstanceCreateOperator
 
 try:
     # noinspection PyProtectedMember
@@ -48,18 +48,18 @@ INITIAL_SPLIT_KEYS = []
 EMPTY_COLUMN_FAMILIES = {}
 
 
-class GcpBigTableInstanceCreateTest(unittest.TestCase):
+class BigtableInstanceCreateTest(unittest.TestCase):
     @parameterized.expand([
         ('project_id', '', INSTANCE_ID, CLUSTER_ID, CLUSTER_ZONE),
         ('instance_id', PROJECT_ID, '', CLUSTER_ID, CLUSTER_ZONE),
         ('main_cluster_id', PROJECT_ID, INSTANCE_ID, '', CLUSTER_ZONE),
         ('main_cluster_zone', PROJECT_ID, INSTANCE_ID, CLUSTER_ID, ''),
     ], testcase_func_name=lambda f, n, p: 'test_empty_attribute.empty_' + p.args[0])
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_empty_attribute(self, missing_attribute, project_id, instance_id, main_cluster_id,
                              main_cluster_zone, mock_hook):
         with self.assertRaises(AirflowException) as e:
-            BigTableInstanceCreateOperator(
+            BigtableInstanceCreateOperator(
                 project_id=project_id,
                 instance_id=instance_id,
                 main_cluster_id=main_cluster_id,
@@ -70,11 +70,11 @@ class GcpBigTableInstanceCreateTest(unittest.TestCase):
         self.assertEqual(str(err), 'Empty parameter: {}'.format(missing_attribute))
         mock_hook.assert_not_called()
 
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_create_instance_that_exists(self, mock_hook):
         mock_hook.return_value.get_instance.return_value = mock.Mock(Instance)
 
-        op = BigTableInstanceCreateOperator(
+        op = BigtableInstanceCreateOperator(
             project_id=PROJECT_ID,
             instance_id=INSTANCE_ID,
             main_cluster_id=CLUSTER_ID,
@@ -86,10 +86,10 @@ class GcpBigTableInstanceCreateTest(unittest.TestCase):
         mock_hook.assert_called_once_with()
         mock_hook.return_value.create_instance.assert_not_called()
 
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_different_error_reraised(self, mock_hook):
         mock_hook.return_value.get_instance.return_value = None
-        op = BigTableInstanceCreateOperator(
+        op = BigtableInstanceCreateOperator(
             project_id=PROJECT_ID,
             instance_id=INSTANCE_ID,
             main_cluster_id=CLUSTER_ID,
@@ -109,17 +109,17 @@ class GcpBigTableInstanceCreateTest(unittest.TestCase):
         )
 
 
-class GcpBigTableClusterUpdateTest(unittest.TestCase):
+class BigtableClusterUpdateTest(unittest.TestCase):
     @parameterized.expand([
         ('project_id', '', INSTANCE_ID, CLUSTER_ID, NODES),
         ('instance_id', PROJECT_ID, '', CLUSTER_ID, NODES),
         ('cluster_id', PROJECT_ID, INSTANCE_ID, '', NODES),
         ('nodes', PROJECT_ID, INSTANCE_ID, CLUSTER_ID, ''),
     ], testcase_func_name=lambda f, n, p: 'test_empty_attribute.empty_' + p.args[0])
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_empty_attribute(self, missing_attribute, project_id, instance_id, cluster_id, nodes, mock_hook):
         with self.assertRaises(AirflowException) as e:
-            BigTableClusterUpdateOperator(
+            BigtableClusterUpdateOperator(
                 project_id=project_id,
                 instance_id=instance_id,
                 cluster_id=cluster_id,
@@ -130,12 +130,12 @@ class GcpBigTableClusterUpdateTest(unittest.TestCase):
         self.assertEqual(str(err), 'Empty parameter: {}'.format(missing_attribute))
         mock_hook.assert_not_called()
 
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_updating_cluster_but_instance_does_not_exists(self, mock_hook):
         mock_hook.return_value.get_instance.return_value = None
 
         with self.assertRaises(AirflowException) as e:
-            op = BigTableClusterUpdateOperator(
+            op = BigtableClusterUpdateOperator(
                 project_id=PROJECT_ID,
                 instance_id=INSTANCE_ID,
                 cluster_id=CLUSTER_ID,
@@ -145,18 +145,18 @@ class GcpBigTableClusterUpdateTest(unittest.TestCase):
             op.execute(None)
 
         err = e.exception
-        self.assertEqual(str(err), "Dependency: Instance '{}' does not exist.".format(INSTANCE_ID))
+        self.assertEqual(str(err), "Dependency: instance '{}' does not exist.".format(INSTANCE_ID))
         mock_hook.assert_called_once_with()
         mock_hook.return_value.update_cluster.assert_not_called()
 
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_updating_cluster_that_does_not_exists(self, mock_hook):
         instance = mock_hook.return_value.get_instance.return_value = mock.Mock(Instance)
         mock_hook.return_value.update_cluster.side_effect = mock.Mock(
             side_effect=google.api_core.exceptions.NotFound("Cluster not found."))
 
         with self.assertRaises(AirflowException) as e:
-            op = BigTableClusterUpdateOperator(
+            op = BigtableClusterUpdateOperator(
                 project_id=PROJECT_ID,
                 instance_id=INSTANCE_ID,
                 cluster_id=CLUSTER_ID,
@@ -168,14 +168,14 @@ class GcpBigTableClusterUpdateTest(unittest.TestCase):
         err = e.exception
         self.assertEqual(
             str(err),
-            "Dependency: Cluster '{}' does not exist for Instance '{}'.".format(CLUSTER_ID, INSTANCE_ID)
+            "Dependency: cluster '{}' does not exist for instance '{}'.".format(CLUSTER_ID, INSTANCE_ID)
         )
         mock_hook.assert_called_once_with()
         mock_hook.return_value.update_cluster.assert_called_once_with(instance, CLUSTER_ID, NODES)
 
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_different_error_reraised(self, mock_hook):
-        op = BigTableClusterUpdateOperator(
+        op = BigtableClusterUpdateOperator(
             project_id=PROJECT_ID,
             instance_id=INSTANCE_ID,
             cluster_id=CLUSTER_ID,
@@ -193,10 +193,10 @@ class GcpBigTableClusterUpdateTest(unittest.TestCase):
         mock_hook.return_value.update_cluster.assert_called_once_with(instance, CLUSTER_ID, NODES)
 
 
-class GcpBigTableInstanceDeleteTest(unittest.TestCase):
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+class BigtableInstanceDeleteTest(unittest.TestCase):
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_delete_execute(self, mock_hook):
-        op = BigTableInstanceDeleteOperator(
+        op = BigtableInstanceDeleteOperator(
             project_id=PROJECT_ID,
             instance_id=INSTANCE_ID,
             task_id="id"
@@ -209,10 +209,10 @@ class GcpBigTableInstanceDeleteTest(unittest.TestCase):
         ('project_id', '', INSTANCE_ID),
         ('instance_id', PROJECT_ID, ''),
     ], testcase_func_name=lambda f, n, p: 'test_empty_attribute.empty_' + p.args[0])
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_empty_attribute(self, missing_attribute, project_id, instance_id, mock_hook):
         with self.assertRaises(AirflowException) as e:
-            BigTableInstanceDeleteOperator(
+            BigtableInstanceDeleteOperator(
                 project_id=project_id,
                 instance_id=instance_id,
                 task_id="id"
@@ -221,9 +221,9 @@ class GcpBigTableInstanceDeleteTest(unittest.TestCase):
         self.assertEqual(str(err), 'Empty parameter: {}'.format(missing_attribute))
         mock_hook.assert_not_called()
 
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_deleting_instance_that_doesnt_exists(self, mock_hook):
-        op = BigTableInstanceDeleteOperator(
+        op = BigtableInstanceDeleteOperator(
             project_id=PROJECT_ID,
             instance_id=INSTANCE_ID,
             task_id="id"
@@ -234,9 +234,9 @@ class GcpBigTableInstanceDeleteTest(unittest.TestCase):
         mock_hook.assert_called_once_with()
         mock_hook.return_value.delete_instance.assert_called_once_with(PROJECT_ID, INSTANCE_ID)
 
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_different_error_reraised(self, mock_hook):
-        op = BigTableInstanceDeleteOperator(
+        op = BigtableInstanceDeleteOperator(
             project_id=PROJECT_ID,
             instance_id=INSTANCE_ID,
             task_id="id"
@@ -251,10 +251,10 @@ class GcpBigTableInstanceDeleteTest(unittest.TestCase):
         mock_hook.return_value.delete_instance.assert_called_once_with(PROJECT_ID, INSTANCE_ID)
 
 
-class GcpBigTableTableDeleteTest(unittest.TestCase):
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+class BigtableTableDeleteTest(unittest.TestCase):
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_delete_execute(self, mock_hook):
-        op = BigTableTableDeleteOperator(
+        op = BigtableTableDeleteOperator(
             project_id=PROJECT_ID,
             instance_id=INSTANCE_ID,
             table_id=TABLE_ID,
@@ -269,10 +269,10 @@ class GcpBigTableTableDeleteTest(unittest.TestCase):
         ('instance_id', PROJECT_ID, '', TABLE_ID),
         ('table_id', PROJECT_ID, INSTANCE_ID, ''),
     ], testcase_func_name=lambda f, n, p: 'test_empty_attribute.empty_' + p.args[0])
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_empty_attribute(self, missing_attribute, project_id, instance_id, table_id, mock_hook):
         with self.assertRaises(AirflowException) as e:
-            BigTableTableDeleteOperator(
+            BigtableTableDeleteOperator(
                 project_id=project_id,
                 instance_id=instance_id,
                 table_id=table_id,
@@ -282,9 +282,9 @@ class GcpBigTableTableDeleteTest(unittest.TestCase):
         self.assertEqual(str(err), 'Empty parameter: {}'.format(missing_attribute))
         mock_hook.assert_not_called()
 
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_deleting_table_that_doesnt_exists(self, mock_hook):
-        op = BigTableTableDeleteOperator(
+        op = BigtableTableDeleteOperator(
             project_id=PROJECT_ID,
             instance_id=INSTANCE_ID,
             table_id=TABLE_ID,
@@ -297,9 +297,9 @@ class GcpBigTableTableDeleteTest(unittest.TestCase):
         mock_hook.assert_called_once_with()
         mock_hook.return_value.delete_table.assert_called_once_with(PROJECT_ID, INSTANCE_ID, TABLE_ID)
 
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_deleting_table_when_instance_doesnt_exists(self, mock_hook):
-        op = BigTableTableDeleteOperator(
+        op = BigtableTableDeleteOperator(
             project_id=PROJECT_ID,
             instance_id=INSTANCE_ID,
             table_id=TABLE_ID,
@@ -310,13 +310,13 @@ class GcpBigTableTableDeleteTest(unittest.TestCase):
         with self.assertRaises(AirflowException) as e:
             op.execute(None)
         err = e.exception
-        self.assertEqual(str(err), "Dependency: Instance '{}' does not exist.".format(INSTANCE_ID))
+        self.assertEqual(str(err), "Dependency: instance '{}' does not exist.".format(INSTANCE_ID))
         mock_hook.assert_called_once_with()
         mock_hook.return_value.delete_table.assert_not_called()
 
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_different_error_reraised(self, mock_hook):
-        op = BigTableTableDeleteOperator(
+        op = BigtableTableDeleteOperator(
             project_id=PROJECT_ID,
             instance_id=INSTANCE_ID,
             table_id=TABLE_ID,
@@ -332,10 +332,10 @@ class GcpBigTableTableDeleteTest(unittest.TestCase):
         mock_hook.return_value.delete_table.assert_called_once_with(PROJECT_ID, INSTANCE_ID, TABLE_ID)
 
 
-class GcpBigTableTableCreateTest(unittest.TestCase):
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+class BigtableTableCreateTest(unittest.TestCase):
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_create_execute(self, mock_hook):
-        op = BigTableTableCreateOperator(
+        op = BigtableTableCreateOperator(
             project_id=PROJECT_ID,
             instance_id=INSTANCE_ID,
             table_id=TABLE_ID,
@@ -354,10 +354,10 @@ class GcpBigTableTableCreateTest(unittest.TestCase):
         ('instance_id', PROJECT_ID, '', TABLE_ID),
         ('table_id', PROJECT_ID, INSTANCE_ID, ''),
     ], testcase_func_name=lambda f, n, p: 'test_empty_attribute.empty_' + p.args[0])
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_empty_attribute(self, missing_attribute, project_id, instance_id, table_id, mock_hook):
         with self.assertRaises(AirflowException) as e:
-            BigTableTableCreateOperator(
+            BigtableTableCreateOperator(
                 project_id=project_id,
                 instance_id=instance_id,
                 table_id=table_id,
@@ -367,9 +367,9 @@ class GcpBigTableTableCreateTest(unittest.TestCase):
         self.assertEqual(str(err), 'Empty parameter: {}'.format(missing_attribute))
         mock_hook.assert_not_called()
 
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_instance_not_exists(self, mock_hook):
-        op = BigTableTableCreateOperator(
+        op = BigtableTableCreateOperator(
             project_id=PROJECT_ID,
             instance_id=INSTANCE_ID,
             table_id=TABLE_ID,
@@ -383,13 +383,13 @@ class GcpBigTableTableCreateTest(unittest.TestCase):
         err = e.exception
         self.assertEqual(
             str(err),
-            "Dependency: Instance '{}' does not exist in project '{}'.".format(INSTANCE_ID, PROJECT_ID)
+            "Dependency: instance '{}' does not exist in project '{}'.".format(INSTANCE_ID, PROJECT_ID)
         )
         mock_hook.assert_called_once_with()
 
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_creating_table_that_exists(self, mock_hook):
-        op = BigTableTableCreateOperator(
+        op = BigtableTableCreateOperator(
             project_id=PROJECT_ID,
             instance_id=INSTANCE_ID,
             table_id=TABLE_ID,
@@ -408,9 +408,9 @@ class GcpBigTableTableCreateTest(unittest.TestCase):
         mock_hook.return_value.create_table.assert_called_once_with(
             instance, TABLE_ID, INITIAL_SPLIT_KEYS, EMPTY_COLUMN_FAMILIES)
 
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_creating_table_that_exists_with_different_column_families_ids_in_the_table(self, mock_hook):
-        op = BigTableTableCreateOperator(
+        op = BigtableTableCreateOperator(
             project_id=PROJECT_ID,
             instance_id=INSTANCE_ID,
             table_id=TABLE_ID,
@@ -432,9 +432,9 @@ class GcpBigTableTableCreateTest(unittest.TestCase):
         )
         mock_hook.assert_called_once_with()
 
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_creating_table_that_exists_with_different_column_families_gc_rule_in_the_table(self, mock_hook):
-        op = BigTableTableCreateOperator(
+        op = BigtableTableCreateOperator(
             project_id=PROJECT_ID,
             instance_id=INSTANCE_ID,
             table_id=TABLE_ID,
@@ -462,16 +462,16 @@ class GcpBigTableTableCreateTest(unittest.TestCase):
         mock_hook.assert_called_once_with()
 
 
-class GcpBigTableWaitForTableReplicationTest(unittest.TestCase):
+class BigtableWaitForTableReplicationTest(unittest.TestCase):
     @parameterized.expand([
         ('project_id', '', INSTANCE_ID, TABLE_ID),
         ('instance_id', PROJECT_ID, '', TABLE_ID),
         ('table_id', PROJECT_ID, INSTANCE_ID, ''),
     ], testcase_func_name=lambda f, n, p: 'test_empty_attribute.empty_' + p.args[0])
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_empty_attribute(self, missing_attribute, project_id, instance_id, table_id, mock_hook):
         with self.assertRaises(AirflowException) as e:
-            BigTableTableWaitForReplicationSensor(
+            BigtableTableWaitForReplicationSensor(
                 project_id=project_id,
                 instance_id=instance_id,
                 table_id=table_id,
@@ -481,11 +481,11 @@ class GcpBigTableWaitForTableReplicationTest(unittest.TestCase):
         self.assertEqual(str(err), 'Empty parameter: {}'.format(missing_attribute))
         mock_hook.assert_not_called()
 
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_wait_no_instance(self, mock_hook):
         mock_hook.return_value.get_instance.return_value = None
 
-        op = BigTableTableWaitForReplicationSensor(
+        op = BigtableTableWaitForReplicationSensor(
             project_id=PROJECT_ID,
             instance_id=INSTANCE_ID,
             table_id=TABLE_ID,
@@ -494,13 +494,13 @@ class GcpBigTableWaitForTableReplicationTest(unittest.TestCase):
         self.assertFalse(op.poke(None))
         mock_hook.assert_called_once_with()
 
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_wait_no_table(self, mock_hook):
         mock_hook.return_value.get_instance.return_value = mock.Mock(Instance)
         mock_hook.return_value.get_cluster_states_for_table.side_effect = mock.Mock(
             side_effect=google.api_core.exceptions.NotFound("Table not found."))
 
-        op = BigTableTableWaitForReplicationSensor(
+        op = BigtableTableWaitForReplicationSensor(
             project_id=PROJECT_ID,
             instance_id=INSTANCE_ID,
             table_id=TABLE_ID,
@@ -509,13 +509,13 @@ class GcpBigTableWaitForTableReplicationTest(unittest.TestCase):
         self.assertFalse(op.poke(None))
         mock_hook.assert_called_once_with()
 
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_wait_not_ready(self, mock_hook):
         mock_hook.return_value.get_instance.return_value = mock.Mock(Instance)
         mock_hook.return_value.get_cluster_states_for_table.return_value = {
             "cl-id": ClusterState(0)
         }
-        op = BigTableTableWaitForReplicationSensor(
+        op = BigtableTableWaitForReplicationSensor(
             project_id=PROJECT_ID,
             instance_id=INSTANCE_ID,
             table_id=TABLE_ID,
@@ -524,13 +524,13 @@ class GcpBigTableWaitForTableReplicationTest(unittest.TestCase):
         self.assertFalse(op.poke(None))
         mock_hook.assert_called_once_with()
 
-    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigTableHook')
+    @mock.patch('airflow.contrib.operators.gcp_bigtable_operator.BigtableHook')
     def test_wait_ready(self, mock_hook):
         mock_hook.return_value.get_instance.return_value = mock.Mock(Instance)
         mock_hook.return_value.get_cluster_states_for_table.return_value = {
             "cl-id": ClusterState(4)
         }
-        op = BigTableTableWaitForReplicationSensor(
+        op = BigtableTableWaitForReplicationSensor(
             project_id=PROJECT_ID,
             instance_id=INSTANCE_ID,
             table_id=TABLE_ID,

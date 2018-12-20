@@ -361,13 +361,13 @@ More information
 See `Google Compute Engine API documentation
 <https://cloud.google.com/compute/docs/reference/rest/v1/instanceGroupManagers>`_.
 
-Google Cloud BigTable Operators
+Google Cloud Bigtable Operators
 --------------------------------
 
 Arguments
 """""""""
 
-All examples below rely on following variables, that can be passed via environment variables.
+All examples below rely on the following variables, which can be passed via environment variables.
 
 .. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_bigtable_operators.py
     :language: python
@@ -375,14 +375,14 @@ All examples below rely on following variables, that can be passed via environme
     :end-before: [END howto_operator_gcp_bigtable_args]
 
 
-BigTableInstanceCreateOperator
+BigtableInstanceCreateOperator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Use the :class:`~airflow.contrib.operators.gcp_bigtable_operator.BigTableInstanceCreateOperator`
-to create an instance of Google Cloud BigTable.
+Use the :class:`~airflow.contrib.operators.gcp_bigtable_operator.BigtableInstanceCreateOperator`
+to create a Google Cloud Bigtable instance.
 
-If the instance with given ID already exists, operator does not compare its configuration and
-immediately succeeds.
+If the Cloud Bigtable instance with the given ID exists, the operator does not compare its configuration
+and immediately succeeds. No changes are made to the existing instance.
 
 Using the operator
 """"""""""""""""""
@@ -394,11 +394,11 @@ Using the operator
     :end-before: [END howto_operator_gcp_bigtable_instance_create]
 
 
-BigTableInstanceDeleteOperator
+BigtableInstanceDeleteOperator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Use the :class:`~airflow.contrib.operators.gcp_bigtable_operator.BigTableInstanceDeleteOperator`
-to delete an instance of Google Cloud BigTable.
+Use the :class:`~airflow.contrib.operators.gcp_bigtable_operator.BigtableInstanceDeleteOperator`
+to delete a Google Cloud Bigtable instance.
 
 Using the operator
 """"""""""""""""""
@@ -409,11 +409,11 @@ Using the operator
     :start-after: [START howto_operator_gcp_bigtable_instance_delete]
     :end-before: [END howto_operator_gcp_bigtable_instance_delete]
 
-BigTableClusterUpdateOperator
+BigtableClusterUpdateOperator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Use the :class:`~airflow.contrib.operators.gcp_bigtable_operator.BigTableClusterUpdateOperator`
-to modify number of nodes for a BigTable cluster.
+Use the :class:`~airflow.contrib.operators.gcp_bigtable_operator.BigtableClusterUpdateOperator`
+to modify number of nodes in a Cloud Bigtable cluster.
 
 Using the operator
 """"""""""""""""""
@@ -425,13 +425,14 @@ Using the operator
     :end-before: [END howto_operator_gcp_bigtable_cluster_update]
 
 
-BigTableTableCreateOperator
+BigtableTableCreateOperator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Creates a table in Cloud BigTable instance.
+Creates a table in a Cloud Bigtable instance.
 
-If table with given ID already exists in instance, operator will compare Column Families. In case they are the same
-operator will succeed, otherwise it will fail with appropriate error message.
+If the table with given ID exists in the Cloud Bigtable instance, the operator compares the Column Families.
+If the Column Families are identical operator succeeds. Otherwise, the operator fails with the appropriate
+error message.
 
 
 Using the operator
@@ -446,17 +447,17 @@ Using the operator
 Advanced
 """"""""
 
-Optional ``initial_split_keys`` and ``column_familes`` can be specified when creating a table.
-Please refer to Python Client for Google Cloud BigTable documentation
+When creating a table, you can specify the optional ``initial_split_keys`` and ``column_familes`.
+Please refer to the Python Client for Google Cloud Bigtable documentation
 `for Table <https://googleapis.github.io/google-cloud-python/latest/bigtable/table.html>`_ and `for Column
 Families <https://googleapis.github.io/google-cloud-python/latest/bigtable/column-family.html>`_.
 
 
-BigTableTableDeleteOperator
+BigtableTableDeleteOperator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Use the :class:`~airflow.contrib.operators.gcp_bigtable_operator.BigTableTableDeleteOperator`
-to delete a table in Google Cloud BigTable.
+Use the :class:`~airflow.contrib.operators.gcp_bigtable_operator.BigtableTableDeleteOperator`
+to delete a table in Google Cloud Bigtable.
 
 Using the operator
 """"""""""""""""""
@@ -467,16 +468,16 @@ Using the operator
     :start-after: [START howto_operator_gcp_bigtable_table_delete]
     :end-before: [END howto_operator_gcp_bigtable_table_delete]
 
-BigTableTableWaitForReplicationSensor
+BigtableTableWaitForReplicationSensor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Use the :class:`~airflow.contrib.operators.gcp_bigtable_operator.BigTableTableWaitForReplicationSensor`
-to wait for table to be fully replicated.
+Use the :class:`~airflow.contrib.operators.gcp_bigtable_operator.BigtableTableWaitForReplicationSensor`
+to wait for the table to replicate fully.
 
-Same arguments applies as for GcpBigTableTableCreateOperator_.
+The same arguments apply to this sensor as the BigtableTableCreateOperator_.
 
-**Note:** If table or even instance does not exist, this sensor will not raise any exception. It will wait
-for table until timeout is hit.
+**Note:** If the table or the Cloud Bigtable instance does not exist, this sensor waits for the table until
+timeout hits and does not raise any exception.
 
 Using the operator
 """"""""""""""""""
