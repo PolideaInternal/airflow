@@ -699,6 +699,12 @@ CloudSpannerInstanceDeleteOperator
 .. autoclass:: airflow.contrib.operators.gcp_spanner_operator.CloudSpannerInstanceDeleteOperator
 
 
+CloudSpannerHook
+""""""""""""""""
+
+.. autoclass:: airflow.contrib.hooks.gcp_spanner_hook.CloudSpannerHook
+:members:
+
 
 Cloud SQL
 '''''''''

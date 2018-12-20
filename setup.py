@@ -190,7 +190,7 @@ gcp_api = [
     'google-auth-httplib2>=0.0.1',
     'google-cloud-container>=0.1.1',
     'google-cloud-bigtable==0.31.0',
-    'google-cloud-spanner>=1.6.0',
+    'google-cloud-spanner>=1.7.1',
     'grpcio-gcp>=0.2.2',
     'PyOpenSSL',
     'pandas-gbq'
@@ -245,6 +245,7 @@ all_dbs = postgres + mysql + hive + mssql + hdfs + vertica + cloudant + druid + 
 
 devel = [
     'click==6.7',
+    'freezegun',
     'freezegun',
     'jira',
     'lxml>=4.0.0',

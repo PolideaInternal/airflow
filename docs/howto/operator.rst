@@ -803,10 +803,11 @@ CloudSpannerInstanceDatabaseUpdateOperator
 Runs a DDL query in a Cloud Spanner database and allows you to modify structure of an
 existing database.
 
-The DDL queries run through the operator should be done in an idempotent way if only
-possible until `Missing operation id is added and released in python googleapi libs
-<https://github.com/googleapis/google-cloud-python/issues/6737>`_. Then,  you will be
-able to specify the unique operation_id to use  for the  idempotence check..
+You can optionally specify an operation_id parameter which simplifies determining whether
+the statements were executed in case the update_database call is replayed
+(idempotency check). The operation_id should be unique within the database, and must be
+a valid identifier: `[a-z][a-z0-9_]*`. More information can be found in
+`the documentation of updateDdl API <https://cloud.google.com/spanner/docs/reference/rest/v1/projects.instances.databases/updateDdl>`_
 
 For parameter definition take a look at
 :class:`~airflow.contrib.operators.gcp_spanner_operator.CloudSpannerInstanceDatabaseUpdateOperator`.
