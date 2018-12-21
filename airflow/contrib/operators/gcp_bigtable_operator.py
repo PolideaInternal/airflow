@@ -247,7 +247,7 @@ class BigtableTableCreateOperator(BaseOperator, BigtableValidationMixin):
             if not self._compare_column_families():
                 raise AirflowException(
                     "Table '{}' already exists with different Column Families.".format(self.table_id))
-            self.log.info("The table '{}' already exists. Consider it as created", self.table_id)
+            self.log.info("The table '%s' already exists. Consider it as created", self.table_id)
 
 
 class BigtableTableDeleteOperator(BaseOperator, BigtableValidationMixin):
