@@ -43,6 +43,9 @@ PROJECT_ID = os.environ.get('PROJECT_ID', 'project-id')
 INSTANCE_NAME = os.environ.get('INSTANCE_NAME', 'test-name')
 DB_NAME = os.environ.get('DB_NAME', 'db1')
 
+
+PROJECT_EXTRA = 'extra__google_cloud_platform__project'
+
 CREATE_BODY = {
     "name": INSTANCE_NAME,
     "settings": {
