@@ -716,19 +716,19 @@ class CloudSqlQueryOperator(BaseOperator):
             self.cloud_sql_proxy_runner.start_proxy()
 
     def execute(self, context):
-        self.log.info('Executing: "%s"', self.sql)
-        self.database_hook.run(self.sql, self.autocommit, parameters=self.parameters)
-
-    def post_execute(self, context, result=None):
-        # Make sure that all the cleanups happen, no matter if there are some
-        # exceptions thrown
         try:
-            self.cloudsql_db_hook.cleanup_database_hook()
+            self.log.info('Executing: "%s"', self.sql)
+            self.database_hook.run(self.sql, self.autocommit, parameters=self.parameters)
         finally:
+            # Make sure that all the cleanups happen, no matter if there are some
+            # exceptions thrown
             try:
-                if self.cloud_sql_proxy_runner:
-                    self.cloud_sql_proxy_runner.stop_proxy()
-                    self.cloud_sql_proxy_runner = None
+                self.cloudsql_db_hook.cleanup_database_hook()
             finally:
-                self.cloudsql_db_hook.delete_connection()
-                self.cloudsql_db_hook = None
+                try:
+                    if self.cloud_sql_proxy_runner:
+                        self.cloud_sql_proxy_runner.stop_proxy()
+                        self.cloud_sql_proxy_runner = None
+                finally:
+                    self.cloudsql_db_hook.delete_connection()
+                    self.cloudsql_db_hook = None
