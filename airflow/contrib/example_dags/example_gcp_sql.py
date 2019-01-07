@@ -30,8 +30,6 @@ https://airflow.apache.org/concepts.html#variables
 
 import os
 
-import re
-
 import airflow
 from airflow import models
 from airflow.contrib.operators.gcp_sql_operator import CloudSqlInstanceCreateOperator, \
@@ -42,6 +40,8 @@ from airflow.contrib.operators.gcp_sql_operator import CloudSqlInstanceCreateOpe
 from airflow.contrib.operators.gcs_acl_operator import \
     GoogleCloudStorageBucketCreateAclEntryOperator, \
     GoogleCloudStorageObjectCreateAclEntryOperator
+
+from six.moves.urllib.parse import urlsplit
 
 # [START howto_operator_cloudsql_arguments]
 PROJECT_ID = os.environ.get('PROJECT_ID', 'example-project')
@@ -230,6 +230,7 @@ with models.DAG(
     # ############################################## #
     # ### EXPORTING SQL FROM INSTANCE 1 ############ #
     # ############################################## #
+    export_url_split = urlsplit(EXPORT_URI)
 
     # For export to work we need to add the Cloud SQL instance's Service Account
     # write access to the destination GCS bucket.
@@ -237,7 +238,7 @@ with models.DAG(
     sql_gcp_add_bucket_permission = GoogleCloudStorageBucketCreateAclEntryOperator(
         entity="user-{{ task_instance.xcom_pull('sql_instance_create', key='service_account_email') }}",
         role="WRITER",
-        bucket=re.match(r'gs:\/\/(\S*)\/', EXPORT_URI).group(1),
+        bucket=export_url_split[1],  # netloc (bucket)
         task_id='sql_gcp_add_bucket_permission'
     )
     # [END howto_operator_cloudsql_export_gcs_permissions]
@@ -256,6 +257,7 @@ with models.DAG(
     # ############################################## #
     # ### IMPORTING SQL TO INSTANCE 2 ############## #
     # ############################################## #
+    import_url_split = urlsplit(IMPORT_URI)
 
     # For import to work we need to add the Cloud SQL instance's Service Account
     # read access to the target GCS object.
@@ -263,12 +265,24 @@ with models.DAG(
     sql_gcp_add_object_permission = GoogleCloudStorageObjectCreateAclEntryOperator(
         entity="user-{{ task_instance.xcom_pull('sql_instance_create_2', key='service_account_email') }}",
         role="READER",
-        bucket=re.match(r'gs:\/\/(\S*)\/', IMPORT_URI).group(1),
-        object_name=re.match(r'gs:\/\/[^\/]*\/(\S*)', IMPORT_URI).group(1),
+        bucket=import_url_split[1],  # netloc (bucket)
+        object_name=import_url_split[2][1:],  # path (strip first '/')
         task_id='sql_gcp_add_object_permission',
     )
-    # [END howto_operator_cloudsql_import_gcs_permissions]
     prev_task = next_dep(sql_gcp_add_object_permission, prev_task)
+
+    # For import to work we also need to add the Cloud SQL instance's Service Account
+    # write access to the whole bucket!.
+    sql_gcp_add_bucket_permission2 = GoogleCloudStorageBucketCreateAclEntryOperator(
+        entity="user-{{ task_instance.xcom_pull("
+               "'sql_instance_create_2_task', key='service_account_email') "
+               "}}",
+        role="WRITER",
+        bucket=import_url_split[1],  # netloc
+        task_id='sql_gcp_add_bucket_permission2',
+    )
+    # [END howto_operator_cloudsql_import_gcs_permissions]
+    prev_task = next_dep(sql_gcp_add_bucket_permission2, prev_task)
 
     # [START howto_operator_cloudsql_import]
     sql_import_task = CloudSqlInstanceImportOperator(
