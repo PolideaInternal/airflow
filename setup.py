@@ -183,7 +183,9 @@ celery = [
 cgroups = [
     'cgroupspy>=0.1.4',
 ]
+
 cloudant = ['cloudant>=2.0']
+coverage = ['coverage']
 crypto = ['cryptography>=0.9.3']
 dask = [
     'distributed>=1.17.1, <2'
@@ -203,7 +205,10 @@ elasticsearch = [
     'elasticsearch>=5.0.0,<6.0.0',
     'elasticsearch-dsl>=5.0.0,<6.0.0'
 ]
-gcp = [
+
+gcp_api = [
+    'httplib2>=0.9.2',
+    'google-api-core>=1.6.0',
     'google-api-python-client>=1.6.0, <2.0.0dev',
     'google-auth-httplib2>=0.0.1',
     'google-auth>=1.0.0, <2.0.0dev',
@@ -236,6 +241,7 @@ hive = [
 jdbc = ['jaydebeapi>=1.1.1']
 jenkins = ['python-jenkins>=1.0.0']
 jira = ['JIRA>1.0.7']
+junit2html = ['junit2html==22']
 kerberos = ['pykerberos>=1.1.13',
             'requests_kerberos>=0.10.0',
             'thrift_sasl>=0.2.0',
@@ -270,6 +276,7 @@ statsd = ['statsd>=3.0.1, <4.0']
 vertica = ['vertica-python>=0.5.1']
 webhdfs = ['hdfs[dataframe,avro,kerberos]>=2.0.4']
 winrm = ['pywinrm==0.2.2']
+xunitmerge = ['xunitmerge==1.0.4']
 zendesk = ['zdesk']
 
 all_dbs = postgres + mysql + hive + mssql + hdfs + vertica + cloudant + druid + pinot \
@@ -290,6 +297,7 @@ devel = [
     'paramiko',
     'pylint~=2.3.1',  # Ensure the same version as in .travis.yml
     'pysftp',
+    'pydevd>=1.4.0',
     'pywinrm',
     'qds-sdk>=1.9.6',
     'rednose',
@@ -303,8 +311,9 @@ else:
 
 devel_minreq = devel + kubernetes + mysql + doc + password + cgroups
 devel_hadoop = devel_minreq + hive + hdfs + webhdfs + kerberos
+devel_gcp = devel_minreq + gcp_api + doc + coverage + junit2html + xunitmerge
 devel_all = (sendgrid + devel + all_dbs + doc + samba + slack + crypto + oracle +
-             docker + ssh + kubernetes + celery + redis + gcp + grpc +
+             docker + ssh + kubernetes + celery + redis + gcp_api + grpc +
              datadog + zendesk + jdbc + ldap + kerberos + password + webhdfs + jenkins +
              druid + pinot + segment + snowflake + elasticsearch +
              atlas + azure + aws + salesforce + cgroups + papermill)
@@ -378,6 +387,7 @@ def do_setup():
         extras_require={
             'all': devel_all,
             'devel_ci': devel_ci,
+            'devel_gcp': devel_gcp,
             'all_dbs': all_dbs,
             'atlas': atlas,
             'async': async_packages,
@@ -397,8 +407,8 @@ def do_setup():
             'docker': docker,
             'druid': druid,
             'elasticsearch': elasticsearch,
-            'gcp': gcp,
-            'gcp_api': gcp,  # TODO: remove this in Airflow 2.1
+            'gcp': gcp_api,
+            'gcp_api': gcp_api,  # TODO: remove this in Airflow 2.1
             'github_enterprise': flask_oauth,
             'google_auth': flask_oauth,
             'grpc': grpc,
