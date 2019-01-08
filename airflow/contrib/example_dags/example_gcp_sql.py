@@ -58,6 +58,11 @@ IMPORT_URI = os.environ.get('IMPORT_URI', 'gs://bucketName/fileName')
 # Bodies below represent Cloud SQL instance resources:
 # https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances
 
+# [START howto_operator_cloudsql_create_arguments]
+FAILOVER_REPLICA_NAME = INSTANCE_NAME + "-failover-replica"
+READ_REPLICA_NAME = INSTANCE_NAME + "-read-replica"
+# [END howto_operator_cloudsql_create_arguments]
+
 # [START howto_operator_cloudsql_create_body]
 body = {
     "name": INSTANCE_NAME,
@@ -86,11 +91,14 @@ body = {
         },
         "pricingPlan": "PER_USE",
         "replicationType": "ASYNCHRONOUS",
-        "storageAutoResize": False,
+        "storageAutoResize": True,
         "storageAutoResizeLimit": 0,
         "userLabels": {
             "my-key": "my-value"
         }
+    },
+    "failoverReplica": {
+        "name": FAILOVER_REPLICA_NAME
     },
     "databaseVersion": "MYSQL_5_7",
     "region": "europe-west4",
@@ -105,6 +113,19 @@ body2 = {
     "databaseVersion": "MYSQL_5_7",
     "region": "europe-west4",
 }
+
+# [START howto_operator_cloudsql_create_replica]
+read_replica_body = {
+    "name": READ_REPLICA_NAME,
+    "settings": {
+        "tier": "db-n1-standard-1",
+    },
+    "databaseVersion": "MYSQL_5_7",
+    "region": "europe-west4",
+    "masterInstanceName": INSTANCE_NAME,
+}
+# [END howto_operator_cloudsql_create_replica]
+
 
 # [START howto_operator_cloudsql_patch_body]
 patch_body = {
@@ -183,6 +204,14 @@ with models.DAG(
     )
     # [END howto_operator_cloudsql_create]
     prev_task = sql_instance_create
+
+    sql_instance_read_replica_create = CloudSqlInstanceCreateOperator(
+        project_id=PROJECT_ID,
+        body=read_replica_body,
+        instance=INSTANCE_NAME2,
+        task_id='sql_instance_read_replica_create'
+    )
+    prev_task = next_dep(sql_instance_read_replica_create, prev_task)
 
     sql_instance_create_2 = CloudSqlInstanceCreateOperator(
         project_id=PROJECT_ID,
@@ -297,6 +326,18 @@ with models.DAG(
     # ############################################## #
     # ### INSTANCES TEAR DOWN ###################### #
     # ############################################## #
+
+    sql_instance_failover_replica_delete_task = CloudSqlInstanceDeleteOperator(
+        project_id=PROJECT_ID,
+        instance=FAILOVER_REPLICA_NAME,
+        task_id='sql_instance_failover_replica_delete_task'
+    )
+
+    sql_instance_failover_replica_delete_task = CloudSqlInstanceDeleteOperator(
+        project_id=PROJECT_ID,
+        instance=READ_REPLICA_NAME,
+        task_id='sql_instance_failover_replica_delete_task'
+    )
 
     # [START howto_operator_cloudsql_delete]
     sql_instance_delete_task = CloudSqlInstanceDeleteOperator(
