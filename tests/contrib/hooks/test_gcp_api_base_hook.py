@@ -21,10 +21,16 @@
 import os
 import unittest
 
+from googleapiclient.errors import HttpError
+
+from airflow import AirflowException
 from airflow.contrib.hooks import gcp_api_base_hook as hook
 
 import google.auth
 from google.auth.exceptions import GoogleAuthError
+
+from airflow.hooks.base_hook import BaseHook
+
 try:
     from StringIO import StringIO
 except ImportError:
@@ -125,3 +131,31 @@ class TestGoogleCloudBaseHook(unittest.TestCase):
                              file_name)
             self.assertEqual(file_content, string_file.getvalue())
         assert_gcp_credential_file_in_env(self.instance)
+
+
+class TestConvertHttpException(unittest.TestCase):
+    def test_no_exception(self):
+        self.called = False
+
+        class FixtureClass(BaseHook):
+            @hook.GoogleCloudBaseHook.convert_http_exception
+            def test_fixutre(*args, **kwargs):
+                self.called = True
+
+        FixtureClass(None).test_fixutre()
+
+        self.assertTrue(self.called)
+
+    def test_raise_exception(self):
+        self.called = False
+
+        class FixtureClass(BaseHook):
+            @hook.GoogleCloudBaseHook.convert_http_exception
+            def test_fixutre(*args, **kwargs):
+                self.called = True
+                raise HttpError(mock.Mock(**{"reason.return_value": None}), b"CONTENT")
+
+        with self.assertRaises(AirflowException):
+            FixtureClass(None).test_fixutre()
+
+        self.assertTrue(self.called)

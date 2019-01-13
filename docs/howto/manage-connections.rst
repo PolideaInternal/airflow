@@ -159,6 +159,8 @@ Scopes (comma separated)
         issue `AIRFLOW-2522
         <https://issues.apache.org/jira/browse/AIRFLOW-2522>`_.
 
+.. _connection-type-AWS:
+
 Amazon Web Services
 ~~~~~~~~~~~~~~~~~~~
 

@@ -208,6 +208,16 @@ Operators
 .. autoclass:: airflow.contrib.operators.gcp_compute_operator.GceSetMachineTypeOperator
 .. autoclass:: airflow.contrib.operators.gcp_function_operator.GcfFunctionDeleteOperator
 .. autoclass:: airflow.contrib.operators.gcp_function_operator.GcfFunctionDeployOperator
+.. autoclass:: airflow.contrib.operators.gcp_transfer_operator.GcpTransferServiceJobCreateOperator
+.. autoclass:: airflow.contrib.operators.gcp_transfer_operator.GcpTransferServiceJobDeleteOperator
+.. autoclass:: airflow.contrib.operators.gcp_transfer_operator.GcpTransferServiceJobUpdateOperator
+.. autoclass:: airflow.contrib.operators.gcp_transfer_operator.GcpTransferServiceOperationCancelOperator
+.. autoclass:: airflow.contrib.operators.gcp_transfer_operator.GcpTransferServiceOperationGetOperator
+.. autoclass:: airflow.contrib.operators.gcp_transfer_operator.GcpTransferServiceOperationPauseOperator
+.. autoclass:: airflow.contrib.operators.gcp_transfer_operator.GcpTransferServiceOperationResumeOperator
+.. autoclass:: airflow.contrib.operators.gcp_transfer_operator.GcpTransferServiceOperationsListOperator
+.. autoclass:: airflow.contrib.operators.gcp_transfer_operator.GoogleCloudStorageToGoogleCloudStorageTransferOperator
+.. autoclass:: airflow.contrib.operators.gcp_transfer_operator.S3ToGoogleCloudStorageTransferOperator
 .. autoclass:: airflow.contrib.operators.gcs_acl_operator.GoogleCloudStorageBucketCreateAclEntryOperator
 .. autoclass:: airflow.contrib.operators.gcs_operator.GoogleCloudStorageCreateBucketOperator
 .. autoclass:: airflow.contrib.operators.gcs_download_operator.GoogleCloudStorageDownloadOperator
@@ -215,7 +225,6 @@ Operators
 .. autoclass:: airflow.contrib.operators.gcs_acl_operator.GoogleCloudStorageObjectCreateAclEntryOperator
 .. autoclass:: airflow.contrib.operators.gcs_to_bq.GoogleCloudStorageToBigQueryOperator
 .. autoclass:: airflow.contrib.operators.gcs_to_gcs.GoogleCloudStorageToGoogleCloudStorageOperator
-.. autoclass:: airflow.contrib.operators.gcs_to_gcs_transfer_operator.GoogleCloudStorageToGoogleCloudStorageTransferOperator
 .. autoclass:: airflow.contrib.operators.gcs_to_s3.GoogleCloudStorageToS3Operator
 .. autoclass:: airflow.contrib.operators.hipchat_operator.HipChatAPIOperator
 .. autoclass:: airflow.contrib.operators.hipchat_operator.HipChatAPISendRoomNotificationOperator
@@ -245,7 +254,6 @@ Operators
 .. autoclass:: airflow.contrib.operators.s3_delete_objects_operator.S3DeleteObjectsOperator
 .. autoclass:: airflow.contrib.operators.s3_list_operator.S3ListOperator
 .. autoclass:: airflow.contrib.operators.s3_to_gcs_operator.S3ToGoogleCloudStorageOperator
-.. autoclass:: airflow.contrib.operators.s3_to_gcs_transfer_operator.S3ToGoogleCloudStorageTransferOperator
 .. autoclass:: airflow.contrib.operators.s3_to_sftp_operator.S3ToSFTPOperator
 .. autoclass:: airflow.contrib.operators.sftp_operator.SFTPOperator
 .. autoclass:: airflow.contrib.operators.sftp_to_s3_operator.SFTPToS3Operator
@@ -291,6 +299,7 @@ Sensors
 .. autoclass:: airflow.contrib.sensors.ftp_sensor.FTPSSensor
 .. autoclass:: airflow.contrib.sensors.ftp_sensor.FTPSensor
 .. autoclass:: airflow.contrib.sensors.file_sensor.FileSensor
+.. autoclass:: airflow.contrib.sensors.gcp_transfer_sensor.GCPTransferServiceWaitForJobStatusSensor
 .. autoclass:: airflow.contrib.sensors.gcs_sensor.GoogleCloudStorageObjectSensor
 .. autoclass:: airflow.contrib.sensors.gcs_sensor.GoogleCloudStorageObjectUpdatedSensor
 .. autoclass:: airflow.contrib.sensors.gcs_sensor.GoogleCloudStoragePrefixSensor

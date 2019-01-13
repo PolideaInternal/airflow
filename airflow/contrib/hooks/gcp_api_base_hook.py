@@ -27,6 +27,8 @@ import google.oauth2.service_account
 import os
 import tempfile
 
+from googleapiclient.errors import HttpError
+
 from airflow.exceptions import AirflowException
 from airflow.hooks.base_hook import BaseHook
 
@@ -187,6 +189,22 @@ class GoogleCloudBaseHook(BaseHook):
         return inner_wrapper
 
     fallback_to_default_project_id = staticmethod(fallback_to_default_project_id)
+
+    def convert_http_exception(func):
+        """
+        Function decorator that intercepts HTTP Errors and raises AirflowException
+        with more informative message.
+        """
+        @functools.wraps(func)
+        def wrapper_decorator(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+            except HttpError as e:
+                self.log.error('The request failed:\n%s', str(e))
+                raise AirflowException(e)
+        return wrapper_decorator
+
+    convert_http_exception = staticmethod(convert_http_exception)
 
     def _get_project_id(self, project_id):
         """
