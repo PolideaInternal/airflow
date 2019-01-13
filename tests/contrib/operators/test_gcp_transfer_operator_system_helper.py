@@ -1,0 +1,153 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+import argparse
+import os
+
+from googleapiclient._auth import default_credentials, with_scopes
+
+from tests.contrib.utils.gcp_authenticator import GcpAuthenticator, GCP_GCS_KEY
+from tests.contrib.utils.logging_command_executor import LoggingCommandExecutor
+from googleapiclient import discovery
+
+GCP_PROJECT_ID = os.environ.get('GCP_PROJECT_ID', 'example-project')
+GCT_SOURCE_GCS_BUCKET_NAME = os.environ.get('GCT_SOURCE_BUCKET_NAME',
+                                            'instance-mb-test-1')
+GCT_TARGET_GCS_BUCKET_NAME = os.environ.get('GCT_SOURCE_BUCKET_NAME',
+                                            'instance-bucket-test-2')
+GCT_SOURCE_AWS_BUCKET_NAME = os.environ.get('GCT_SOURCE_AWS_BUCKET_NAME',
+                                            'instance-bucket-test-2')
+
+# 10 MB
+TEST_FILE_SIZE = 100 * 1024 * 1025
+TEST_FILE_NO = 10
+
+
+class GCPTransferTestHelper(LoggingCommandExecutor):
+
+    def create_s3_bucket(self):
+        self.execute_cmd([
+            "aws", "s3api",
+            "create-bucket", "--bucket", GCT_SOURCE_AWS_BUCKET_NAME
+        ])
+
+    def delete_s3_bucket(self):
+        self.execute_cmd([
+            "aws", "s3api",
+            "delete-bucket", "--bucket", GCT_SOURCE_AWS_BUCKET_NAME
+        ])
+
+    def create_gcs_buckets(self):
+        self.execute_cmd([
+            'gsutil', 'mb', "-p", GCP_PROJECT_ID,
+            "gs://%s/" % GCT_TARGET_GCS_BUCKET_NAME,
+        ])
+
+        self.execute_cmd([
+            'gsutil', 'mb', "-p", GCP_PROJECT_ID,
+            "gs://%s/" % GCT_SOURCE_GCS_BUCKET_NAME,
+        ])
+
+        self.execute_cmd([
+            "bash", "-c",
+            "gsutil -m cp <(cat /dev/urandom | head -c %s) "
+            "gs://%s/file.bin" % (TEST_FILE_SIZE, GCT_SOURCE_GCS_BUCKET_NAME)
+        ])
+
+        self.execute_cmd([
+            "bash", "-c",
+            "for i in {1..200}; do echo $i; done | xargs -n 1 -P 16 -I {} "
+            "gsutil cp  gs://%s/file.txt gs://%s/file-{}.txt" %
+            (GCT_SOURCE_GCS_BUCKET_NAME, GCT_SOURCE_GCS_BUCKET_NAME)
+        ])
+
+        transfer_service_account = GCPTransferTestHelper.\
+            _get_transfer_service_account()
+        account_email = transfer_service_account['accountEmail']
+
+        self.execute_cmd([
+            "gsutil", "iam", "ch",
+            "serviceAccount:%s:objectViewer" % account_email,
+            "gs://" % GCT_SOURCE_GCS_BUCKET_NAME
+        ])
+        self.execute_cmd([
+            "gsutil", "iam", "ch",
+            "serviceAccount:%s:objectCreator" % account_email,
+            "gs://" % GCT_TARGET_GCS_BUCKET_NAME
+        ])
+
+    def delete_gcs_buckets(self):
+        self.execute_cmd([
+            'gsutil', 'rm', "-r", "gs://%s/" % GCT_TARGET_GCS_BUCKET_NAME
+        ])
+
+        self.execute_cmd([
+            'gsutil', 'rm', "-r", "gs://%s/" % GCT_SOURCE_AWS_BUCKET_NAME,
+        ])
+
+    @staticmethod
+    def _get_transfer_service_account():
+        credentials = default_credentials()
+        credentials = with_scopes(credentials, scopes=[
+            'https://www.googleapis.com/auth/cloud-platform'
+        ])
+        service = discovery.build(
+            'storagetransfer', 'v1',
+            cache_discovery=False, credentials=credentials)
+
+        request = service.googleServiceAccounts().get(projectId=GCP_PROJECT_ID)
+        return request.execute()
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='Create and delete buckets for system tests.')
+    parser.add_argument('--action', dest='action', required=True,
+                        choices=('create-s3-bucket', 'delete-s3-bucket',
+                                 'create-gcs-buckets', 'delete-gcs-buckets',
+                                 'before-tests', 'after-tests'))
+    action = parser.parse_args().action
+
+    helper = GCPTransferTestHelper()
+    gcp_authenticator = GcpAuthenticator(GCP_GCS_KEY)
+    helper.log.info('Starting action: {}'.format(action))
+
+    gcp_authenticator.gcp_store_authentication()
+    try:
+        gcp_authenticator.gcp_authenticate()
+        if action == 'before-tests':
+            # helper.create_s3_bucket()
+            helper.create_gcs_buckets()
+        elif action == 'after-tests':
+            # helper.delete_s3_bucket()
+            helper.delete_gcs_buckets()
+        elif action == 'create-s3_bucket':
+            helper.create_s3_bucket()
+        elif action == 'delete-s3-bucket':
+            helper.delete_s3_bucket()
+        elif action == 'create-gcs-bucket':
+            helper.create_gcs_buckets()
+        elif action == 'delete-gcs-buckets':
+            helper.delete_gcs_buckets()
+        else:
+            raise Exception("Unknown action: {}".format(action))
+    finally:
+        gcp_authenticator.gcp_restore_authentication()
+
+    helper.log.info('Finishing action: {}'.format(action))

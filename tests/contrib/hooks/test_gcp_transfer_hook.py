@@ -24,6 +24,8 @@ import unittest
 from airflow.exceptions import AirflowException
 from airflow.contrib.hooks.gcp_transfer_hook import GCPTransferServiceHook
 from airflow.contrib.hooks.gcp_transfer_hook import TIME_TO_SLEEP_IN_SECONDS
+from tests.contrib.utils.base_gcp_mock import \
+    mock_base_gcp_hook_no_default_project_id
 
 try:
     from unittest import mock
@@ -33,110 +35,27 @@ except ImportError:
     except ImportError:
         mock = None
 
+BODY = {
+    'description': 'AAA'
+}
+
+TRANSFER_JOB = {"name": "transfer-job"}
+
 
 class TestGCPTransferServiceHook(unittest.TestCase):
     def setUp(self):
-        with mock.patch.object(GCPTransferServiceHook, '__init__', return_value=None):
-            self.conn = mock.Mock()
-            self.transfer_hook = GCPTransferServiceHook()
-            self.transfer_hook._conn = self.conn
+        with mock.patch('airflow.contrib.hooks.gcp_api_base_hook.GoogleCloudBaseHook.__init__',
+                        new=mock_base_gcp_hook_no_default_project_id):
+            self.gct_hook_no_project_id = GCPTransferServiceHook(gcp_conn_id='test')
 
-    def test_create_transfer_job(self):
-        mock_create = self.conn.transferJobs.return_value.create
-        mock_execute = mock_create.return_value.execute
-        mock_execute.return_value = {
-            'projectId': 'test-project',
-            'name': 'transferJobs/test-job',
-        }
-        now = datetime.datetime.utcnow()
-        transfer_spec = {
-            'awsS3DataSource': {'bucketName': 'test-s3-bucket'},
-            'gcsDataSink': {'bucketName': 'test-gcs-bucket'}
-        }
-        self.transfer_hook.create_transfer_job(
-            project_id='test-project',
-            description='test-description',
-            schedule=None,
-            transfer_spec=transfer_spec)
-        mock_create.assert_called_once_with(body={
-            'status': 'ENABLED',
-            'projectId': 'test-project',
-            'description': 'test-description',
-            'transferSpec': transfer_spec,
-            'schedule': {
-                'scheduleStartDate': {
-                    'day': now.day,
-                    'month': now.month,
-                    'year': now.year,
-                },
-                'scheduleEndDate': {
-                    'day': now.day,
-                    'month': now.month,
-                    'year': now.year,
-                }
-            }
-        })
-
-    def test_create_transfer_job_custom_schedule(self):
-        mock_create = self.conn.transferJobs.return_value.create
-        mock_execute = mock_create.return_value.execute
-        mock_execute.return_value = {
-            'projectId': 'test-project',
-            'name': 'transferJobs/test-job',
-        }
-        schedule = {
-            'scheduleStartDate': {'month': 10, 'day': 1, 'year': 2018},
-            'scheduleEndDate': {'month': 10, 'day': 31, 'year': 2018},
-        }
-        transfer_spec = {
-            'awsS3DataSource': {'bucketName': 'test-s3-bucket'},
-            'gcsDataSink': {'bucketName': 'test-gcs-bucket'}
-        }
-        self.transfer_hook.create_transfer_job(
-            project_id='test-project',
-            description='test-description',
-            schedule=schedule,
-            transfer_spec=transfer_spec)
-        mock_create.assert_called_once_with(body={
-            'status': 'ENABLED',
-            'projectId': 'test-project',
-            'description': 'test-description',
-            'transferSpec': transfer_spec,
-            'schedule': schedule,
-        })
-
-    @mock.patch('time.sleep')
-    def test_wait_for_transfer_job(self, mock_sleep):
-        mock_list = self.conn.transferOperations.return_value.list
-        mock_execute = mock_list.return_value.execute
-        mock_execute.side_effect = [
-            {'operations': [{'metadata': {'status': 'IN_PROGRESS'}}]},
-            {'operations': [{'metadata': {'status': 'SUCCESS'}}]},
-        ]
-        self.transfer_hook.wait_for_transfer_job({
-            'projectId': 'test-project',
-            'name': 'transferJobs/test-job',
-        })
-        self.assertTrue(mock_list.called)
-        list_args, list_kwargs = mock_list.call_args_list[0]
-        self.assertEqual(list_kwargs.get('name'), 'transferOperations')
-        self.assertEqual(
-            json.loads(list_kwargs.get('filter')),
-            {
-                'project_id': 'test-project',
-                'job_names': ['transferJobs/test-job']
-            },
+    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.GCPTransferServiceHook.get_conn')
+    def test_create_transfer_job(self, get_conn):
+        create_method = get_conn.return_value.transferJobs.return_value.create
+        execute_method = create_method.return_value.execute
+        execute_method.return_value = TRANSFER_JOB
+        res = self.gct_hook_no_project_id.create_transfer_job(
+            body=BODY
         )
-        mock_sleep.assert_called_once_with(TIME_TO_SLEEP_IN_SECONDS)
-
-    def test_wait_for_transfer_job_failed(self):
-        mock_list = self.conn.transferOperations.return_value.list
-        mock_execute = mock_list.return_value.execute
-        mock_execute.side_effect = [
-            {'operations': [{'name': 'test-job', 'metadata': {'status': 'FAILED'}}]},
-        ]
-        with self.assertRaises(AirflowException):
-            self.transfer_hook.wait_for_transfer_job({
-                'projectId': 'test-project',
-                'name': 'transferJobs/test-job',
-            })
+        self.assertEqual(res, TRANSFER_JOB)
+        create_method.assert_called_once_with(body=BODY)
+        execute_method.assert_called_once_with(num_retries=5)
