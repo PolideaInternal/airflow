@@ -632,6 +632,70 @@ Transfer Service
 They also use :class:`airflow.contrib.hooks.gcp_transfer_hook.GCPTransferServiceHook` to communicate with Google Cloud Platform.
 
 
+Cloud Vision
+''''''''''''
+
+Cloud Vision Product Search Operators
+"""""""""""""""""""""""""""""""""""""
+
+- :ref:`CloudVisionProductSetCreateOperator` : Creates a new ProductSet resource.
+- :ref:`CloudVisionProductSetGetOperator` : Gets information associated with a ProductSet.
+- :ref:`CloudVisionProductSetUpdateOperator` : Makes changes to a ProductSet resource.
+- :ref:`CloudVisionProductSetDeleteOperator` : Permanently deletes a ProductSet.
+- :ref:`CloudVisionProductCreateOperator` : Creates a new Product resource.
+- :ref:`CloudVisionProductGetOperator` : Gets information associated with a Product.
+- :ref:`CloudVisionProductUpdateOperator` : Makes changes to a Product resource.
+- :ref:`CloudVisionProductDeleteOperator` : Permanently deletes a product and its reference images.
+
+.. _CloudVisionProductSetCreateOperator:
+
+CloudVisionProductSetCreateOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetCreateOperator
+
+.. _CloudVisionProductSetGetOperator:
+
+CloudVisionProductSetGetOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetGetOperator
+
+.. _CloudVisionProductSetUpdateOperator:
+
+CloudVisionProductSetUpdateOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetUpdateOperator
+
+.. _CloudVisionProductSetDeleteOperator:
+
+CloudVisionProductSetDeleteOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetDeleteOperator
+
+.. _CloudVisionProductCreateOperator:
+
+CloudVisionProductCreateOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductCreateOperator
+
+.. _CloudVisionProductGetOperator:
+
+CloudVisionProductGetOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductGetOperator
+
+.. _CloudVisionProductUpdateOperator:
+
+CloudVisionProductUpdateOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductUpdateOperator
+
+.. _CloudVisionProductDeleteOperator:
+
+CloudVisionProductDeleteOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductDeleteOperator
+
+
 Google Kubernetes Engine
 ''''''''''''''''''''''''
 
