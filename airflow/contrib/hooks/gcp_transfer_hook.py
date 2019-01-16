@@ -86,7 +86,7 @@ class GCPTransferServiceHook(GoogleCloudBaseHook):
         return self.get_conn().transferJobs().list(filter=filter).execute()
 
     def update_transfer_job(self, job_name, body):
-        self.get_conn().transferJobs().update(jobName=job_name, body=body).execute()
+        return self.get_conn().transferJobs().update(jobName=job_name, body=body).execute()
 
     def delete_transfer_job(self, job_name):
         # This is a soft delete state. After a transfer job is set to this

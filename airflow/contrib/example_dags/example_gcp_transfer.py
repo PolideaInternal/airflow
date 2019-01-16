@@ -35,7 +35,7 @@ from airflow import models
 from airflow.contrib.operators.gcp_function_operator \
     import GcfFunctionDeployOperator, GcfFunctionDeleteOperator
 from airflow.contrib.operators.gcp_transfer_operator import GcpStorageTransferJobCreateOperator, \
-    GpcStorageTransferJobUpdateOperator
+    GpcStorageTransferJobUpdateOperator, GcpStorageTransferJobDeleteOperator
 from airflow.utils import dates
 
 # [START howto_operator_gcf_common_variables]
@@ -64,7 +64,7 @@ body = {
         "scheduleEndDate": {
             "day": 1,
             "month": 1,
-            "year": 2015
+            "year": 2020
         },
         "startTimeOfDay": {
             "hours": 1,
@@ -104,26 +104,27 @@ else:
 
 
 with models.DAG(
-    'example_gcp_function',
+    'example_gcp_transfer',
     default_args=default_args,
     schedule_interval=None  # Override to match your needs
 ) as dag:
     # [START howto_operator_gct_create]
     create_job = GcpStorageTransferJobCreateOperator(
-        task_id="gct_deploy_task",
+        task_id="gct_create_task",
         body=body,
     )
-    # [END howto_operator_gct_create]
-    # [START howto_operator_gct_update]
-    update_job = GpcStorageTransferJobUpdateOperator(
-        task_id="gct_delete_task",
-        body=body
-    )
-    # [END howto_operator_gct_delete]
+    # [END howto_operator_gct_update]
+    # # [START howto_operator_gct_update]
+    # update_job = GpcStorageTransferJobUpdateOperator(
+    #     task_id="gct_update_task",
+    #     body=body
+    # )
+    # # [END howto_operator_gct_delete]
     # [START howto_operator_gct_delete]
-    delete_job = GpcStorageTransferJoDeleteOperator(
+    delete_job = GcpStorageTransferJobDeleteOperator(
         task_id="gct_delete_task",
         body=body
     )
     # [END howto_operator_gcf_delete]
-    create_job >> update_job >> delete_job
+    # create_job >> update_job >> delete_job
+    create_job >> delete_job

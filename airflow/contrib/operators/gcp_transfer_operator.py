@@ -20,7 +20,7 @@
 import os
 import subprocess
 import tempfile
-from datetime import date
+from datetime import date, time
 
 from googleapiclient.errors import HttpError
 
@@ -33,72 +33,74 @@ from airflow.utils.decorators import apply_defaults
 
 class TransferJobPreprocessor:
 
-    def __init__(self, body, aws_conn_id):
+    def __init__(self, body, aws_conn_id='aws_default'):
         self.body = body
         self.aws_conn_id = aws_conn_id
 
     def _verify_data_source(self):
-        is_gcs = 'gcs_data_source' in self.body['transfer_spec']
-        is_aws_s3 = 'aws_s3_data_source' in self.body['transfer_spec']
-        is_http = 'http_data_source' in self.body['transfer_spec']
+        if 'transferSpec' not in self.body:
+            return
 
-        if not is_gcs and not is_aws_s3 and not is_http:
-            raise AirflowException("You must choose data source")
-        if is_gcs ^ is_aws_s3 ^ is_http:
+        is_gcs = 'gcsDataSource' in self.body['transferSpec']
+        is_aws_s3 = 'awsS3DataSource' in self.body['transferSpec']
+        is_http = 'httpDataSource' in self.body['transferSpec']
+
+        # if not is_gcs and not is_aws_s3 and not is_http:
+        #     raise AirflowException("You must choose data source")
+        if not is_gcs ^ is_aws_s3 ^ is_http:
             raise AirflowException("You must choose only one data source")
 
     def _inject_aws_credentials(self):
-        if not 'aws_s3_data_source' in self.body['transfer_spec']:
+        if 'transferSpec' not in self.body or 'awsS3DataSource' not in self.body['transferSpec']:
             return
 
         aws_hook = AwsHook(self.aws_conn_id)
         aws_credentials = aws_hook.get_credentials()
         aws_access_key_id = aws_credentials.access_key
         aws_secret_access_key = aws_credentials.secret_key
-        self.body['transfer_spec']["aws_access_key"] = {
-            "access_key_id": aws_access_key_id,
-            "aws_secret_access_key": aws_secret_access_key
+        self.body['transferSpec']['awsS3DataSource']["awsAccessKey"] = {
+            "accessKeyId": aws_access_key_id,
+            "secretAccessKey": aws_secret_access_key
         }
 
     def _reformat_date(self, field_key):
-        if not field_key in self.body['schedule']:
+        if field_key not in self.body['schedule']:
             return
         if isinstance(self.body['schedule'][field_key], date):
             self.body['schedule'][field_key] = self._convert_date(self.body['schedule'][field_key])
 
     def _reformat_time(self, field_key):
-        if not field_key in self.body['schedule']:
+        if field_key not in self.body['schedule']:
             return
-        if isinstance(self.body['schedule'][field_key], date):
+        if isinstance(self.body['schedule'][field_key], time):
             self.body['schedule'][field_key] = self._convert_time(self.body['schedule'][field_key])
 
-
     def _reformat_schedule(self):
-        if not 'schedule' in self.body:
-            pass
-        self._reformat_date('schedule_start_date')
-        self._reformat_date('schedule_start_date')
-        self._reformat_time('start_time_of_day')
-
+        if 'schedule' not in self.body:
+            return
+        self._reformat_date('scheduleStartDate')
+        self._reformat_date('scheduleEndDate')
+        self._reformat_time('startTimeOfDay')
 
     def process_body(self):
-            self._inject_aws_credentials()
-            self._reformat_schedule()
+        self._verify_data_source()
+        self._inject_aws_credentials()
+        self._reformat_schedule()
 
     @staticmethod
     def _convert_date(field_date):
         return {
-            'hours': field_date.hour,
-            'minutes': field_date.minute,
-            'seconds': field_date.second
+            'day': field_date.day,
+            'month': field_date.month,
+            'year': field_date.year
         }
 
     @staticmethod
     def _convert_time(time):
         return {
             "hours": time.hour,
-            "minutes": time.minutes,
-            "seconds": time.seconds,
+            "minutes": time.minute,
+            "seconds": time.second,
         }
 
 
@@ -119,7 +121,7 @@ class GcpStorageTransferJobCreateOperator(BaseOperator):
                  *args,
                  **kwargs):
         super(GcpStorageTransferJobCreateOperator, self).__init__(*args, **kwargs)
-        self.body =  body
+        self.body = body
         self.api_version = api_version
         self._hook = GCPTransferServiceHook(
             api_version=api_version,
@@ -136,7 +138,7 @@ class GcpStorageTransferJobCreateOperator(BaseOperator):
 
     def execute(self, context):
         self._validate_inputs()
-        self._hook.create_transfer_job(
+        return self._hook.create_transfer_job(
             body=self.body
         )
 
@@ -144,11 +146,12 @@ class GcpStorageTransferJobCreateOperator(BaseOperator):
 class GpcStorageTransferJobUpdateOperator(BaseOperator):
 
     # [START gcp_transfer_job_update_template_fields]
-    template_fields = ('operation_name', 'gcp_conn_id', 'api_version')
+    template_fields = ('job_name', 'gcp_conn_id', 'api_version')
     # [END gcp_transfer_job_update_template_fields]
 
     @apply_defaults
     def __init__(self,
+                 job_name,
                  body,
                  aws_conn_id='aws_default',
                  gcp_conn_id='google_cloud_default',
@@ -156,6 +159,7 @@ class GpcStorageTransferJobUpdateOperator(BaseOperator):
                  *args,
                  **kwargs):
         super().__init__(*args, **kwargs)
+        self.job_name = job_name
         self.body = body
         self._hook = GCPTransferServiceHook(
             api_version=api_version,
@@ -171,7 +175,7 @@ class GpcStorageTransferJobUpdateOperator(BaseOperator):
         self._preprocessor.process_body()
 
     def execute(self, context):
-        self._hook.update_transfer_job(self.body)
+        return self._hook.update_transfer_job(job_name=self.job_name, body=self.body)
 
 
 class GcpStorageTransferJobDeleteOperator(BaseOperator):
@@ -204,12 +208,12 @@ class GcpStorageTransferJobDeleteOperator(BaseOperator):
 
     def execute(self, context):
         self._validate_inputs()
-        self._hook.delete_transfer_job(
-            job_name=self.operation_name
+        return self._hook.delete_transfer_job(
+            job_name=self.job_name
         )
 
 
-class GpcStorageTransferOperationsGetOperator(BaseOperator):
+class GpcStorageTransferOperationGetOperator(BaseOperator):
     """
     Get a state of an transfer operation in Google Storage Transfer Service.
 
@@ -254,33 +258,33 @@ class GpcStorageTransferOperationsGetOperator(BaseOperator):
         )
 
 
-class GcpStorageTransferOperationsListOperator(BaseOperator):
+class GcpStorageTransferOperationListOperator(BaseOperator):
     def __init__(self,
-                 operation_name,
+                 filter,
                  api_version='v1',
                  gcp_conn_id='google_cloud_default',
                  *args,
                  **kwargs):
         super().__init__(*args, **kwargs)
-        self.operation_name = operation_name
+        self.filter = filter
         self.api_version = api_version
         self.gcp_conn_id = gcp_conn_id
         self._validate_inputs()
 
     def _validate_inputs(self):
-        if not self.operation_name:
-            raise AirflowException("The required parameter 'operation_name' "
-                                   "is empty or None")
+        pass
 
     def execute(self, context):
         hook = GCPTransferServiceHook(
             api_version=self.api_version,
             gcp_conn_id=self.gcp_conn_id,
         )
-        return hook.list_transfer_operation(self.operation_name)
+        return hook.list_transfer_operations(
+            filter=self.filter
+        )
 
 
-class GcpStorageTransferOperationsPauseOperator(BaseOperator):
+class GcpStorageTransferOperationPauseOperator(BaseOperator):
     """
     Pauses an transfer operation in Google Storage Transfer Service.
 
@@ -320,10 +324,12 @@ class GcpStorageTransferOperationsPauseOperator(BaseOperator):
             gcp_conn_id=self.gcp_conn_id,
         )
 
-        return hook.pause_transfer_operation(self.operation_name)
+        return hook.pause_transfer_operation(
+            operation_name=self.operation_name
+        )
 
 
-class GcpStorageTransferOperationsResumeOperator(BaseOperator):
+class GcpStorageTransferOperationResumeOperator(BaseOperator):
     """
     Resumes an transfer operation in Google Storage Transfer Service.
 
@@ -364,10 +370,12 @@ class GcpStorageTransferOperationsResumeOperator(BaseOperator):
             gcp_conn_id=self.gcp_conn_id,
         )
 
-        return hook.resume_transfer_operation(self.operation_name)
+        return hook.resume_transfer_operation(
+            operation_name=self.operation_name
+        )
 
 
-class GcpStorageTransferOperationsCancelOperator(BaseOperator):
+class GcpStorageTransferOperationCancelOperator(BaseOperator):
     """
     Cancels an transfer operation in Google Storage Transfer Service.
 
@@ -406,4 +414,6 @@ class GcpStorageTransferOperationsCancelOperator(BaseOperator):
             api_version=self.api_version,
             gcp_conn_id=self.gcp_conn_id,
         )
-        return hook.cancel_transfer_operation(self.operation_name)
+        return hook.cancel_transfer_operation(
+            operation_name=self.operation_name
+        )
