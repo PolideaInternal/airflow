@@ -18,67 +18,36 @@
 # under the License.
 import unittest
 
+from tests.contrib.operators.test_gcp_transfer_operator_system_helper import GCPTransferTestHelper
 from tests.contrib.utils.base_gcp_system_test_case import \
     SKIP_TEST_WARNING, DagGcpSystemTestCase
 
-from tests.contrib.operators.test_gcp_compute_operator_system_helper import \
-    GCPComputeTestHelper
-from tests.contrib.utils.gcp_authenticator import GCP_COMPUTE_KEY
+from tests.contrib.utils.gcp_authenticator import GCP_GCS_KEY
 
 
-@unittest.skipIf(DagGcpSystemTestCase.skip_check(GCP_COMPUTE_KEY), SKIP_TEST_WARNING)
-class GcpComputeExampleDagsSystemTest(DagGcpSystemTestCase):
+@unittest.skipIf(DagGcpSystemTestCase.skip_check(GCP_GCS_KEY), SKIP_TEST_WARNING)
+class GcpTransferExampleDagsSystemTest(DagGcpSystemTestCase):
 
     def setUp(self):
-        super(GcpComputeExampleDagsSystemTest, self).setUp()
+        super(GcpTransferExampleDagsSystemTest, self).setUp()
         self.gcp_authenticator.gcp_authenticate()
-        self.helper.delete_instance()
-        self.helper.create_instance()
+        self.helper.create_s3_bucket()
+        self.helper.create_gcs_buckets()
         self.gcp_authenticator.gcp_revoke_authentication()
 
     def tearDown(self):
         self.gcp_authenticator.gcp_authenticate()
-        self.helper.delete_instance()
+        self.helper.delete_gcs_buckets()
+        self.helper.delete_s3_bucket()
         self.gcp_authenticator.gcp_revoke_authentication()
-        super(GcpComputeExampleDagsSystemTest, self).tearDown()
+        super(GcpTransferExampleDagsSystemTest, self).tearDown()
 
     def __init__(self, method_name='runTest'):
-        super(GcpComputeExampleDagsSystemTest, self).__init__(
+        super(GcpTransferExampleDagsSystemTest, self).__init__(
             method_name,
-            dag_id='example_gcp_compute',
-            gcp_key=GCP_COMPUTE_KEY)
-        self.helper = GCPComputeTestHelper()
+            dag_id='example_gcp_transfer',
+            gcp_key=GCP_GCS_KEY)
+        self.helper = GCPTransferTestHelper()
 
     def test_run_example_dag_compute(self):
-        self._run_dag()
-
-
-@unittest.skipIf(DagGcpSystemTestCase.skip_check(GCP_COMPUTE_KEY), SKIP_TEST_WARNING)
-class GcpComputeIgmExampleDagsSystemTest(DagGcpSystemTestCase):
-
-    def setUp(self):
-        super(GcpComputeIgmExampleDagsSystemTest, self).setUp()
-        self.gcp_authenticator.gcp_authenticate()
-        try:
-            self.helper.delete_instance_group_and_template(silent=True)
-            self.helper.create_instance_group_and_template()
-        finally:
-            self.gcp_authenticator.gcp_revoke_authentication()
-
-    def tearDown(self):
-        self.gcp_authenticator.gcp_authenticate()
-        try:
-            self.helper.delete_instance_group_and_template()
-        finally:
-            self.gcp_authenticator.gcp_revoke_authentication()
-        super(GcpComputeIgmExampleDagsSystemTest, self).tearDown()
-
-    def __init__(self, method_name='runTest'):
-        super(GcpComputeIgmExampleDagsSystemTest, self).__init__(
-            method_name,
-            dag_id='example_gcp_compute_igm',
-            gcp_key=GCP_COMPUTE_KEY)
-        self.helper = GCPComputeTestHelper()
-
-    def test_run_example_dag_compute_igm(self):
         self._run_dag()

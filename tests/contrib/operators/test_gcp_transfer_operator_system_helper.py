@@ -20,19 +20,19 @@
 import argparse
 import os
 
-from tests.contrib.utils.gcp_authenticator import GcpAuthenticator, GCP_COMPUTE_KEY
+from tests.contrib.utils.gcp_authenticator import GcpAuthenticator, GCP_GCS_KEY
 from tests.contrib.utils.logging_command_executor import LoggingCommandExecutor
 
 GCP_PROJECT_ID = os.environ.get('GCP_PROJECT_ID', 'example-project')
 GCT_SOURCE_GCS_BUCKET_NAME = os.environ.get('GCT_SOURCE_BUCKET_NAME',
-                                        'instance-bucket-test-1')
+                                            'instance-mb-test-1')
 GCT_TARGET_GCS_BUCKET_NAME = os.environ.get('GCT_SOURCE_BUCKET_NAME',
-                                        'instance-bucket-test-2')
+                                            'instance-bucket-test-2')
 GCT_SOURCE_AWS_BUCKET_NAME = os.environ.get('GCT_SOURCE_AWS_BUCKET_NAME',
                                             'instance-bucket-test-2')
 
 
-class GCPComputeTestHelper(LoggingCommandExecutor):
+class GCPTransferTestHelper(LoggingCommandExecutor):
 
     def create_s3_bucket(self):
         self.execute_cmd([
@@ -48,13 +48,14 @@ class GCPComputeTestHelper(LoggingCommandExecutor):
 
     def create_gcs_buckets(self):
         self.execute_cmd([
-            'gsutil', 'mb', "gs://%s/" % GCT_TARGET_GCS_BUCKET_NAME,
-            "-p", GCP_PROJECT_ID,
+            'gsutil', 'mb', "-p", GCP_PROJECT_ID,
+            "gs://%s/" % GCT_TARGET_GCS_BUCKET_NAME,
+
         ])
 
         self.execute_cmd([
-            'gsutil', 'mb', "gs://%s/" % GCT_SOURCE_GCS_BUCKET_NAME,
-            "-p", GCP_PROJECT_ID,
+            'gsutil', 'mb', "-p", GCP_PROJECT_ID,
+            "gs://%s/" % GCT_SOURCE_GCS_BUCKET_NAME,
         ])
 
     def delete_gcs_buckets(self):
@@ -76,22 +77,24 @@ if __name__ == '__main__':
                                  'before-tests', 'after-tests'))
     action = parser.parse_args().action
 
-    helper = GCPComputeTestHelper()
-    gcp_authenticator = GcpAuthenticator(GCP_COMPUTE_KEY)
+    helper = GCPTransferTestHelper()
+    gcp_authenticator = GcpAuthenticator(GCP_GCS_KEY)
     helper.log.info('Starting action: {}'.format(action))
 
     gcp_authenticator.gcp_store_authentication()
     try:
         gcp_authenticator.gcp_authenticate()
         if action == 'before-tests':
-            pass
+            # helper.create_s3_bucket()
+            helper.create_gcs_buckets()
         elif action == 'after-tests':
-            pass
+            # helper.delete_s3_bucket()
+            helper.delete_gcs_buckets()
         elif action == 'create-s3_bucket':
             helper.create_s3_bucket()
-        elif action == 'create-s3-bucket':
-            helper.delete_s3_bucket()
         elif action == 'delete-s3-bucket':
+            helper.delete_s3_bucket()
+        elif action == 'create-gcs-bucket':
             helper.create_gcs_buckets()
         elif action == 'delete-gcs-buckets':
             helper.delete_gcs_buckets()

@@ -99,7 +99,9 @@ elif GCT_SOURCE_HTTP_URL:
         'list_url': GCT_SOURCE_HTTP_URL
     }
 else:
-    raise Exception("Please provide one of the source_code parameters")
+    raise Exception("Please provide one of data_source. You must set one of "
+                    "the environment variable: GCT_SOURCE_AWS_BUCKET, "
+                    "GCT_SOURCE_GCP_BUCKET, GCT_SOURCE_HTTP_URL")
 # [END howto_operator_gct_source_variants]
 
 
