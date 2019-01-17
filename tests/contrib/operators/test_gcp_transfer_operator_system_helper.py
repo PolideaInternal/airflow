@@ -20,8 +20,11 @@
 import argparse
 import os
 
+from googleapiclient._auth import default_credentials, with_scopes
+
 from tests.contrib.utils.gcp_authenticator import GcpAuthenticator, GCP_GCS_KEY
 from tests.contrib.utils.logging_command_executor import LoggingCommandExecutor
+from googleapiclient import discovery
 
 GCP_PROJECT_ID = os.environ.get('GCP_PROJECT_ID', 'example-project')
 GCT_SOURCE_GCS_BUCKET_NAME = os.environ.get('GCT_SOURCE_BUCKET_NAME',
@@ -30,6 +33,10 @@ GCT_TARGET_GCS_BUCKET_NAME = os.environ.get('GCT_SOURCE_BUCKET_NAME',
                                             'instance-bucket-test-2')
 GCT_SOURCE_AWS_BUCKET_NAME = os.environ.get('GCT_SOURCE_AWS_BUCKET_NAME',
                                             'instance-bucket-test-2')
+
+# 10 MB
+TEST_FILE_SIZE = 100 * 1024 * 1025
+TEST_FILE_NO = 10
 
 
 class GCPTransferTestHelper(LoggingCommandExecutor):
@@ -50,12 +57,39 @@ class GCPTransferTestHelper(LoggingCommandExecutor):
         self.execute_cmd([
             'gsutil', 'mb', "-p", GCP_PROJECT_ID,
             "gs://%s/" % GCT_TARGET_GCS_BUCKET_NAME,
-
         ])
 
         self.execute_cmd([
             'gsutil', 'mb', "-p", GCP_PROJECT_ID,
             "gs://%s/" % GCT_SOURCE_GCS_BUCKET_NAME,
+        ])
+
+        self.execute_cmd([
+            "bash", "-c",
+            "gsutil -m cp <(cat /dev/urandom | head -c %s) "
+            "gs://%s/file.bin" % (TEST_FILE_SIZE, GCT_SOURCE_GCS_BUCKET_NAME)
+        ])
+
+        self.execute_cmd([
+            "bash", "-c",
+            "for i in {1..200}; do echo $i; done | xargs -n 1 -P 16 -I {} "
+            "gsutil cp  gs://%s/file.txt gs://%s/file-{}.txt" %
+            (GCT_SOURCE_GCS_BUCKET_NAME, GCT_SOURCE_GCS_BUCKET_NAME)
+        ])
+
+        transfer_service_account = GCPTransferTestHelper.\
+            _get_transfer_service_account()
+        account_email = transfer_service_account['accountEmail']
+
+        self.execute_cmd([
+            "gsutil", "iam", "ch",
+            "serviceAccount:%s:objectViewer" % account_email,
+            "gs://" % GCT_SOURCE_GCS_BUCKET_NAME
+        ])
+        self.execute_cmd([
+            "gsutil", "iam", "ch",
+            "serviceAccount:%s:objectCreator" % account_email,
+            "gs://" % GCT_TARGET_GCS_BUCKET_NAME
         ])
 
     def delete_gcs_buckets(self):
@@ -67,13 +101,26 @@ class GCPTransferTestHelper(LoggingCommandExecutor):
             'gsutil', 'rm', "-r", "gs://%s/" % GCT_SOURCE_AWS_BUCKET_NAME,
         ])
 
+    @staticmethod
+    def _get_transfer_service_account():
+        credentials= default_credentials()
+        credentials = with_scopes(credentials, scopes=[
+            'https://www.googleapis.com/auth/cloud-platform'
+        ])
+        service = discovery.build(
+            'storagetransfer', 'v1',
+            cache_discovery=False, credentials=credentials)
+
+        request = service.googleServiceAccounts().get(projectId=GCP_PROJECT_ID)
+        return request.execute()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Create and delete buckets for system tests.')
     parser.add_argument('--action', dest='action', required=True,
-                        choices=('create_s3_bucket', 'delete_s3_bucket',
-                                 'create_gcs_buckets', 'delete_gcs_buckets',
+                        choices=('create-s3-bucket', 'delete-s3-bucket',
+                                 'create-gcs-buckets', 'delete-gcs-buckets',
                                  'before-tests', 'after-tests'))
     action = parser.parse_args().action
 

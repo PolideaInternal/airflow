@@ -25,6 +25,10 @@ from googleapiclient.discovery import build
 from airflow.exceptions import AirflowException
 from airflow.contrib.hooks.gcp_api_base_hook import GoogleCloudBaseHook
 
+# Magic constant:
+# See:
+# https://cloud.google.com/storage-transfer/docs/reference/rest/v1/transferOperations/list
+TRANSFER_OPERATIONS = 'transferOperations'
 # Time to sleep between active checks of the operation results
 TIME_TO_SLEEP_IN_SECONDS = 10
 
@@ -48,6 +52,11 @@ class GcpTransferSource:
     AWS_S3 = "AWS_S3"
     HTTP = "HTTP"
 
+
+NEGATIVE_STATUS = {
+    GcpTransferOperationStatus.FAILED,
+    GcpTransferOperationStatus.ABORTED
+}
 
 # noinspection PyAbstractClass
 class GCPTransferServiceHook(GoogleCloudBaseHook):
@@ -115,12 +124,16 @@ class GCPTransferServiceHook(GoogleCloudBaseHook):
             .list(name=operation_name)\
             .execute()
 
-    def list_transfer_operations(self, operation_name):
+    def list_transfer_operations(self, filter):
         conn = self.get_conn()
 
         operations = []
 
-        request = conn.transferOperations().list(name=operation_name)
+        request = conn.transferOperations().list(
+            name=TRANSFER_OPERATIONS,
+            filter=filter
+        )
+
         while request is not None:
             response = request.execute()
             operations.extend(response['operations'])
@@ -143,36 +156,42 @@ class GCPTransferServiceHook(GoogleCloudBaseHook):
             .resume(name=operation_name)\
             .execute()
 
-    def wait_for_transfer_job(self, job):
+    def wait_for_transfer_job(self,
+                              job,
+                              expected_status=GcpTransferOperationStatus.SUCCESS):
         while True:
             result = self.get_conn()\
                 .transferOperations()\
                 .list(
-                    name='transferOperations',
+                    name=TRANSFER_OPERATIONS,
                     filter=json.dumps({
                         'project_id': job['projectId'],
                         'job_names': [job['name']],
                     })
                 ).execute()
-            if GCPTransferServiceHook._check_operations_result(result):
+            if GCPTransferServiceHook.check_operations_result(result,
+                                                              expected_status):
                 return True
             time.sleep(TIME_TO_SLEEP_IN_SECONDS)
 
     @staticmethod
-    def _check_operations_result(result):
+    def check_operations_result(result, expected_status):
         operations = result.get('operations', [])
+
         if len(operations) == 0:
             return False
+
         for operation in operations:
             status = operation['metadata']['status']
-            if status in {
-                GcpTransferOperationStatus.FAILED,
-                GcpTransferOperationStatus.ABORTED
-            }:
+
+            if expected_status not in NEGATIVE_STATUS \
+                and status in NEGATIVE_STATUS:
                 name = operation['name']
                 # TODO: Better error message
                 raise AirflowException('Operation {} {}'.format(
                     name, status))
-            if status != GcpTransferOperationStatus.SUCCESS:
+
+            if status != expected_status:
                 return False
+
         return True
