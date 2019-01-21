@@ -104,7 +104,7 @@ class TransferJobPreprocessor:
         }
 
 
-class GcpStorageTransferJobCreateOperator(BaseOperator):
+class GcpTransferServiceJobCreateOperator(BaseOperator):
     """
     Creates a transfer job that runs periodically.
     """
@@ -120,7 +120,7 @@ class GcpStorageTransferJobCreateOperator(BaseOperator):
                  api_version='v1',
                  *args,
                  **kwargs):
-        super(GcpStorageTransferJobCreateOperator, self).__init__(*args, **kwargs)
+        super(GcpTransferServiceJobCreateOperator, self).__init__(*args, **kwargs)
         self.body = body
         self.api_version = api_version
         self._hook = GCPTransferServiceHook(
@@ -143,7 +143,7 @@ class GcpStorageTransferJobCreateOperator(BaseOperator):
         )
 
 
-class GpcStorageTransferJobUpdateOperator(BaseOperator):
+class GcpTransferServiceJobUpdateOperator(BaseOperator):
 
     # [START gcp_transfer_job_update_template_fields]
     template_fields = ('job_name', 'gcp_conn_id', 'api_version')
@@ -178,7 +178,7 @@ class GpcStorageTransferJobUpdateOperator(BaseOperator):
         return self._hook.update_transfer_job(job_name=self.job_name, body=self.body)
 
 
-class GcpStorageTransferJobDeleteOperator(BaseOperator):
+class GcpTransferServiceJobDeleteOperator(BaseOperator):
     """
     Delete a transfer job.
     """
@@ -194,7 +194,7 @@ class GcpStorageTransferJobDeleteOperator(BaseOperator):
                  api_version='v1',
                  *args,
                  **kwargs):
-        super(GcpStorageTransferJobDeleteOperator, self).__init__(*args, **kwargs)
+        super(GcpTransferServiceJobDeleteOperator, self).__init__(*args, **kwargs)
         self.job_name = job_name
         self.api_version = api_version
         self._hook = GCPTransferServiceHook(
@@ -213,7 +213,7 @@ class GcpStorageTransferJobDeleteOperator(BaseOperator):
         )
 
 
-class GpcStorageTransferOperationGetOperator(BaseOperator):
+class GcpTransferServiceOperationsGetOperator(BaseOperator):
     """
     Get a state of an transfer operation in Google Storage Transfer Service.
 
@@ -258,7 +258,7 @@ class GpcStorageTransferOperationGetOperator(BaseOperator):
         )
 
 
-class GcpStorageTransferOperationListOperator(BaseOperator):
+class GcpTransferServiceOperationsListOperator(BaseOperator):
     def __init__(self,
                  filter,
                  api_version='v1',
@@ -284,7 +284,7 @@ class GcpStorageTransferOperationListOperator(BaseOperator):
         )
 
 
-class GcpStorageTransferOperationPauseOperator(BaseOperator):
+class GcpTransferServiceOperationsPauseOperator(BaseOperator):
     """
     Pauses an transfer operation in Google Storage Transfer Service.
 
@@ -329,7 +329,7 @@ class GcpStorageTransferOperationPauseOperator(BaseOperator):
         )
 
 
-class GcpStorageTransferOperationResumeOperator(BaseOperator):
+class GcpTransferServiceOperationsResumeOperator(BaseOperator):
     """
     Resumes an transfer operation in Google Storage Transfer Service.
 
@@ -375,7 +375,7 @@ class GcpStorageTransferOperationResumeOperator(BaseOperator):
         )
 
 
-class GcpStorageTransferOperationCancelOperator(BaseOperator):
+class GcpTransferServiceOperationsCancelOperator(BaseOperator):
     """
     Cancels an transfer operation in Google Storage Transfer Service.
 

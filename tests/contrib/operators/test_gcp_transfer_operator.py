@@ -25,10 +25,10 @@ from parameterized import parameterized
 from botocore.credentials import ReadOnlyCredentials
 
 from airflow import AirflowException, configuration
-from airflow.contrib.operators.gcp_transfer_operator import GcpStorageTransferOperationCancelOperator, \
-    GcpStorageTransferOperationResumeOperator, GcpStorageTransferOperationListOperator, TransferJobPreprocessor, \
-    GcpStorageTransferJobCreateOperator, GpcStorageTransferJobUpdateOperator, GpcStorageTransferOperationGetOperator, \
-    GcpStorageTransferOperationPauseOperator
+from airflow.contrib.operators.gcp_transfer_operator import GcpTransferServiceOperationsCancelOperator, \
+    GcpTransferServiceOperationsResumeOperator, GcpTransferServiceOperationsListOperator, TransferJobPreprocessor, \
+    GcpTransferServiceJobCreateOperator, GcpTransferServiceJobUpdateOperator, GcpTransferServiceOperationsGetOperator, \
+    GcpTransferServiceOperationsPauseOperator
 from airflow.models import TaskInstance, DAG
 from airflow.utils import timezone
 
@@ -166,7 +166,7 @@ class GcpStorageTransferJobCreateOperatorTest(unittest.TestCase):
         body = deepcopy(VALID_TRANSFER_JOB)
         del(body['name'])
 
-        op = GcpStorageTransferJobCreateOperator(
+        op = GcpTransferServiceJobCreateOperator(
             body=body,
             task_id='task-id'
         )
@@ -192,7 +192,7 @@ class GcpStorageTransferJobUpdateOperatorTest(unittest.TestCase):
             'update_transfer_job_field_mask': 'description',
         }
 
-        op = GpcStorageTransferJobUpdateOperator(
+        op = GcpTransferServiceJobUpdateOperator(
             job_name=JOB_NAME,
             body=body,
             task_id='task-id'
@@ -213,7 +213,7 @@ class GpcStorageTransferOperationsGetOperatorTest(unittest.TestCase):
     @mock.patch('airflow.contrib.operators.gcp_transfer_operator.GCPTransferServiceHook')
     def test_operation_get(self, mock_hook):
         mock_hook.return_value.get_transfer_operation.return_value = VALID_OPERATION
-        op = GpcStorageTransferOperationGetOperator(
+        op = GcpTransferServiceOperationsGetOperator(
             operation_name=OPERATION_NAME,
             task_id='task-id'
         )
@@ -235,7 +235,7 @@ class GpcStorageTransferOperationsGetOperatorTest(unittest.TestCase):
             'start_date': DEFAULT_DATE
         }
         self.dag = DAG(dag_id, default_args=args)
-        op = GpcStorageTransferOperationGetOperator(
+        op = GcpTransferServiceOperationsGetOperator(
             operation_name='{{ dag.dag_id }}',
             gcp_conn_id='{{ dag.dag_id }}',
             api_version='{{ dag.dag_id }}',
@@ -251,7 +251,7 @@ class GpcStorageTransferOperationsGetOperatorTest(unittest.TestCase):
     @mock.patch('airflow.contrib.operators.gcp_transfer_operator.GCPTransferServiceHook')
     def test_operation_get_should_throw_ex_when_operation_name_none(self, mock_hook):
         with self.assertRaises(AirflowException) as cm:
-            op = GpcStorageTransferOperationGetOperator(
+            op = GcpTransferServiceOperationsGetOperator(
                 operation_name="",
                 task_id='task-id'
             )
@@ -265,7 +265,7 @@ class GcpStorageTransferOperationListOperatorTest(unittest.TestCase):
     @mock.patch('airflow.contrib.operators.gcp_transfer_operator.GCPTransferServiceHook')
     def test_operation_list(self, mock_hook):
         mock_hook.return_value.list_transfer_operations.return_value = [VALID_TRANSFER_JOB]
-        op = GcpStorageTransferOperationListOperator(
+        op = GcpTransferServiceOperationsListOperator(
             filter=FILTER,
             task_id='task-id'
         )
@@ -281,7 +281,7 @@ class GcpStorageTransferOperationListOperatorTest(unittest.TestCase):
 class GcpStorageTransferOperationsPauseOperatorTest(unittest.TestCase):
     @mock.patch('airflow.contrib.operators.gcp_transfer_operator.GCPTransferServiceHook')
     def test_operation_pause(self, mock_hook):
-        op = GcpStorageTransferOperationPauseOperator(
+        op = GcpTransferServiceOperationsPauseOperator(
             operation_name=OPERATION_NAME,
             task_id='task-id'
         )
@@ -302,7 +302,7 @@ class GcpStorageTransferOperationsPauseOperatorTest(unittest.TestCase):
             'start_date': DEFAULT_DATE
         }
         self.dag = DAG(dag_id, default_args=args)
-        op = GcpStorageTransferOperationPauseOperator(
+        op = GcpTransferServiceOperationsPauseOperator(
             operation_name='{{ dag.dag_id }}',
             gcp_conn_id='{{ dag.dag_id }}',
             api_version='{{ dag.dag_id }}',
@@ -318,7 +318,7 @@ class GcpStorageTransferOperationsPauseOperatorTest(unittest.TestCase):
     @mock.patch('airflow.contrib.operators.gcp_transfer_operator.GCPTransferServiceHook')
     def test_operation_pause_should_throw_ex_when_operation_name_none(self, mock_hook):
         with self.assertRaises(AirflowException) as cm:
-            op = GcpStorageTransferOperationPauseOperator(
+            op = GcpTransferServiceOperationsPauseOperator(
                 operation_name="",
                 task_id='task-id'
             )
@@ -331,7 +331,7 @@ class GcpStorageTransferOperationsPauseOperatorTest(unittest.TestCase):
 class GcpStorageTransferOperationsResumeOperatorTest(unittest.TestCase):
     @mock.patch('airflow.contrib.operators.gcp_transfer_operator.GCPTransferServiceHook')
     def test_operation_resume(self, mock_hook):
-        op = GcpStorageTransferOperationResumeOperator(
+        op = GcpTransferServiceOperationsResumeOperator(
             operation_name=OPERATION_NAME,
             task_id='task-id'
         )
@@ -353,7 +353,7 @@ class GcpStorageTransferOperationsResumeOperatorTest(unittest.TestCase):
             'start_date': DEFAULT_DATE
         }
         self.dag = DAG(dag_id, default_args=args)
-        op = GcpStorageTransferOperationResumeOperator(
+        op = GcpTransferServiceOperationsResumeOperator(
             operation_name='{{ dag.dag_id }}',
             gcp_conn_id='{{ dag.dag_id }}',
             api_version='{{ dag.dag_id }}',
@@ -369,7 +369,7 @@ class GcpStorageTransferOperationsResumeOperatorTest(unittest.TestCase):
     @mock.patch('airflow.contrib.operators.gcp_transfer_operator.GCPTransferServiceHook')
     def test_operation_resume_should_throw_ex_when_operation_name_none(self, mock_hook):
         with self.assertRaises(AirflowException) as cm:
-            op = GcpStorageTransferOperationResumeOperator(
+            op = GcpTransferServiceOperationsResumeOperator(
                 operation_name="",
                 task_id='task-id'
             )
@@ -382,7 +382,7 @@ class GcpStorageTransferOperationsResumeOperatorTest(unittest.TestCase):
 class GcpStorageTransferOperationsCancelOperatorTest(unittest.TestCase):
     @mock.patch('airflow.contrib.operators.gcp_transfer_operator.GCPTransferServiceHook')
     def test_operation_cancel(self, mock_hook):
-        op = GcpStorageTransferOperationCancelOperator(
+        op = GcpTransferServiceOperationsCancelOperator(
             operation_name=OPERATION_NAME,
             task_id='task-id'
         )
@@ -404,7 +404,7 @@ class GcpStorageTransferOperationsCancelOperatorTest(unittest.TestCase):
             'start_date': DEFAULT_DATE
         }
         self.dag = DAG(dag_id, default_args=args)
-        op = GcpStorageTransferOperationCancelOperator(
+        op = GcpTransferServiceOperationsCancelOperator(
             operation_name='{{ dag.dag_id }}',
             gcp_conn_id='{{ dag.dag_id }}',
             api_version='{{ dag.dag_id }}',
@@ -420,7 +420,7 @@ class GcpStorageTransferOperationsCancelOperatorTest(unittest.TestCase):
     @mock.patch('airflow.contrib.operators.gcp_transfer_operator.GCPTransferServiceHook')
     def test_operation_cancel_should_throw_ex_when_operation_name_none(self, mock_hook):
         with self.assertRaises(AirflowException) as cm:
-            op = GcpStorageTransferOperationCancelOperator(
+            op = GcpTransferServiceOperationsCancelOperator(
                 operation_name="",
                 task_id='task-id'
             )
