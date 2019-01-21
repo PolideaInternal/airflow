@@ -27,7 +27,7 @@ from botocore.credentials import ReadOnlyCredentials
 from airflow import AirflowException, configuration
 from airflow.contrib.operators.gcp_transfer_operator import GcpTransferServiceOperationsCancelOperator, \
     GcpTransferServiceOperationsResumeOperator, GcpTransferServiceOperationsListOperator, TransferJobPreprocessor, \
-    GcpTransferServiceJobCreateOperator, GcpTransferServiceJobUpdateOperator, GcpTransferServiceOperationsGetOperator, \
+    GcpTransferServiceJobsCreateOperator, GcpTransferServiceJobsUpdateOperator, GcpTransferServiceOperationsGetOperator, \
     GcpTransferServiceOperationsPauseOperator
 from airflow.models import TaskInstance, DAG
 from airflow.utils import timezone
@@ -166,7 +166,7 @@ class GcpStorageTransferJobCreateOperatorTest(unittest.TestCase):
         body = deepcopy(VALID_TRANSFER_JOB)
         del(body['name'])
 
-        op = GcpTransferServiceJobCreateOperator(
+        op = GcpTransferServiceJobsCreateOperator(
             body=body,
             task_id='task-id'
         )
@@ -192,7 +192,7 @@ class GcpStorageTransferJobUpdateOperatorTest(unittest.TestCase):
             'update_transfer_job_field_mask': 'description',
         }
 
-        op = GcpTransferServiceJobUpdateOperator(
+        op = GcpTransferServiceJobsUpdateOperator(
             job_name=JOB_NAME,
             body=body,
             task_id='task-id'

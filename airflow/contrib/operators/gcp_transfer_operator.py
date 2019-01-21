@@ -104,7 +104,7 @@ class TransferJobPreprocessor:
         }
 
 
-class GcpTransferServiceJobCreateOperator(BaseOperator):
+class GcpTransferServiceJobsCreateOperator(BaseOperator):
     """
     Creates a transfer job that runs periodically.
     """
@@ -120,7 +120,7 @@ class GcpTransferServiceJobCreateOperator(BaseOperator):
                  api_version='v1',
                  *args,
                  **kwargs):
-        super(GcpTransferServiceJobCreateOperator, self).__init__(*args, **kwargs)
+        super(GcpTransferServiceJobsCreateOperator, self).__init__(*args, **kwargs)
         self.body = body
         self.api_version = api_version
         self._hook = GCPTransferServiceHook(
@@ -143,7 +143,7 @@ class GcpTransferServiceJobCreateOperator(BaseOperator):
         )
 
 
-class GcpTransferServiceJobUpdateOperator(BaseOperator):
+class GcpTransferServiceJobsUpdateOperator(BaseOperator):
 
     # [START gcp_transfer_job_update_template_fields]
     template_fields = ('job_name', 'gcp_conn_id', 'api_version')
@@ -178,7 +178,7 @@ class GcpTransferServiceJobUpdateOperator(BaseOperator):
         return self._hook.update_transfer_job(job_name=self.job_name, body=self.body)
 
 
-class GcpTransferServiceJobDeleteOperator(BaseOperator):
+class GcpTransferServiceJobsDeleteOperator(BaseOperator):
     """
     Delete a transfer job.
     """
@@ -194,7 +194,7 @@ class GcpTransferServiceJobDeleteOperator(BaseOperator):
                  api_version='v1',
                  *args,
                  **kwargs):
-        super(GcpTransferServiceJobDeleteOperator, self).__init__(*args, **kwargs)
+        super(GcpTransferServiceJobsDeleteOperator, self).__init__(*args, **kwargs)
         self.job_name = job_name
         self.api_version = api_version
         self._hook = GCPTransferServiceHook(
