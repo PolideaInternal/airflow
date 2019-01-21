@@ -106,9 +106,6 @@ class GcpTransferServiceJobsCreateOperator(BaseOperator):
     """
     Creates a transfer job that runs periodically.
     """
-    # [START gcp_transfer_job_update_template_fields]
-    template_fields = ('operation_name', 'gcp_conn_id', 'api_version')
-    # [END gcp_transfer_job_update_template_fields]
 
     @apply_defaults
     def __init__(self,
@@ -145,14 +142,13 @@ class GcpTransferServiceJobsCreateOperator(BaseOperator):
 class GcpTransferServiceJobsUpdateOperator(BaseOperator):
 
     # [START gcp_transfer_job_update_template_fields]
-    template_fields = ('job_name', 'gcp_conn_id', 'api_version')
+    template_fields = ['job_name']
     # [END gcp_transfer_job_update_template_fields]
 
     @apply_defaults
     def __init__(self,
                  job_name,
                  body,
-                 field_mask,
                  aws_conn_id='aws_default',
                  gcp_conn_id='google_cloud_default',
                  api_version='v1',
@@ -161,7 +157,6 @@ class GcpTransferServiceJobsUpdateOperator(BaseOperator):
         super().__init__(*args, **kwargs)
         self.job_name = job_name
         self.body = body
-        self.field_mask = field_mask
         self._hook = GCPTransferServiceHook(
             api_version=api_version,
             gcp_conn_id=gcp_conn_id,
@@ -179,7 +174,6 @@ class GcpTransferServiceJobsUpdateOperator(BaseOperator):
         return self._hook.update_transfer_job(
             job_name=self.job_name,
             body=self.body,
-            field_mask=self.field_mask,
         )
 
 
@@ -188,7 +182,7 @@ class GcpTransferServiceJobsDeleteOperator(BaseOperator):
     Delete a transfer job.
     """
     # [START gcp_transfer_job_update_template_fields]
-    template_fields = ('job_name', 'gcp_conn_id', 'api_version')
+    template_fields = ['job_name']
     # [END gcp_transfer_job_update_template_fields]
 
     @apply_defaults
@@ -197,12 +191,14 @@ class GcpTransferServiceJobsDeleteOperator(BaseOperator):
                  aws_conn_id='aws_default',
                  gcp_conn_id='google_cloud_default',
                  api_version='v1',
+                 project_id=None,
                  *args,
                  **kwargs):
         super(GcpTransferServiceJobsDeleteOperator, self)\
             .__init__(*args, **kwargs)
         self.job_name = job_name
         self.api_version = api_version
+        self.project_id=project_id
         self._hook = GCPTransferServiceHook(
             api_version=api_version,
             gcp_conn_id=gcp_conn_id,
@@ -215,7 +211,8 @@ class GcpTransferServiceJobsDeleteOperator(BaseOperator):
     def execute(self, context):
         self._validate_inputs()
         return self._hook.delete_transfer_job(
-            job_name=self.job_name
+            job_name=self.job_name,
+            project_id=self.project_id
         )
 
 
@@ -265,6 +262,11 @@ class GcpTransferServiceOperationsGetOperator(BaseOperator):
 
 
 class GcpTransferServiceOperationsListOperator(BaseOperator):
+
+    # [START gcp_transfer_operation_get_template_fields]
+    template_fields = ['filter']
+    # [END gcp_transfer_operation_get_template_fields]
+
     def __init__(self,
                  filter,
                  api_version='v1',
@@ -303,7 +305,7 @@ class GcpTransferServiceOperationsPauseOperator(BaseOperator):
     :type gcp_conn_id: str
     """
     # [START gcp_transfer_operation_pause_template_fields]
-    template_fields = ('operation_name', 'gcp_conn_id', 'api_version')
+    template_fields = ['operation_name']
     # [END gcp_transfer_operation_pause_template_fields]
 
     @apply_defaults
