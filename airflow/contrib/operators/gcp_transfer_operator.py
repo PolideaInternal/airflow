@@ -152,6 +152,7 @@ class GcpTransferServiceJobsUpdateOperator(BaseOperator):
     def __init__(self,
                  job_name,
                  body,
+                 field_mask,
                  aws_conn_id='aws_default',
                  gcp_conn_id='google_cloud_default',
                  api_version='v1',
@@ -160,6 +161,7 @@ class GcpTransferServiceJobsUpdateOperator(BaseOperator):
         super().__init__(*args, **kwargs)
         self.job_name = job_name
         self.body = body
+        self.field_mask = field_mask
         self._hook = GCPTransferServiceHook(
             api_version=api_version,
             gcp_conn_id=gcp_conn_id,
@@ -176,7 +178,9 @@ class GcpTransferServiceJobsUpdateOperator(BaseOperator):
     def execute(self, context):
         return self._hook.update_transfer_job(
             job_name=self.job_name,
-            body=self.body)
+            body=self.body,
+            field_mask=self.field_mask,
+        )
 
 
 class GcpTransferServiceJobsDeleteOperator(BaseOperator):
@@ -195,12 +199,8 @@ class GcpTransferServiceJobsDeleteOperator(BaseOperator):
                  api_version='v1',
                  *args,
                  **kwargs):
-<<<<<<< HEAD
-        super(GcpTransferServiceJobDeleteOperator, self)\
+        super(GcpTransferServiceJobsDeleteOperator, self)\
             .__init__(*args, **kwargs)
-=======
-        super(GcpTransferServiceJobsDeleteOperator, self).__init__(*args, **kwargs)
->>>>>>> f251557f... gcp transfer jobs operators name change
         self.job_name = job_name
         self.api_version = api_version
         self._hook = GCPTransferServiceHook(

@@ -98,19 +98,35 @@ class GCPTransferServiceHook(GoogleCloudBaseHook):
     def get_transfer_job(self, job_name):
         return self.get_conn()\
             .transferJobs()\
-            .list(jobName=job_name)\
+            .get(jobName=job_name)\
             .execute(num_retries=NUM_RETRIES)
 
     def list_transfer_job(self, filter):
-        return self.get_conn()\
-            .transferJobs()\
-            .list(filter=filter)\
-            .execute(num_retries=NUM_RETRIES)
+        jobs = []
+        conn = self.get_conn()
 
-    def update_transfer_job(self, job_name, body):
+        request = conn.transferJobs().list(
+            filter=json.dumps(filter)
+        )
+
+        while request is not None:
+            response = request.execute(num_retries=NUM_RETRIES)
+            jobs.extend(response['transferJobs'])
+
+            request = conn.transferJobs().list_next(
+                previous_request=request,
+                previous_response=response)
+
+        return jobs
+
+    def update_transfer_job(self, job_name, body, field_mask):
         return self.get_conn()\
             .transferJobs()\
-            .update(jobName=job_name, body=body)\
+            .patch(
+                jobName=job_name,
+                body=body,
+                updateFieldMask=field_mask
+            )\
             .execute(num_retries=NUM_RETRIES)
 
     def delete_transfer_job(self, job_name):
@@ -118,9 +134,13 @@ class GCPTransferServiceHook(GoogleCloudBaseHook):
         # state, the job and all the transfer executions are subject to garbage
         # collection. Transfer jobs become eligible for garbage collection
         # 30 days after their status is set to DELETED.
-        return self.get_conn().transferJob().update(jobName=job_name, body={
-            'status': GcpTransferJobsStatus.DELETED
-        }).execute(num_retries=NUM_RETRIES)
+        return self.get_conn().transferJobs().patch(
+            jobName=job_name,
+            body={
+                'status': GcpTransferJobsStatus.DELETED
+            },
+            updateFieldMask='status'
+        ).execute(num_retries=NUM_RETRIES)
 
     def cancel_transfer_operation(self, operation_name):
         return self.get_conn()\
@@ -128,16 +148,10 @@ class GCPTransferServiceHook(GoogleCloudBaseHook):
             .cancel(name=operation_name)\
             .execute(num_retries=NUM_RETRIES)
 
-    def delete_transfer_operation(self, operation_name):
-        return self.get_conn()\
-            .transferOperations()\
-            .delete(name=operation_name)\
-            .execute(num_retries=NUM_RETRIES)
-
     def get_transfer_operation(self, operation_name):
         return self.get_conn()\
             .transferOperations()\
-            .list(name=operation_name)\
+            .get(name=operation_name)\
             .execute(num_retries=NUM_RETRIES)
 
     def list_transfer_operations(self, filter):
