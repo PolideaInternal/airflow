@@ -56,11 +56,13 @@ TRANSFER_OPERATION_FILTER = {
 
 class TestGCPTransferServiceHook(unittest.TestCase):
     def setUp(self):
-        with mock.patch('airflow.contrib.hooks.gcp_api_base_hook.GoogleCloudBaseHook.__init__',
+        with mock.patch('airflow.contrib.hooks.'
+                        'gcp_api_base_hook.GoogleCloudBaseHook.__init__',
                         new=mock_base_gcp_hook_no_default_project_id):
             self.gct_hook = GCPTransferServiceHook(gcp_conn_id='test')
 
-    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.GCPTransferServiceHook.get_conn')
+    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.'
+                'GCPTransferServiceHook.get_conn')
     def test_create_transfer_job(self, get_conn):
         create_method = get_conn.return_value.transferJobs.return_value.create
         execute_method = create_method.return_value.execute
@@ -72,7 +74,8 @@ class TestGCPTransferServiceHook(unittest.TestCase):
         create_method.assert_called_once_with(body=BODY)
         execute_method.assert_called_once_with(num_retries=5)
 
-    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.GCPTransferServiceHook.get_conn')
+    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.'
+                'GCPTransferServiceHook.get_conn')
     def test_get_transfer_job(self, get_conn):
         get_method = get_conn.return_value.transferJobs.return_value.get
         execute_method = get_method.return_value.execute
@@ -85,7 +88,8 @@ class TestGCPTransferServiceHook(unittest.TestCase):
         get_method.assert_called_once_with(jobName=TRANSFER_JOB_NAME)
         execute_method.assert_called_once_with(num_retries=5)
 
-    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.GCPTransferServiceHook.get_conn')
+    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.'
+                'GCPTransferServiceHook.get_conn')
     def test_list_transfer_job(self, get_conn):
         list_method = get_conn.return_value.transferJobs.return_value.list
         list_execute_method = list_method.return_value.execute
@@ -105,8 +109,8 @@ class TestGCPTransferServiceHook(unittest.TestCase):
         list_execute_method.assert_called_once_with(num_retries=5)
         list_next.assert_called_once()
 
-
-    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.GCPTransferServiceHook.get_conn')
+    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.'
+                'GCPTransferServiceHook.get_conn')
     def test_update_transfer_job(self, get_conn):
         update_method = get_conn.return_value.transferJobs.return_value.patch
         execute_method = update_method.return_value.execute
@@ -124,7 +128,8 @@ class TestGCPTransferServiceHook(unittest.TestCase):
         )
         execute_method.assert_called_once_with(num_retries=5)
 
-    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.GCPTransferServiceHook.get_conn')
+    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.'
+                'GCPTransferServiceHook.get_conn')
     def test_delete_transfer_job(self, get_conn):
         update_method = get_conn.return_value.transferJobs.return_value.patch
         execute_method = update_method.return_value.execute
@@ -142,7 +147,8 @@ class TestGCPTransferServiceHook(unittest.TestCase):
         )
         execute_method.assert_called_once_with(num_retries=5)
 
-    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.GCPTransferServiceHook.get_conn')
+    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.'
+                'GCPTransferServiceHook.get_conn')
     def test_cancel_transfer_operation(self, get_conn):
         cancel_method = get_conn.return_value.transferOperations.\
             return_value.cancel
@@ -156,7 +162,8 @@ class TestGCPTransferServiceHook(unittest.TestCase):
         )
         execute_method.assert_called_once_with(num_retries=5)
 
-    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.GCPTransferServiceHook.get_conn')
+    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.'
+                'GCPTransferServiceHook.get_conn')
     def test_get_transfer_operation(self, get_conn):
         get_method = get_conn.return_value.transferOperations. \
             return_value.get
@@ -171,7 +178,8 @@ class TestGCPTransferServiceHook(unittest.TestCase):
         )
         execute_method.assert_called_once_with(num_retries=5)
 
-    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.GCPTransferServiceHook.get_conn')
+    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.'
+                'GCPTransferServiceHook.get_conn')
     def test_list_transfer_operation(self, get_conn):
         list_method = get_conn.return_value.transferOperations.return_value.list
         list_execute_method = list_method.return_value.execute
@@ -193,16 +201,21 @@ class TestGCPTransferServiceHook(unittest.TestCase):
         list_next.assert_called_once()
 
     @mock.patch('time.sleep')
-    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.GCPTransferServiceHook.get_conn')
+    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.'
+                'GCPTransferServiceHook.get_conn')
     def test_wait_for_transfer_job(self, get_conn, mock_sleep):
         list_method = get_conn.return_value.transferOperations.return_value.list
         list_execute_method = list_method.return_value.execute
         list_execute_method.side_effect = [
-            {'operations': [{'metadata': {
-                 'status': GcpTransferOperationStatus.IN_PROGRESS}}
+            {'operations': [
+                {'metadata': {
+                    'status': GcpTransferOperationStatus.IN_PROGRESS
+                }}
             ]},
-            {'operations': [{'metadata': {
-                'status': GcpTransferOperationStatus.SUCCESS}}
+            {'operations': [
+                {'metadata': {
+                    'status': GcpTransferOperationStatus.SUCCESS
+                }}
             ]},
         ]
         get_conn.return_value.transferOperations\
@@ -226,16 +239,19 @@ class TestGCPTransferServiceHook(unittest.TestCase):
         mock_sleep.assert_called_once_with(TIME_TO_SLEEP_IN_SECONDS)
 
     @mock.patch('time.sleep')
-    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.GCPTransferServiceHook.get_conn')
+    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.'
+                'GCPTransferServiceHook.get_conn')
     def test_wait_for_transfer_job_failed(self, get_conn, mock_sleep):
         list_method = get_conn.return_value.transferOperations.return_value.list
         list_execute_method = list_method.return_value.execute
-        list_execute_method.return_value = {
-            'operations': [{
-                'name': TRANSFER_OPERATION_NAME,
-                'metadata': {
-                    'status': GcpTransferOperationStatus.FAILED}}
-                ]
+        list_execute_method.return_value = \
+            {
+                'operations': [{
+                    'name': TRANSFER_OPERATION_NAME,
+                    'metadata': {
+                        'status': GcpTransferOperationStatus.FAILED
+                    }
+                }]
             }
 
         get_conn.return_value.transferOperations \
@@ -250,7 +266,8 @@ class TestGCPTransferServiceHook(unittest.TestCase):
             self.assertTrue(list_method.called)
 
     @mock.patch('time.sleep')
-    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.GCPTransferServiceHook.get_conn')
+    @mock.patch('airflow.contrib.hooks.gcp_transfer_hook.'
+                'GCPTransferServiceHook.get_conn')
     def test_wait_for_transfer_job_expect_failed(self, get_conn, mock_sleep):
         list_method = get_conn.return_value.transferOperations.return_value.list
         list_execute_method = list_method.return_value.execute

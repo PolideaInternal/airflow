@@ -18,8 +18,6 @@
 # under the License.
 import unittest
 
-from parameterized import parameterized
-
 from airflow.contrib.hooks.gcp_transfer_hook import GcpTransferOperationStatus
 from airflow.contrib.sensors.gcp_transfer_sensor import \
     GcpStorageTransferOperationWaitForJobStatusSensor
@@ -81,4 +79,3 @@ class TestGcpStorageTransferOperationWaitForJobStatusSensor(unittest.TestCase):
             expected_status=GcpTransferOperationStatus.SUCCESS
         )
         self.assertTrue(result)
-

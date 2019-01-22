@@ -125,8 +125,7 @@ class GCPTransferServiceHook(GoogleCloudBaseHook):
             .patch(
                 jobName=job_name,
                 body=body,
-                updateFieldMask=field_mask
-            )\
+                updateFieldMask=field_mask)\
             .execute(num_retries=NUM_RETRIES)
 
     def delete_transfer_job(self, job_name):
