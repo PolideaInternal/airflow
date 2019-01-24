@@ -137,6 +137,8 @@ class GcpTransferServiceJobsCreateOperator(BaseOperator):
     # :param validate_body: Whether the body should be validated.
     #     Defaults to True.
     # :type validate_body: bool
+    :return: Google Storage Transfer service object
+    :rtype: dict
     """
     @apply_defaults
     def __init__(self,
@@ -179,7 +181,7 @@ class GcpTransferServiceJobsUpdateOperator(BaseOperator):
         https://cloud.google.com/storage-transfer/docs/reference/rest/v1/transferJobs/patch#request-body
         With two additional improvements:
         * dates can be given in the form datetime.date
-        * credentials to AWS  AWS should be stored in connection and
+        * credentials to Amazon Web Service should be stored in connection and
           indicated by the aws_conn_id parameter
     :type body: dict
     :param gcp_conn_id: The connection ID used to retrieve credentials to
@@ -193,6 +195,8 @@ class GcpTransferServiceJobsUpdateOperator(BaseOperator):
     # :param validate_body: Whether the body should be validated.
     #     Defaults to True.
     # :type validate_body: bool
+    :return: Google Storage Transfer service object
+    :rtype: dict
     """
     # [START gcp_transfer_job_update_template_fields]
     template_fields = ['job_name']
@@ -243,7 +247,6 @@ class GcpTransferServiceJobsDeleteOperator(BaseOperator):
     :type gcp_conn_id: str
     :param api_version: API version used (e.g. v1).
     :type api_version: str
-
     """
     # [START gcp_transfer_job_update_template_fields]
     template_fields = ['job_name']
@@ -273,7 +276,7 @@ class GcpTransferServiceJobsDeleteOperator(BaseOperator):
 
     def execute(self, context):
         self._validate_inputs()
-        return self._hook.delete_transfer_job(
+        self._hook.delete_transfer_job(
             job_name=self.job_name,
             project_id=self.project_id
         )
@@ -291,6 +294,8 @@ class GcpTransferServiceOperationsGetOperator(BaseOperator):
     :param gcp_conn_id: The connection ID used to connect to Google
         Cloud Platform.
     :type gcp_conn_id: str
+    :return: Google Storage Transfer service object
+    :rtype: dict
     """
     # [START gcp_transfer_operation_get_template_fields]
     template_fields = ('operation_name', 'gcp_conn_id', 'api_version')
@@ -343,6 +348,8 @@ class GcpTransferServiceOperationsListOperator(BaseOperator):
     :param gcp_conn_id: The connection ID used to connect to Google
         Cloud Platform.
     :type gcp_conn_id: str
+    :return: List of Google Storage Transfer service object
+    :rtype: dict[]
     """
     # [START gcp_transfer_operation_get_template_fields]
     template_fields = ['filter']
@@ -384,6 +391,8 @@ class GcpTransferServiceOperationsPauseOperator(BaseOperator):
     :param gcp_conn_id: Optional, The connection ID used to connect to Google
         Cloud Platform.
     :type gcp_conn_id: str
+    :return: Google Storage Transfer service object
+    :rtype: dict
     """
     # [START gcp_transfer_operation_pause_template_fields]
     template_fields = ['operation_name']
@@ -412,8 +421,7 @@ class GcpTransferServiceOperationsPauseOperator(BaseOperator):
             api_version=self.api_version,
             gcp_conn_id=self.gcp_conn_id,
         )
-
-        return hook.pause_transfer_operation(
+        hook.pause_transfer_operation(
             operation_name=self.operation_name
         )
 
@@ -459,7 +467,7 @@ class GcpTransferServiceOperationsResumeOperator(BaseOperator):
             gcp_conn_id=self.gcp_conn_id,
         )
 
-        return hook.resume_transfer_operation(
+        hook.resume_transfer_operation(
             operation_name=self.operation_name
         )
 
@@ -503,6 +511,6 @@ class GcpTransferServiceOperationsCancelOperator(BaseOperator):
             api_version=self.api_version,
             gcp_conn_id=self.gcp_conn_id,
         )
-        return hook.cancel_transfer_operation(
+        hook.cancel_transfer_operation(
             operation_name=self.operation_name
         )

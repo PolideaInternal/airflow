@@ -76,9 +76,10 @@ class GCPTransferTestHelper(LoggingCommandExecutor):
 
         self.execute_cmd([
             "bash", "-c",
-            "for i in {1..200}; do echo $i; done | xargs -n 1 -P 16 -I {} "
+            "seq 1 %s | xargs -n 1 -P 16 -I {} "
             "gsutil cp  gs://%s/file.bin gs://%s/file-{}.bin" %
-            (GCP_TRANSFER_SOURCE_GCP_BUCKET, GCP_TRANSFER_SOURCE_GCP_BUCKET)
+            (TEST_FILE_NO, GCP_TRANSFER_SOURCE_GCP_BUCKET,
+             GCP_TRANSFER_SOURCE_GCP_BUCKET)
         ])
 
         project_number = subprocess.check_output(

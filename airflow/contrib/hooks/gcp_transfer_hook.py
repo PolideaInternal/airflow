@@ -65,7 +65,7 @@ NUM_RETRIES = 5
 # noinspection PyAbstractClass
 class GCPTransferServiceHook(GoogleCloudBaseHook):
     """
-    Hook for GCP Storage Transfer Service.
+    Hook for Google Storage Transfer Service.
     """
     _conn = None
 
