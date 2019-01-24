@@ -31,9 +31,9 @@ SERVICE_EMAIL = "project-%s@storage-transfer-service.iam.gserviceaccount.com"
 
 GCP_PROJECT_ID = os.environ.get('GCP_PROJECT_ID', 'example-project')
 GCP_TRANSFER_SOURCE_GCP_BUCKET = os.environ.get('GCP_TRANSFER_SOURCE_GCP_BUCKET',
-                                            'instance-mb-test-1')
+                                                'instance-mb-test-1')
 GCP_TRANSFER_SOURCE_AWS_BUCKET = os.environ.get('GCP_TRANSFER_SOURCE_AWS_BUCKET',
-                                            'instance-bucket-test-2')
+                                                'instance-bucket-test-2')
 GCP_TRANSFER_TARGET_BUCKET = os.environ.get('GCP_TRANSFER_TARGET_BUCKET',
                                             'instance-bucket-test-2')
 
@@ -41,6 +41,7 @@ GCP_TRANSFER_TARGET_BUCKET = os.environ.get('GCP_TRANSFER_TARGET_BUCKET',
 TEST_FILE_SIZE = 100 * 1024 * 1025
 TEST_FILE_NO = 10
 # Total: 10 * 100 MB = 1GB
+
 
 class GCPTransferTestHelper(LoggingCommandExecutor):
 

@@ -46,6 +46,10 @@ except ImportError:
         import mock
     except ImportError:
         mock = None
+try:
+    import boto3
+except ImportError:
+    boto3 = None
 
 GCP_PROJECT_ID = 'project-id'
 
@@ -107,13 +111,15 @@ class TransferJobPreprocessorTest(unittest.TestCase):
         ).process_body()
         self.assertEqual(body, {})
 
+    @unittest.skipIf(boto3 is None,
+                     "Skipping test because boto3 is not available")
     @mock.patch('airflow.contrib.operators.gcp_transfer_operator.AwsHook')
     def test_should_inject_aws_credentials(self, mock_hook):
         mock_hook.return_value.get_credentials.return_value = \
             ReadOnlyCredentials(AWS_ACCESS_KEY, AWS_ACCESS_SECRET, None)
 
         body = {
-            'transferSpec': SOURCE_AWS
+            'transferSpec': deepcopy(SOURCE_AWS)
         }
         TransferJobPreprocessor(
             body=body
@@ -127,7 +133,6 @@ class TransferJobPreprocessorTest(unittest.TestCase):
     @parameterized.expand([
         ('scheduleStartDate',),
         ('scheduleEndDate',),
-
     ])
     def test_should_format_date_from_python_to_dict(self, field_attr):
         body = {
@@ -151,6 +156,25 @@ class TransferJobPreprocessorTest(unittest.TestCase):
         ).process_body()
         self.assertEqual(body['schedule']['startTimeOfDay'], DICT_TIME)
 
+    def test_should_raise_exception_when_encounters_aws_credentials(self):
+        body = {
+            "transferSpec": {
+                "awsS3DataSource": {
+                    "awsAccessKey": {
+                        "accessKeyId": 'AAA',
+                        "secretAccessKey": 'BBB'
+                    }
+                },
+            }
+        }
+        with self.assertRaises(AirflowException) as cm:
+            TransferJobPreprocessor(
+                body=body
+            ).process_body()
+        err = cm.exception
+        self.assertIn("Credentials in body is not allowed. "
+                      "To store credentials, use connections.", str(err))
+
     @parameterized.expand([
         (dict(itertools.chain(SOURCE_AWS.items(), SOURCE_GCS.items())),),
         (dict(itertools.chain(SOURCE_AWS.items(), SOURCE_HTTP.items())),),
@@ -172,12 +196,11 @@ class TransferJobPreprocessorTest(unittest.TestCase):
 class GcpStorageTransferJobCreateOperatorTest(unittest.TestCase):
     @mock.patch('airflow.contrib.operators.'
                 'gcp_transfer_operator.GCPTransferServiceHook')
-    def test_job_get(self, mock_hook):
+    def test_job_create(self, mock_hook):
         mock_hook.return_value\
             .create_transfer_job.return_value = VALID_TRANSFER_JOB
         body = deepcopy(VALID_TRANSFER_JOB)
         del(body['name'])
-
         op = GcpTransferServiceJobsCreateOperator(
             body=body,
             task_id='task-id'
@@ -187,9 +210,44 @@ class GcpStorageTransferJobCreateOperatorTest(unittest.TestCase):
         mock_hook.assert_called_once_with(api_version='v1',
                                           gcp_conn_id='google_cloud_default')
         mock_hook.return_value.create_transfer_job.assert_called_once_with(
-            body=body
-        )
+            body={
+                'description': 'Description',
+                'status': 'ENABLED',
+                'schedule': {
+                    'scheduleStartDate': {'day': 15, 'month': 10, 'year': 2018},
+                    'scheduleEndDate': {'day': 15, 'month': 10, 'year': 2018},
+                    'startTimeOfDay': {
+                        'hours': 11, 'minutes': 42, 'seconds': 43}
+                },
+                'transferSpec': {
+                    'gcsDataSource': {'bucketName': 'gcp-bucket-name'},
+                    'gcsDataSink': {'bucketName': 'gcp-bucket-name'}
+                }
+            })
         self.assertEqual(result, VALID_TRANSFER_JOB)
+
+    @mock.patch('airflow.contrib.operators.'
+                'gcp_transfer_operator.GCPTransferServiceHook')
+    @mock.patch('airflow.contrib.operators.gcp_transfer_operator.AwsHook')
+    def test_job_create_multiple(self, gcp_hook, aws_hook):
+        aws_hook.return_value.get_credentials.return_value = \
+            ReadOnlyCredentials(AWS_ACCESS_KEY, AWS_ACCESS_SECRET, None)
+        gcp_hook.return_value \
+            .create_transfer_job.return_value = VALID_TRANSFER_JOB
+        body = deepcopy(VALID_TRANSFER_JOB)
+        del(body['transferSpec']['gcsDataSource'])
+        body['transferSpec'].update(SOURCE_AWS)
+
+        op = GcpTransferServiceJobsCreateOperator(
+            body=body,
+            task_id='task-id'
+        )
+        op.execute(None)
+        op = GcpTransferServiceJobsCreateOperator(
+            body=body,
+            task_id='task-id'
+        )
+        op.execute(None)
 
 
 class GcpStorageTransferJobUpdateOperatorTest(unittest.TestCase):
