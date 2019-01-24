@@ -375,9 +375,11 @@ class GcpTransferServiceOperationsListOperator(BaseOperator):
             api_version=self.api_version,
             gcp_conn_id=self.gcp_conn_id,
         )
-        return hook.list_transfer_operations(
+        res = hook.list_transfer_operations(
             filter=self.filter
         )
+        print(res)
+        return res
 
 
 class GcpTransferServiceOperationsPauseOperator(BaseOperator):

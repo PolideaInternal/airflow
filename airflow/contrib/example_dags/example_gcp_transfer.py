@@ -29,17 +29,21 @@ https://airflow.apache.org/concepts.html#variables
 
 """
 import datetime
-import json
 import os
 
 import airflow
 from airflow import models
 from airflow.contrib.hooks.gcp_transfer_hook import GcpTransferOperationStatus
-from airflow.contrib.operators.gcp_transfer_operator import GcpTransferServiceJobsCreateOperator, \
-    GcpTransferServiceJobsDeleteOperator, GcpTransferServiceJobsUpdateOperator, \
-    GcpTransferServiceOperationsListOperator, GcpTransferServiceOperationsPauseOperator, \
-    GcpTransferServiceOperationsGetOperator, GcpTransferServiceOperationsResumeOperator, \
+from airflow.contrib.operators.gcp_transfer_operator import (
+    GcpTransferServiceJobsCreateOperator,
+    GcpTransferServiceJobsDeleteOperator,
+    GcpTransferServiceJobsUpdateOperator,
+    GcpTransferServiceOperationsListOperator,
+    GcpTransferServiceOperationsPauseOperator,
+    GcpTransferServiceOperationsGetOperator,
+    GcpTransferServiceOperationsResumeOperator,
     GcpTransferServiceOperationsCancelOperator
+)
 from airflow.contrib.sensors.gcp_transfer_sensor import GcpStorageTransferOperationWaitForJobStatusSensor
 from airflow.utils import dates
 
@@ -47,6 +51,7 @@ from airflow.utils import dates
 GCP_PROJECT_ID = os.environ.get('GCP_PROJECT_ID', 'example-project')
 GCP_DESCRIPTION = os.environ.get('GCP_DESCRIPTION', 'description')
 GCP_TRANSFER_TARGET_BUCKET = os.environ.get('GCP_TRANSFER_TARGET_BUCKET')
+WAIT_FOR_OPERATION_POKE_INTERVAL = os.environ.get('WAIT_FOR_OPERATION_POKE_INTERVAL', 5)
 # [END howto_operator_gcf_common_variables]
 
 # [START howto_operator_gcf_deploy_variables]
@@ -55,8 +60,9 @@ GCP_TRANSFER_SOURCE_GCP_BUCKET = os.environ.get('GCP_TRANSFER_SOURCE_GCP_BUCKET'
 GCP_TRANSFER_SOURCE_HTTP_URL = os.environ.get('GCP_TRANSFER_SOURCE_HTTP_URL', '')
 # [END howto_operator_gcf_deploy_variables]
 
-now = datetime.datetime.now()
-job_time = now + datetime.timedelta(minutes=7)
+
+now = datetime.datetime.utcnow()
+job_time = now + datetime.timedelta(minutes=1)
 
 # [START howto_operator_gcf_deploy_body]
 create_body = {
@@ -83,6 +89,9 @@ create_body = {
         "gcsDataSink": {
             "bucketName": GCP_TRANSFER_TARGET_BUCKET
         },
+        "transferOptions": {
+            "overwriteObjectsAlreadyExistingInSink": True
+        },
     }
 }
 
@@ -108,17 +117,17 @@ default_args = {
 # [END howto_operator_gct_default_args]
 
 # [START howto_operator_gct_source_variants]
-if GCT_SOURCE_AWS_BUCKET:
-    body['aws_s3_data_source'] = {
-        'bucketName': GCT_SOURCE_AWS_BUCKET
+if GCP_TRANSFER_SOURCE_AWS_BUCKET:
+    create_body['transferSpec']['awsS3DataSource'] = {
+        'bucketName': GCP_TRANSFER_SOURCE_AWS_BUCKET
     }
-elif GCT_SOURCE_GCP_BUCKET:
-    body['aws_s3_data_source'] = {
-        'bucketName': GCT_SOURCE_GCP_BUCKET
+elif GCP_TRANSFER_SOURCE_GCP_BUCKET:
+    create_body['transferSpec']['gcsDataSource'] = {
+        'bucketName': GCP_TRANSFER_SOURCE_GCP_BUCKET
     }
-elif GCT_SOURCE_HTTP_URL:
-    body['http_data_source'] = {
-        'list_url': GCT_SOURCE_HTTP_URL
+elif GCP_TRANSFER_SOURCE_HTTP_URL:
+    create_body['transferSpec']['httpDataSource'] = {
+        'list_url': GCP_TRANSFER_SOURCE_HTTP_URL
     }
 else:
     raise Exception("Please provide one of data_source. You must set one of "
@@ -142,15 +151,8 @@ with models.DAG(
         task_id="create_job",
         body=create_body
     )
-    # [END howto_operator_gct_update]
+    # [END howto_operator_gct_create]
     prev_task = create_job
-
-    # [START howto_operator_gct_update]
-    update_job = GcpTransferServiceJobsUpdateOperator(
-        task_id="update_job",
-        job_name="{{task_instance.xcom_pull('create_job', key='return_value')['name']}}",
-        body=update_body
-    )
 
     wait_for_operation_to_start = GcpStorageTransferOperationWaitForJobStatusSensor(
         task_id="wait_for_operation_to_start",
@@ -158,35 +160,56 @@ with models.DAG(
         job_name="{{task_instance.xcom_pull('create_job', key='return_value')['name']}}",
         project_id=GCP_PROJECT_ID,
         expected_status=GcpTransferOperationStatus.IN_PROGRESS,
+        poke_interval=WAIT_FOR_OPERATION_POKE_INTERVAL
     )
+
+    prev_task = next_dep(wait_for_operation_to_start, prev_task)
 
     list_operations = GcpTransferServiceOperationsListOperator(
         task_id="list_operations",
         filter={
-            "project_id": GCP_PROJECT_ID,
-            "job_names": ["{{task_instance.xcom_pull('create_job', key='return_value')['name']}}]"]
+                "project_id": GCP_PROJECT_ID,
+                "job_names": ["{{task_instance.xcom_pull('create_job', key='return_value')['name']}}"]
         }
     )
 
+    prev_task = next_dep(list_operations, prev_task)
+
     pause_operation = GcpTransferServiceOperationsPauseOperator(
         task_id="pause_operation",
-        operation_name=""
+        operation_name="{{task_instance.xcom_pull('list_operations', key='return_value')[0]['name']}}"
     )
+
+    prev_task = next_dep(pause_operation, prev_task)
+
+    update_job = GcpTransferServiceJobsUpdateOperator(
+        task_id="update_job",
+        job_name="{{task_instance.xcom_pull('create_job', key='return_value')['name']}}",
+        body=update_body
+    )
+
+    prev_task = next_dep(update_job, prev_task)
 
     get_operation = GcpTransferServiceOperationsGetOperator(
         task_id="get_operation",
-        operation_name=""
+        operation_name="{{task_instance.xcom_pull('list_operations', key='return_value')[0]['name']}}"
     )
+
+    prev_task = next_dep(get_operation, prev_task)
 
     resume_operation = GcpTransferServiceOperationsResumeOperator(
         task_id="resume_operation",
-        operation_name=""
+        operation_name="{{task_instance.xcom_pull('get_operation', key='return_value')['name']}}"
     )
+
+    prev_task = next_dep(resume_operation, prev_task)
 
     cancel_operation = GcpTransferServiceOperationsCancelOperator(
         task_id="cancel_operation",
-        operation_name=""
+        operation_name="{{task_instance.xcom_pull('get_operation', key='return_value')['name']}}"
     )
+
+    prev_task = next_dep(cancel_operation, prev_task)
 
     # # [START howto_operator_gct_delete]
     delete_job = GcpTransferServiceJobsDeleteOperator(
@@ -195,3 +218,5 @@ with models.DAG(
         project_id=GCP_PROJECT_ID
     )
     # [END howto_operator_gcf_delete]
+
+    prev_task = next_dep(delete_job, prev_task)

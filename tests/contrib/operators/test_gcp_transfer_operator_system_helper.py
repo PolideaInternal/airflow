@@ -23,19 +23,23 @@ import subprocess
 
 from googleapiclient._auth import default_credentials, with_scopes
 
+from tests.contrib.utils.base_gcp_system_test_case import RetrieveVariables
 from tests.contrib.utils.gcp_authenticator import GcpAuthenticator, GCP_GCS_TRANSFER_KEY
 from tests.contrib.utils.logging_command_executor import LoggingCommandExecutor
 from googleapiclient import discovery
 
-SERVICE_EMAIL = "project-%s@storage-transfer-service.iam.gserviceaccount.com"
+
+retrieve_variables = RetrieveVariables()
+
+SERVICE_EMAIL_FORMAT = "project-%s@storage-transfer-service.iam.gserviceaccount.com"
 
 GCP_PROJECT_ID = os.environ.get('GCP_PROJECT_ID', 'example-project')
 GCP_TRANSFER_SOURCE_GCP_BUCKET = os.environ.get('GCP_TRANSFER_SOURCE_GCP_BUCKET',
-                                                'instance-mb-test-1')
+                                            'gcp-transfer-test-gcp-source')
 GCP_TRANSFER_SOURCE_AWS_BUCKET = os.environ.get('GCP_TRANSFER_SOURCE_AWS_BUCKET',
                                                 'instance-bucket-test-2')
 GCP_TRANSFER_TARGET_BUCKET = os.environ.get('GCP_TRANSFER_TARGET_BUCKET',
-                                            'instance-bucket-test-2')
+                                            'gcp-transfer-test-target')
 
 # 100 MB
 TEST_FILE_SIZE = 100 * 1024 * 1025
@@ -59,12 +63,12 @@ class GCPTransferTestHelper(LoggingCommandExecutor):
 
     def create_gcs_buckets(self):
         self.execute_cmd([
-            'gsutil', 'mb', "-p", GCP_PROJECT_ID,
+            'gsutil', 'mb', "-p", GCP_PROJECT_ID, "-c", "regional", "-l", "europe-north1",
             "gs://%s/" % GCP_TRANSFER_TARGET_BUCKET,
         ])
 
         self.execute_cmd([
-            'gsutil', 'mb', "-p", GCP_PROJECT_ID,
+            'gsutil', 'mb', "-p", GCP_PROJECT_ID, "-c", "regional", "-l", "europe-west1",
             "gs://%s/" % GCP_TRANSFER_SOURCE_GCP_BUCKET,
         ])
 
@@ -89,7 +93,7 @@ class GCPTransferTestHelper(LoggingCommandExecutor):
             ]
         ).decode("utf-8").strip()
 
-        account_email = SERVICE_EMAIL % project_number
+        account_email = SERVICE_EMAIL_FORMAT % project_number
 
         self.execute_cmd([
             "gsutil", "iam", "ch",
@@ -109,7 +113,7 @@ class GCPTransferTestHelper(LoggingCommandExecutor):
         ])
 
         self.execute_cmd([
-            'gsutil', 'rm', "-r", "gs://%s/" % GCP_TRANSFER_TARGET_BUCKET,
+            'gsutil', 'rm', "-r", "gs://%s/" % GCP_TRANSFER_SOURCE_GCP_BUCKET
         ])
 
     @staticmethod

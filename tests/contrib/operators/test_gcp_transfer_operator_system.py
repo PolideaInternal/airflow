@@ -22,10 +22,10 @@ from tests.contrib.operators.test_gcp_transfer_operator_system_helper import GCP
 from tests.contrib.utils.base_gcp_system_test_case import \
     SKIP_TEST_WARNING, DagGcpSystemTestCase
 
-from tests.contrib.utils.gcp_authenticator import GCP_GCS_KEY
+from tests.contrib.utils.gcp_authenticator import GCP_GCS_TRANSFER_KEY
 
 
-@unittest.skipIf(DagGcpSystemTestCase.skip_check(GCP_GCS_KEY), SKIP_TEST_WARNING)
+@unittest.skipIf(DagGcpSystemTestCase.skip_check(GCP_GCS_TRANSFER_KEY), SKIP_TEST_WARNING)
 class GcpTransferExampleDagsSystemTest(DagGcpSystemTestCase):
 
     def setUp(self):
@@ -46,7 +46,7 @@ class GcpTransferExampleDagsSystemTest(DagGcpSystemTestCase):
         super(GcpTransferExampleDagsSystemTest, self).__init__(
             method_name,
             dag_id='example_gcp_transfer',
-            gcp_key=GCP_GCS_KEY)
+            gcp_key=GCP_GCS_TRANSFER_KEY)
         self.helper = GCPTransferTestHelper()
 
     def test_run_example_dag_compute(self):

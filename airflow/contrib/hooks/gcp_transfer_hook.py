@@ -167,7 +167,8 @@ class GCPTransferServiceHook(GoogleCloudBaseHook):
 
         while request is not None:
             response = request.execute(num_retries=NUM_RETRIES)
-            operations.extend(response['operations'])
+            if 'operations' in response:
+                operations.extend(response['operations'])
 
             request = conn.transferOperations().list_next(
                 previous_request=request,
