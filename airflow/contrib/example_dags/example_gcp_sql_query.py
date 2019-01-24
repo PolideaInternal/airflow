@@ -24,7 +24,7 @@ This DAG relies on the following OS environment variables
 
 * GCP_PROJECT_ID - Google Cloud Platform project for the Cloud SQL instance
 * GCP_REGION - Google Cloud region where the database is created
-*
+*f
 * GCSQL_POSTGRES_INSTANCE_NAME - Name of the postgres Cloud SQL instance
 * GCSQL_POSTGRES_USER - Name of the postgres database user
 * GCSQL_POSTGRES_PASSWORD - Password of the postgres database user

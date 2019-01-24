@@ -31,14 +31,14 @@ class GcpTransferExampleDagsSystemTest(DagGcpSystemTestCase):
     def setUp(self):
         super(GcpTransferExampleDagsSystemTest, self).setUp()
         self.gcp_authenticator.gcp_authenticate()
-        self.helper.create_s3_bucket()
+        # self.helper.create_s3_bucket()
         self.helper.create_gcs_buckets()
         self.gcp_authenticator.gcp_revoke_authentication()
 
     def tearDown(self):
         self.gcp_authenticator.gcp_authenticate()
         self.helper.delete_gcs_buckets()
-        self.helper.delete_s3_bucket()
+        # self.helper.delete_s3_bucket()
         self.gcp_authenticator.gcp_revoke_authentication()
         super(GcpTransferExampleDagsSystemTest, self).tearDown()
 

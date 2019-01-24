@@ -19,86 +19,95 @@
 # under the License.
 import argparse
 import os
+import subprocess
 
 from googleapiclient._auth import default_credentials, with_scopes
 
-from tests.contrib.utils.gcp_authenticator import GcpAuthenticator, GCP_GCS_KEY
+from tests.contrib.utils.gcp_authenticator import GcpAuthenticator, GCP_GCS_TRANSFER_KEY
 from tests.contrib.utils.logging_command_executor import LoggingCommandExecutor
 from googleapiclient import discovery
 
+SERVICE_EMAIL = "project-%s@storage-transfer-service.iam.gserviceaccount.com"
+
 GCP_PROJECT_ID = os.environ.get('GCP_PROJECT_ID', 'example-project')
-GCT_SOURCE_GCS_BUCKET_NAME = os.environ.get('GCT_SOURCE_BUCKET_NAME',
+GCP_TRANSFER_SOURCE_GCP_BUCKET = os.environ.get('GCP_TRANSFER_SOURCE_GCP_BUCKET',
                                             'instance-mb-test-1')
-GCT_TARGET_GCS_BUCKET_NAME = os.environ.get('GCT_SOURCE_BUCKET_NAME',
+GCP_TRANSFER_SOURCE_AWS_BUCKET = os.environ.get('GCP_TRANSFER_SOURCE_AWS_BUCKET',
                                             'instance-bucket-test-2')
-GCT_SOURCE_AWS_BUCKET_NAME = os.environ.get('GCT_SOURCE_AWS_BUCKET_NAME',
+GCP_TRANSFER_TARGET_BUCKET = os.environ.get('GCP_TRANSFER_TARGET_BUCKET',
                                             'instance-bucket-test-2')
 
-# 10 MB
+# 100 MB
 TEST_FILE_SIZE = 100 * 1024 * 1025
 TEST_FILE_NO = 10
-
+# Total: 10 * 100 MB = 1GB
 
 class GCPTransferTestHelper(LoggingCommandExecutor):
 
     def create_s3_bucket(self):
         self.execute_cmd([
             "aws", "s3api",
-            "create-bucket", "--bucket", GCT_SOURCE_AWS_BUCKET_NAME
+            "create-bucket", "--bucket", GCP_TRANSFER_SOURCE_AWS_BUCKET
         ])
 
     def delete_s3_bucket(self):
         self.execute_cmd([
             "aws", "s3api",
-            "delete-bucket", "--bucket", GCT_SOURCE_AWS_BUCKET_NAME
+            "delete-bucket", "--bucket", GCP_TRANSFER_SOURCE_AWS_BUCKET
         ])
 
     def create_gcs_buckets(self):
         self.execute_cmd([
             'gsutil', 'mb', "-p", GCP_PROJECT_ID,
-            "gs://%s/" % GCT_TARGET_GCS_BUCKET_NAME,
+            "gs://%s/" % GCP_TRANSFER_TARGET_BUCKET,
         ])
 
         self.execute_cmd([
             'gsutil', 'mb', "-p", GCP_PROJECT_ID,
-            "gs://%s/" % GCT_SOURCE_GCS_BUCKET_NAME,
+            "gs://%s/" % GCP_TRANSFER_SOURCE_GCP_BUCKET,
         ])
 
         self.execute_cmd([
             "bash", "-c",
             "gsutil -m cp <(cat /dev/urandom | head -c %s) "
-            "gs://%s/file.bin" % (TEST_FILE_SIZE, GCT_SOURCE_GCS_BUCKET_NAME)
+            "gs://%s/file.bin" % (TEST_FILE_SIZE, GCP_TRANSFER_SOURCE_GCP_BUCKET)
         ])
 
         self.execute_cmd([
             "bash", "-c",
             "for i in {1..200}; do echo $i; done | xargs -n 1 -P 16 -I {} "
-            "gsutil cp  gs://%s/file.txt gs://%s/file-{}.txt" %
-            (GCT_SOURCE_GCS_BUCKET_NAME, GCT_SOURCE_GCS_BUCKET_NAME)
+            "gsutil cp  gs://%s/file.bin gs://%s/file-{}.bin" %
+            (GCP_TRANSFER_SOURCE_GCP_BUCKET, GCP_TRANSFER_SOURCE_GCP_BUCKET)
         ])
 
-        transfer_service_account = GCPTransferTestHelper.\
-            _get_transfer_service_account()
-        account_email = transfer_service_account['accountEmail']
+        project_number = subprocess.check_output(
+            [
+                'gcloud', 'projects', 'describe', GCP_PROJECT_ID,
+                '--format', 'value(projectNumber)'
+            ]
+        ).decode("utf-8").strip()
+
+        account_email = SERVICE_EMAIL % project_number
 
         self.execute_cmd([
             "gsutil", "iam", "ch",
-            "serviceAccount:%s:objectViewer" % account_email,
-            "gs://" % GCT_SOURCE_GCS_BUCKET_NAME
+            "serviceAccount:%s:admin" % account_email,
+            "gs://%s" % GCP_TRANSFER_SOURCE_GCP_BUCKET
         ])
+
         self.execute_cmd([
             "gsutil", "iam", "ch",
-            "serviceAccount:%s:objectCreator" % account_email,
-            "gs://" % GCT_TARGET_GCS_BUCKET_NAME
+            "serviceAccount:%s:admin" % account_email,
+            "gs://%s" % GCP_TRANSFER_TARGET_BUCKET
         ])
 
     def delete_gcs_buckets(self):
         self.execute_cmd([
-            'gsutil', 'rm', "-r", "gs://%s/" % GCT_TARGET_GCS_BUCKET_NAME
+            'gsutil', 'rm', "-r", "gs://%s/" % GCP_TRANSFER_TARGET_BUCKET
         ])
 
         self.execute_cmd([
-            'gsutil', 'rm', "-r", "gs://%s/" % GCT_SOURCE_AWS_BUCKET_NAME,
+            'gsutil', 'rm', "-r", "gs://%s/" % GCP_TRANSFER_TARGET_BUCKET,
         ])
 
     @staticmethod
@@ -125,7 +134,7 @@ if __name__ == '__main__':
     action = parser.parse_args().action
 
     helper = GCPTransferTestHelper()
-    gcp_authenticator = GcpAuthenticator(GCP_GCS_KEY)
+    gcp_authenticator = GcpAuthenticator(GCP_GCS_TRANSFER_KEY)
     helper.log.info('Starting action: {}'.format(action))
 
     gcp_authenticator.gcp_store_authentication()

@@ -119,16 +119,15 @@ class GCPTransferServiceHook(GoogleCloudBaseHook):
 
         return jobs
 
-    def update_transfer_job(self, job_name, body, field_mask):
+    def update_transfer_job(self, job_name, body):
         return self.get_conn()\
             .transferJobs()\
             .patch(
                 jobName=job_name,
-                body=body,
-                updateFieldMask=field_mask)\
+                body=body)\
             .execute(num_retries=NUM_RETRIES)
 
-    def delete_transfer_job(self, job_name):
+    def delete_transfer_job(self, job_name, project_id=None):
         # This is a soft delete state. After a transfer job is set to this
         # state, the job and all the transfer executions are subject to garbage
         # collection. Transfer jobs become eligible for garbage collection
@@ -136,9 +135,12 @@ class GCPTransferServiceHook(GoogleCloudBaseHook):
         return self.get_conn().transferJobs().patch(
             jobName=job_name,
             body={
-                'status': GcpTransferJobsStatus.DELETED
+                'project_id': project_id,
+                'transfer_job': {
+                    'status': GcpTransferJobsStatus.DELETED
+                },
+                'update_transfer_job_field_mask': 'status'
             },
-            updateFieldMask='status'
         ).execute(num_retries=NUM_RETRIES)
 
     def cancel_transfer_operation(self, operation_name):

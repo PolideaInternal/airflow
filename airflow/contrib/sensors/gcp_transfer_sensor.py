@@ -24,6 +24,8 @@ from airflow.utils.decorators import apply_defaults
 
 class GcpStorageTransferOperationWaitForJobStatusSensor(BaseSensorOperator):
 
+    template_fields = ['job_name']
+
     @apply_defaults
     def __init__(self,
                  operation_name,
