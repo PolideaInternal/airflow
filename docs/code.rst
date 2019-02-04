@@ -208,6 +208,14 @@ Operators
 .. autoclass:: airflow.contrib.operators.gcp_compute_operator.GceSetMachineTypeOperator
 .. autoclass:: airflow.contrib.operators.gcp_function_operator.GcfFunctionDeleteOperator
 .. autoclass:: airflow.contrib.operators.gcp_function_operator.GcfFunctionDeployOperator
+.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetCreateOperator
+.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetGetOperator
+.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetUpdateOperator
+.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetDeleteOperator
+.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductCreateOperator
+.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductGetOperator
+.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductUpdateOperator
+.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductDeleteOperator
 .. autoclass:: airflow.contrib.operators.gcs_acl_operator.GoogleCloudStorageBucketCreateAclEntryOperator
 .. autoclass:: airflow.contrib.operators.gcs_operator.GoogleCloudStorageCreateBucketOperator
 .. autoclass:: airflow.contrib.operators.gcs_download_operator.GoogleCloudStorageDownloadOperator

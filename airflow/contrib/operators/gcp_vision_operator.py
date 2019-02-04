@@ -449,10 +449,8 @@ class CloudVisionProductUpdateOperator(BaseOperator):
 
     If labels are updated, the change will not be reflected in queries until the next index time.
 
-    Note:
-
-    To locate the `Product` resource, its `name` in the form
-    `projects/PROJECT_ID/locations/LOC_ID/products/PRODUCT_ID` is necessary.
+    .. note:: To locate the `Product` resource, its `name` in the form
+        `projects/PROJECT_ID/locations/LOC_ID/products/PRODUCT_ID` is necessary.
 
     You can provide the `name` directly as an attribute of the `product` object. However, you can leave it
     blank and provide `location` and `product_id` instead (and optionally `project_id` - if not present,
@@ -465,7 +463,7 @@ class CloudVisionProductUpdateOperator(BaseOperator):
 
     - Returns NOT_FOUND if the Product does not exist.
     - Returns INVALID_ARGUMENT if display_name is present in update_mask but is missing from the request or
-    longer than 4096 characters.
+        longer than 4096 characters.
     - Returns INVALID_ARGUMENT if description is present in update_mask but is longer than 4096 characters.
     - Returns INVALID_ARGUMENT if product_category is present in update_mask.
 

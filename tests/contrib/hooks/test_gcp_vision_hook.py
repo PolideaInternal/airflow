@@ -111,7 +111,7 @@ class TestGcpVisionHook(unittest.TestCase):
         # Then
         # API response was wrong (None) and thus ProductSet ID extraction should fail.
         err = cm.exception
-        self.assertIn('Unable to get product set id from name...', str(err))
+        self.assertIn('Unable to get name from response...', str(err))
         create_product_set_method.assert_called_once_with(parent=parent, product_set=product_set,
                                                           product_set_id=None, retry=None, timeout=None,
                                                           metadata=None)
@@ -301,7 +301,7 @@ class TestGcpVisionHook(unittest.TestCase):
         # Then
         # API response was wrong (None) and thus ProductSet ID extraction should fail.
         err = cm.exception
-        self.assertIn('Unable to get product id from name...', str(err))
+        self.assertIn('Unable to get name from response...', str(err))
         create_product_method.assert_called_once_with(parent=parent, product=product, product_id=None,
                                                       retry=None, timeout=None, metadata=None)
 

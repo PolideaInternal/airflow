@@ -1746,10 +1746,8 @@ CloudVisionProductSetUpdateOperator
 Makes changes to a :code:`ProductSet` resource. Only :code:`display_name` can be updated
 currently.
 
-Note:
-
-To locate the `ProductSet` resource, its `name` in the form
-`projects/PROJECT_ID/locations/LOC_ID/productSets/PRODUCT_SET_ID` is necessary.
+.. note:: To locate the `ProductSet` resource, its `name` in the form
+  ``projects/PROJECT_ID/locations/LOC_ID/productSets/PRODUCT_SET_ID`` is necessary.
 
 You can provide the `name` directly as an attribute of the `product_set` object.
 However, you can leave it blank and provide `location` and `product_set_id` instead (and
@@ -1942,10 +1940,8 @@ Makes changes to a :code:`Product` resource. Only the :code:`display_name`,
 If labels are updated, the change will not be reflected in queries until the next index
 time.
 
-Note:
-
-To locate the `Product` resource, its `name` in the form
-`projects/PROJECT_ID/locations/LOC_ID/products/PRODUCT_ID` is necessary.
+.. note:: To locate the `Product` resource, its `name` in the form
+  ``projects/PROJECT_ID/locations/LOC_ID/products/PRODUCT_ID`` is necessary.
 
 You can provide the `name` directly as an attribute of the `product` object. However, you
 can leave it blank and provide `location` and `product_id` instead (and optionally

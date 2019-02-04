@@ -652,49 +652,56 @@ Cloud Vision Product Search Operators
 CloudVisionProductSetCreateOperator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetCreateOperator
+    :noindex:
 
 .. _CloudVisionProductSetGetOperator:
 
 CloudVisionProductSetGetOperator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetGetOperator
+    :noindex:
 
 .. _CloudVisionProductSetUpdateOperator:
 
 CloudVisionProductSetUpdateOperator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetUpdateOperator
+    :noindex:
 
 .. _CloudVisionProductSetDeleteOperator:
 
 CloudVisionProductSetDeleteOperator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetDeleteOperator
+    :noindex:
 
 .. _CloudVisionProductCreateOperator:
 
 CloudVisionProductCreateOperator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductCreateOperator
+    :noindex:
 
 .. _CloudVisionProductGetOperator:
 
 CloudVisionProductGetOperator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductGetOperator
+    :noindex:
 
 .. _CloudVisionProductUpdateOperator:
 
 CloudVisionProductUpdateOperator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductUpdateOperator
+    :noindex:
 
 .. _CloudVisionProductDeleteOperator:
 
 CloudVisionProductDeleteOperator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductDeleteOperator
-
+    :noindex:
 
 Google Kubernetes Engine
 ''''''''''''''''''''''''
