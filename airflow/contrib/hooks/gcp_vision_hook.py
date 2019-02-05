@@ -61,7 +61,7 @@ class CloudVisionHook(GoogleCloudBaseHook):
         response = self._handle_request(lambda **kwargs: client.create_product_set(**kwargs), parent=parent,
                                         product_set=product_set, product_set_id=product_set_id, retry=retry,
                                         timeout=timeout, metadata=metadata)
-        self.log.info('ProductSet created.')
+        self.log.info('ProductSet created: %s', response.name if response else '')
         self.log.debug('ProductSet created:\n%s', response)
 
         if not product_set_id:
@@ -100,7 +100,7 @@ class CloudVisionHook(GoogleCloudBaseHook):
         response = self._handle_request(lambda **kwargs: client.update_product_set(**kwargs),
                                         product_set=product_set, update_mask=update_mask, retry=retry,
                                         timeout=timeout, metadata=metadata)
-        self.log.info('ProductSet updated.')
+        self.log.info('ProductSet updated: %s', response.name if response else '')
         self.log.debug('ProductSet updated:\n%s', response)
         return MessageToJson(response)
 
@@ -158,7 +158,7 @@ class CloudVisionHook(GoogleCloudBaseHook):
         response = self._handle_request(lambda **kwargs: client.create_product(**kwargs), parent=parent,
                                         product=product, product_id=product_id, retry=retry,
                                         timeout=timeout, metadata=metadata)
-        self.log.info('Product created.')
+        self.log.info('Product created: %s', response.name if response else '')
         self.log.debug('Product created:\n%s', response)
 
         if not product_id:
@@ -196,7 +196,7 @@ class CloudVisionHook(GoogleCloudBaseHook):
         response = self._handle_request(lambda **kwargs: client.update_product(**kwargs), product=product,
                                         update_mask=update_mask, retry=retry, timeout=timeout,
                                         metadata=metadata)
-        self.log.info('Product updated:')
+        self.log.info('Product updated: %s', response.name if response else '')
         self.log.debug('Product updated:\n%s', response)
         return MessageToJson(response)
 
