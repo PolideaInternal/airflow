@@ -1677,6 +1677,25 @@ Some arguments in the example DAG are taken from the OS environment variables:
 Using the operator
 """"""""""""""""""
 
+We are using the ``ProductSet`` and ``Retry`` objects from Google libraries:
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_vision.py
+      :language: python
+      :start-after: [START howto_operator_vision_productset_import]
+      :end-before: [END howto_operator_vision_productset_import]
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_vision.py
+      :language: python
+      :start-after: [START howto_operator_vision_retry_import]
+      :end-before: [END howto_operator_vision_retry_import]
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_vision.py
+      :language: python
+      :start-after: [START howto_operator_vision_productset]
+      :end-before: [END howto_operator_vision_productset]
+
+Initialization of the task:
+
 .. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_vision.py
       :language: python
       :dedent: 4
@@ -1773,6 +1792,20 @@ Some arguments in the example DAG are taken from the OS environment variables:
 Using the operator
 """"""""""""""""""
 
+We are using the ``ProductSet`` object from the Google Cloud Vision library:
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_vision.py
+      :language: python
+      :start-after: [START howto_operator_vision_productset_import]
+      :end-before: [END howto_operator_vision_productset_import]
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_vision.py
+      :language: python
+      :start-after: [START howto_operator_vision_productset]
+      :end-before: [END howto_operator_vision_productset]
+
+Initialization of the task:
+
 .. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_vision.py
       :language: python
       :dedent: 4
@@ -1864,6 +1897,25 @@ Some arguments in the example DAG are taken from the OS environment variables:
 
 Using the operator
 """"""""""""""""""
+
+We are using the ``Product`` and ``Retry`` objects from Google libraries:
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_vision.py
+      :language: python
+      :start-after: [START howto_operator_vision_product_import]
+      :end-before: [END howto_operator_vision_product_import]
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_vision.py
+      :language: python
+      :start-after: [START howto_operator_vision_retry_import]
+      :end-before: [END howto_operator_vision_retry_import]
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_vision.py
+      :language: python
+      :start-after: [START howto_operator_vision_product]
+      :end-before: [END howto_operator_vision_product]
+
+Initialization of the task:
 
 .. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_vision.py
       :language: python
@@ -1975,6 +2027,20 @@ Some arguments in the example DAG are taken from the OS environment variables:
 
 Using the operator
 """"""""""""""""""
+
+We are using the ``Product`` object from the Google Cloud Vision library:
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_vision.py
+      :language: python
+      :start-after: [START howto_operator_vision_product_import]
+      :end-before: [END howto_operator_vision_product_import]
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_vision.py
+      :language: python
+      :start-after: [START howto_operator_vision_product]
+      :end-before: [END howto_operator_vision_product]
+
+Initialization of the task:
 
 .. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_vision.py
       :language: python

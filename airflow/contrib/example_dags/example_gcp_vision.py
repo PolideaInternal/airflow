@@ -27,8 +27,15 @@ This DAG relies on the following OS environment variables
 """
 import os
 
+# [START howto_operator_vision_retry_import]
 from google.api_core.retry import Retry
-from google.cloud.vision_v1.proto.product_search_service_pb2 import ProductSet, Product
+# [END howto_operator_vision_retry_import]
+# [START howto_operator_vision_productset_import]
+from google.cloud.vision_v1.proto.product_search_service_pb2 import ProductSet
+# [END howto_operator_vision_productset_import]
+# [START howto_operator_vision_product_import]
+from google.cloud.vision_v1.proto.product_search_service_pb2 import Product
+# [END howto_operator_vision_product_import]
 
 import airflow
 from airflow import models
@@ -51,8 +58,13 @@ default_args = {
 GCP_VISION_LOCATION = os.environ.get('GCP_VISION_LOCATION', 'europe-west1')
 # [END howto_operator_vision_args_common]
 
+# [START howto_operator_vision_productset]
 product_set = ProductSet(display_name='My Product Set 1')
+# [END howto_operator_vision_productset]
+
+# [START howto_operator_vision_product]
 product = Product(display_name='My Product 1', product_category='toys')
+# [END howto_operator_vision_product]
 
 with models.DAG(
     'example_gcp_vision',

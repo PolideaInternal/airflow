@@ -157,10 +157,8 @@ class CloudVisionProductSetUpdateOperator(BaseOperator):
     """
     Makes changes to a `ProductSet` resource. Only display_name can be updated currently.
 
-    Note:
-
-    To locate the `ProductSet` resource, its `name` in the form
-    `projects/PROJECT_ID/locations/LOC_ID/productSets/PRODUCT_SET_ID` is necessary.
+    .. note:: To locate the `ProductSet` resource, its `name` in the form
+        `projects/PROJECT_ID/locations/LOC_ID/productSets/PRODUCT_SET_ID` is necessary.
 
     You can provide the `name` directly as an attribute of the `product_set` object.
     However, you can leave it blank and provide `location` and `product_set_id` instead
