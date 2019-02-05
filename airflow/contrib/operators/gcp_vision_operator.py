@@ -31,8 +31,8 @@ class CloudVisionProductSetCreateOperator(BaseOperator):
         form as the protobuf message `ProductSet`.
     :type product_set: dict or google.cloud.vision_v1.types.ProductSet
         https://googleapis.github.io/google-cloud-python/latest/vision/gapic/v1/types.html#google.cloud.vision_v1.types.ProductSet
-    :param location: (Required) The region where the ProductSet should be created. Valid regions are:
-        us-east1, us-west1, europe-west1, asia-east1
+    :param location: (Required) The region where the ProductSet should be created. Valid regions
+        (as of 2019-02-05) are: us-east1, us-west1, europe-west1, asia-east1
     :type location: str
     :param project_id: (Optional) The project in which the ProductSet should be created. If set to None or
         missing, the default project_id from the GCP connection is used.
@@ -99,8 +99,8 @@ class CloudVisionProductSetGetOperator(BaseOperator):
     """
     Gets information associated with a ProductSet.
 
-    :param location: (Required) The region where the ProductSet is located. Valid regions are:
-        us-east1, us-west1, europe-west1, asia-east1
+    :param location: (Required) The region where the ProductSet is located. Valid regions (as of 2019-02-05)
+        are: us-east1, us-west1, europe-west1, asia-east1
     :type location: str
     :param product_set_id: (Required) The resource id of this ProductSet.
     :type product_set_id: str
@@ -173,7 +173,7 @@ class CloudVisionProductSetUpdateOperator(BaseOperator):
         message `ProductSet`.
     :type product_set: dict or google.cloud.vision_v1.types.ProductSet
         https://googleapis.github.io/google-cloud-python/latest/vision/gapic/v1/types.html#google.cloud.vision_v1.types.ProductSet
-    :param location: (Optional) The region where the ProductSet is located. Valid regions
+    :param location: (Optional) The region where the ProductSet is located. Valid regions (as of 2019-02-05)
         are: us-east1, us-west1, europe-west1, asia-east1
     :type location: str
     :param product_set_id: (Optional) The resource id of this ProductSet.
@@ -243,7 +243,7 @@ class CloudVisionProductSetDeleteOperator(BaseOperator):
     `ProductSet` are not deleted. The actual image files are not deleted from Google
     Cloud Storage.
 
-    :param location: (Required) The region where the ProductSet is located. Valid regions
+    :param location: (Required) The region where the ProductSet is located. Valid regions (as of 2019-02-05)
         are: us-east1, us-west1, europe-west1, asia-east1
     :type location: str
     :param product_set_id: (Required) The resource id of this ProductSet.
@@ -307,8 +307,8 @@ class CloudVisionProductCreateOperator(BaseOperator):
     - Returns INVALID_ARGUMENT if `description` is longer than 4096 characters.
     - Returns INVALID_ARGUMENT if `product_category` is missing or invalid.
 
-    :param location: (Required) The region where the Product should be created. Valid regions are:
-        us-east1, us-west1, europe-west1, asia-east1
+    :param location: (Required) The region where the Product should be created. Valid regions
+        (as of 2019-02-05) are: us-east1, us-west1, europe-west1, asia-east1
     :type location: str
     :param product: (Required) The product to create. If a dict is provided, it must be of the same form as
         the protobuf message `Product`.
@@ -385,7 +385,7 @@ class CloudVisionProductGetOperator(BaseOperator):
 
     - Returns NOT_FOUND if the `Product` does not exist.
 
-    :param location: (Required) The region where the Product is located. Valid regions are:
+    :param location: (Required) The region where the Product is located. Valid regions (as of 2019-02-05) are:
         us-east1, us-west1, europe-west1, asia-east1
     :type location: str
     :param product_id: (Required) The resource id of this Product.
@@ -469,7 +469,7 @@ class CloudVisionProductUpdateOperator(BaseOperator):
         immutable. If a dict is provided, it must be of the same form as the protobuf message `Product`.
     :type product: dict or google.cloud.vision_v1.types.ProductSet
         https://googleapis.github.io/google-cloud-python/latest/vision/gapic/v1/types.html#google.cloud.vision_v1.types.ProductSet
-    :param location: (Optional) The region where the Product is located. Valid regions are:
+    :param location: (Optional) The region where the Product is located. Valid regions (as of 2019-02-05) are:
         us-east1, us-west1, europe-west1, asia-east1
     :type location: str
     :param product_id: (Optional) The resource id of this Product.
@@ -545,8 +545,8 @@ class CloudVisionProductDeleteOperator(BaseOperator):
 
     - Returns NOT_FOUND if the product does not exist.
 
-    :param location: (Required) The region where the Product is located. Valid regions are: us-east1,
-        us-west1, europe-west1, asia-east1
+    :param location: (Required) The region where the Product is located. Valid regions (as of 2019-02-05) are:
+        us-east1, us-west1, europe-west1, asia-east1
     :type location: str
     :param product_id: (Required) The resource id of this Product.
     :type product_id: str
