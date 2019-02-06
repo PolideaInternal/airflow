@@ -171,6 +171,16 @@ with models.DAG(
     )
     # [END howto_operator_vision_product_set_create_2]
 
+    # Second 'create' task with the same product_set_id to demonstrate idempotence
+    product_set_create_2_idempotence = CloudVisionProductSetCreateOperator(
+        product_set_id=GCP_VISION_PRODUCT_SET_ID,
+        location=GCP_VISION_LOCATION,
+        product_set=product_set,
+        retry=Retry(maximum=10.0),
+        timeout=5,
+        task_id='product_set_create_2_idempotence'
+    )
+
     # [START howto_operator_vision_product_set_get_2]
     product_set_get_2 = CloudVisionProductSetGetOperator(
         location=GCP_VISION_LOCATION,
@@ -206,6 +216,16 @@ with models.DAG(
         task_id='product_create_2'
     )
     # [END howto_operator_vision_product_create_2]
+
+    # Second 'create' task with the same product_id to demonstrate idempotence
+    product_create_2_idempotence = CloudVisionProductCreateOperator(
+        product_id=GCP_VISION_PRODUCT_ID,
+        location=GCP_VISION_LOCATION,
+        product=product,
+        retry=Retry(maximum=10.0),
+        timeout=5,
+        task_id='product_create_2_idempotence'
+    )
 
     # [START howto_operator_vision_product_get_2]
     product_get_2 = CloudVisionProductGetOperator(

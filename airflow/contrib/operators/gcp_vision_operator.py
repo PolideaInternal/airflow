@@ -90,9 +90,9 @@ class CloudVisionProductSetCreateOperator(BaseOperator):
                                                  timeout=self.timeout,
                                                  metadata=self.metadata)
         except AlreadyExists:
-            self.log.info('Product set with id %s already exists. Aborting the create operation.',
+            self.log.info('Product set with id %s already exists. Exiting from the create operation.',
                           self.product_set_id)
-            return False
+            return self.product_set_id
 
 
 class CloudVisionProductSetGetOperator(BaseOperator):
@@ -372,9 +372,9 @@ class CloudVisionProductCreateOperator(BaseOperator):
                                              timeout=self.timeout,
                                              metadata=self.metadata)
         except AlreadyExists:
-            self.log.info('Product with id %s already exists. Aborting the create operation.',
+            self.log.info('Product with id %s already exists. Exiting from the create operation.',
                           self.product_id)
-            return False
+            return self.product_id
 
 
 class CloudVisionProductGetOperator(BaseOperator):
