@@ -22,10 +22,16 @@ import unittest
 from google.api_core.exceptions import AlreadyExists
 from google.cloud.vision_v1.proto.product_search_service_pb2 import ProductSet, Product
 
-from airflow.contrib.operators.gcp_vision_operator import CloudVisionProductSetCreateOperator, \
-    CloudVisionProductSetGetOperator, CloudVisionProductSetUpdateOperator, \
-    CloudVisionProductSetDeleteOperator, CloudVisionProductCreateOperator, CloudVisionProductGetOperator, \
-    CloudVisionProductUpdateOperator, CloudVisionProductDeleteOperator
+from airflow.contrib.operators.gcp_vision_operator import (
+    CloudVisionProductSetCreateOperator,
+    CloudVisionProductSetGetOperator,
+    CloudVisionProductSetUpdateOperator,
+    CloudVisionProductSetDeleteOperator,
+    CloudVisionProductCreateOperator,
+    CloudVisionProductGetOperator,
+    CloudVisionProductUpdateOperator,
+    CloudVisionProductDeleteOperator
+)
 
 try:
     # noinspection PyProtectedMember
