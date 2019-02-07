@@ -30,7 +30,6 @@ class CloudVisionProductSetCreateOperator(BaseOperator):
     :param product_set: (Required) The ProductSet to create. If a dict is provided, it must be of the same
         form as the protobuf message `ProductSet`.
     :type product_set: dict or google.cloud.vision_v1.types.ProductSet
-        https://googleapis.github.io/google-cloud-python/latest/vision/gapic/v1/types.html#google.cloud.vision_v1.types.ProductSet
     :param location: (Required) The region where the ProductSet should be created. Valid regions
         (as of 2019-02-05) are: us-east1, us-west1, europe-west1, asia-east1
     :type location: str
@@ -45,7 +44,6 @@ class CloudVisionProductSetCreateOperator(BaseOperator):
     :param retry: (Optional) A retry object used to retry requests. If `None` is
         specified, requests will not be retried.
     :type retry: google.api_core.retry.Retry
-        https://googleapis.github.io/google-cloud-python/latest/core/retry.html#google.api_core.retry.Retry
     :param timeout: (Optional) The amount of time, in seconds, to wait for the request to
         complete. Note that if retry is specified, the timeout applies to each individual
         attempt.
@@ -110,7 +108,6 @@ class CloudVisionProductSetGetOperator(BaseOperator):
     :param retry: (Optional) A retry object used to retry requests. If `None` is
         specified, requests will not be retried.
     :type retry: google.api_core.retry.Retry
-        https://googleapis.github.io/google-cloud-python/latest/core/retry.html#google.api_core.retry.Retry
     :param timeout: (Optional) The amount of time, in seconds, to wait for the request to
         complete. Note that if retry is specified, the timeout applies to each individual
         attempt.
@@ -172,7 +169,6 @@ class CloudVisionProductSetUpdateOperator(BaseOperator):
         server. If a dict is provided, it must be of the same form as the protobuf
         message `ProductSet`.
     :type product_set: dict or google.cloud.vision_v1.types.ProductSet
-        https://googleapis.github.io/google-cloud-python/latest/vision/gapic/v1/types.html#google.cloud.vision_v1.types.ProductSet
     :param location: (Optional) The region where the ProductSet is located. Valid regions (as of 2019-02-05)
         are: us-east1, us-west1, europe-west1, asia-east1
     :type location: str
@@ -188,7 +184,6 @@ class CloudVisionProductSetUpdateOperator(BaseOperator):
     :param retry: (Optional) A retry object used to retry requests. If `None` is
         specified, requests will not be retried.
     :type retry: google.api_core.retry.Retry
-        https://googleapis.github.io/google-cloud-python/latest/core/retry.html#google.api_core.retry.Retry
     :param timeout: (Optional) The amount of time, in seconds, to wait for the request to
         complete. Note that if retry is specified, the timeout applies to each individual
         attempt.
@@ -254,7 +249,6 @@ class CloudVisionProductSetDeleteOperator(BaseOperator):
     :param retry: (Optional) A retry object used to retry requests. If `None` is
         specified, requests will not be retried.
     :type retry: google.api_core.retry.Retry
-        https://googleapis.github.io/google-cloud-python/latest/core/retry.html#google.api_core.retry.Retry
     :param timeout: (Optional) The amount of time, in seconds, to wait for the request to
         complete. Note that if retry is specified, the timeout applies to each individual
         attempt.
@@ -313,7 +307,6 @@ class CloudVisionProductCreateOperator(BaseOperator):
     :param product: (Required) The product to create. If a dict is provided, it must be of the same form as
         the protobuf message `Product`.
     :type product: dict or google.cloud.vision_v1.types.Product
-        https://googleapis.github.io/google-cloud-python/latest/vision/gapic/v1/types.html#google.cloud.vision_v1.types.Product
     :param project_id: (Optional) The project in which the Product should be created. If set to None or
         missing, the default project_id from the GCP connection is used.
     :type project_id: str
@@ -325,7 +318,6 @@ class CloudVisionProductCreateOperator(BaseOperator):
     :param retry: (Optional) A retry object used to retry requests. If `None` is
         specified, requests will not be retried.
     :type retry: google.api_core.retry.Retry
-        https://googleapis.github.io/google-cloud-python/latest/core/retry.html#google.api_core.retry.Retry
     :param timeout: (Optional) The amount of time, in seconds, to wait for the request to
         complete. Note that if retry is specified, the timeout applies to each individual
         attempt.
@@ -396,7 +388,6 @@ class CloudVisionProductGetOperator(BaseOperator):
     :param retry: (Optional) A retry object used to retry requests. If `None` is
         specified, requests will not be retried.
     :type retry: google.api_core.retry.Retry
-        https://googleapis.github.io/google-cloud-python/latest/core/retry.html#google.api_core.retry.Retry
     :param timeout: (Optional) The amount of time, in seconds, to wait for the request to
         complete. Note that if retry is specified, the timeout applies to each individual
         attempt.
@@ -468,7 +459,6 @@ class CloudVisionProductUpdateOperator(BaseOperator):
     :param product: (Required) The Product resource which replaces the one on the server. product.name is
         immutable. If a dict is provided, it must be of the same form as the protobuf message `Product`.
     :type product: dict or google.cloud.vision_v1.types.ProductSet
-        https://googleapis.github.io/google-cloud-python/latest/vision/gapic/v1/types.html#google.cloud.vision_v1.types.ProductSet
     :param location: (Optional) The region where the Product is located. Valid regions (as of 2019-02-05) are:
         us-east1, us-west1, europe-west1, asia-east1
     :type location: str
@@ -485,7 +475,6 @@ class CloudVisionProductUpdateOperator(BaseOperator):
     :param retry: (Optional) A retry object used to retry requests. If `None` is
         specified, requests will not be retried.
     :type retry: google.api_core.retry.Retry
-        https://googleapis.github.io/google-cloud-python/latest/core/retry.html#google.api_core.retry.Retry
     :param timeout: (Optional) The amount of time, in seconds, to wait for the request to
         complete. Note that if retry is specified, the timeout applies to each individual
         attempt.
@@ -556,7 +545,6 @@ class CloudVisionProductDeleteOperator(BaseOperator):
     :param retry: (Optional) A retry object used to retry requests. If `None` is
         specified, requests will not be retried.
     :type retry: google.api_core.retry.Retry
-        https://googleapis.github.io/google-cloud-python/latest/core/retry.html#google.api_core.retry.Retry
     :param timeout: (Optional) The amount of time, in seconds, to wait for the request to
         complete. Note that if retry is specified, the timeout applies to each individual
         attempt.

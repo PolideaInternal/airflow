@@ -638,70 +638,23 @@ Cloud Vision
 Cloud Vision Product Search Operators
 """""""""""""""""""""""""""""""""""""
 
-- :ref:`CloudVisionProductSetCreateOperator` : Creates a new ProductSet resource.
-- :ref:`CloudVisionProductSetGetOperator` : Gets information associated with a ProductSet.
-- :ref:`CloudVisionProductSetUpdateOperator` : Makes changes to a ProductSet resource.
-- :ref:`CloudVisionProductSetDeleteOperator` : Permanently deletes a ProductSet.
-- :ref:`CloudVisionProductCreateOperator` : Creates a new Product resource.
-- :ref:`CloudVisionProductGetOperator` : Gets information associated with a Product.
-- :ref:`CloudVisionProductUpdateOperator` : Makes changes to a Product resource.
-- :ref:`CloudVisionProductDeleteOperator` : Permanently deletes a product and its reference images.
+:class:`airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetCreateOperator`
+    Creates a new ProductSet resource.
+:class:`airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetGetOperator`
+    Gets information associated with a ProductSet.
+:class:`airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetUpdateOperator`
+    Makes changes to a ProductSet resource.
+:class:`airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetDeleteOperator`
+    Permanently deletes a ProductSet.
+:class:`airflow.contrib.operators.gcp_vision_operator.CloudVisionProductCreateOperator`
+    Creates a new Product resource.
+:class:`airflow.contrib.operators.gcp_vision_operator.CloudVisionProductGetOperator`
+    Gets information associated with a Product.
+:class:`airflow.contrib.operators.gcp_vision_operator.CloudVisionProductUpdateOperator`
+    Makes changes to a Product resource.
+:class:`airflow.contrib.operators.gcp_vision_operator.CloudVisionProductDeleteOperator`
+    Permanently deletes a product and its reference images.
 
-.. _CloudVisionProductSetCreateOperator:
-
-CloudVisionProductSetCreateOperator
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetCreateOperator
-    :noindex:
-
-.. _CloudVisionProductSetGetOperator:
-
-CloudVisionProductSetGetOperator
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetGetOperator
-    :noindex:
-
-.. _CloudVisionProductSetUpdateOperator:
-
-CloudVisionProductSetUpdateOperator
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetUpdateOperator
-    :noindex:
-
-.. _CloudVisionProductSetDeleteOperator:
-
-CloudVisionProductSetDeleteOperator
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductSetDeleteOperator
-    :noindex:
-
-.. _CloudVisionProductCreateOperator:
-
-CloudVisionProductCreateOperator
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductCreateOperator
-    :noindex:
-
-.. _CloudVisionProductGetOperator:
-
-CloudVisionProductGetOperator
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductGetOperator
-    :noindex:
-
-.. _CloudVisionProductUpdateOperator:
-
-CloudVisionProductUpdateOperator
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductUpdateOperator
-    :noindex:
-
-.. _CloudVisionProductDeleteOperator:
-
-CloudVisionProductDeleteOperator
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: airflow.contrib.operators.gcp_vision_operator.CloudVisionProductDeleteOperator
-    :noindex:
 
 Google Kubernetes Engine
 ''''''''''''''''''''''''
