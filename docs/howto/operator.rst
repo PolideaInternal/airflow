@@ -1735,3 +1735,52 @@ More information
 
 See `Google Cloud Storage ObjectAccessControls insert documentation
 <https://cloud.google.com/storage/docs/json_api/v1/objectAccessControls/insert>`_.
+
+
+Google Cloud Translate Operators
+--------------------------------
+
+.. _howto/operator:CloudTranslateTextOperator:
+
+CloudTranslateTextOperator
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Translate a string or list of strings.
+
+For parameter definition, take a look at
+:class:`~airflow.contrib.operators.gcp_translate_operator.CloudTranslateTextOperator`
+
+Using the operator
+""""""""""""""""""
+
+Basic usage of the operator:
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_translate.py
+      :language: python
+      :dedent: 4
+      :start-after: [START howto_operator_translate_text]
+      :end-before: [END howto_operator_translate_text]
+
+The result of translation is available as dictionary or array of dictionaries accessible via the usual
+XCom mechanisms of Airflow:
+
+.. literalinclude:: ../../airflow/contrib/example_dags/example_gcp_translate.py
+      :language: python
+      :dedent: 4
+      :start-after: [START howto_operator_translate_access]
+      :end-before: [END howto_operator_translate_access]
+
+
+Templating
+""""""""""
+
+.. literalinclude:: ../../airflow/contrib/operators/gcp_translate_operator.py
+    :language: python
+    :dedent: 4
+    :start-after: [START translate_template_fields]
+    :end-before: [END translate_template_fields]
+
+More information
+""""""""""""""""
+
+See `Google Cloud Translate documentation <https://cloud.google.com/translate/docs/translating-text>_`.

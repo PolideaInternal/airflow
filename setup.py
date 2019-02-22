@@ -179,6 +179,7 @@ gcp_api = [
     'google-cloud-container>=0.1.1',
     'google-cloud-bigtable==0.31.0',
     'google-cloud-spanner>=1.7.1',
+    'google-cloud-translate>=1.3.3',
     'grpcio-gcp>=0.2.2',
     'PyOpenSSL',
     'pandas-gbq'

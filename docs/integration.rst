@@ -593,6 +593,16 @@ Transfer Service
 They also use :class:`airflow.contrib.hooks.gcp_transfer_hook.GCPTransferServiceHook` to communicate with Google Cloud Platform.
 
 
+Cloud Translate
+'''''''''''''''
+
+Cloud Translate Text Operators
+""""""""""""""""""""""""""""""
+
+:class:`airflow.contrib.operators.gcp_translate_operator.CloudTranslateTextOperator`
+    Translate a string or list of strings.
+
+
 Google Kubernetes Engine
 ''''''''''''''''''''''''
 
