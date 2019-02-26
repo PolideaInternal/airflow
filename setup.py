@@ -182,10 +182,11 @@ gcp = [
     'google-cloud-bigtable==0.31.0',
     'google-cloud-spanner>=1.7.1',
     'google-cloud-translate>=1.3.3',
+    'google-cloud-videointelligence>=1.7.0',
     'google-cloud-vision>=0.35.2',
     'grpcio-gcp>=0.2.2',
-    'PyOpenSSL',
-    'pandas-gbq'
+    'pandas-gbq',
+    'PyOpenSSL'
 ]
 github_enterprise = ['Flask-OAuthlib>=0.9.1']
 grpc = ['grpcio>=1.15.0']
