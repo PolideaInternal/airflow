@@ -22,8 +22,8 @@
 Documentation that goes along with the Airflow tutorial located
 [here](https://airflow.apache.org/tutorial.html)
 """
-# [START tutorial_example_pipeline_definition]
-from datetime import timedelta
+# [START tutorial]
+from datetime import datetime, timedelta
 
 # [START scheduler_backfill_and_catchup]
 import airflow
@@ -35,7 +35,7 @@ from airflow.operators.bash_operator import BashOperator
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': airflow.utils.dates.days_ago(2),
+    'start_date': datetime(2015, 12, 1),
     'email': ['airflow@example.com'],
     'email_on_failure': False,
     'email_on_retry': False,
@@ -60,7 +60,7 @@ dag = DAG(
     'tutorial',
     default_args=default_args,
     description='A simple tutorial DAG',
-    schedule_interval=timedelta(days=1),
+    schedule_interval='@daily',
 )
 # [END scheduler_backfill_and_catchup]
 
@@ -85,6 +85,7 @@ t2 = BashOperator(
     task_id='sleep',
     depends_on_past=False,
     bash_command='sleep 5',
+    retries=3,
     dag=dag,
 )
 
@@ -105,4 +106,4 @@ t3 = BashOperator(
 )
 
 t1 >> [t2, t3]
-# [END tutorial_example_pipeline_definition]
+#[END tutorial]

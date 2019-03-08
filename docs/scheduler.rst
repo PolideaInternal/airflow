@@ -110,7 +110,7 @@ False``) or by default at the configuration file level with ``catchup_by_default
 will do, is to instruct the scheduler to only create a DAG Run for the most current instance of the DAG
 interval series.
 
-.. literalinclude:: ../../../airflow/example_dags/tutorial.py
+.. literalinclude:: ../airflow/example_dags/tutorial.py
     :language: python
     :start-after: [START scheduler_backfill_and_catchup]
     :end-before: [END scheduler_backfill_and_catchup]

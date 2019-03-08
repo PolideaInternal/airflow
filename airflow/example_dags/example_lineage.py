@@ -26,33 +26,44 @@ from airflow.operators.dummy_operator import DummyOperator
 from airflow.lineage.datasets import File
 from airflow.models import DAG
 
+
 FILE_CATEGORIES = ["CAT1", "CAT2", "CAT3"]
 
-args = {"owner": "airflow", "start_date": airflow.utils.dates.days_ago(2)}
+args = {
+    'owner': 'airflow',
+    'start_date': airflow.utils.dates.days_ago(2)
+}
 
 dag = DAG(
-    dag_id="example_lineage",
+    dag_id='example_lineage', 
     default_args=args,
-    schedule_interval=None,
-    dagrun_timeout=timedelta(minutes=60),
+    schedule_interval='0 0 * * *',
+    dagrun_timeout=timedelta(minutes=60)
 )
 
 f_final = File("/tmp/final")
+
 run_this_last = DummyOperator(
-    task_id="run_this_last", dag=dag, inlets={"auto": True}, outlets={"datasets": [f_final]}
+    task_id='run_this_last', 
+    dag=dag, 
+    inlets={"auto": True},
+    outlets={"datasets": [f_final]}
 )
 
 f_in = File("/tmp/whole_directory/")
+
 outlets = []
 for file in FILE_CATEGORIES:
     f_out = File("/tmp/{}/{{{{ execution_date }}}}".format(file))
     outlets.append(f_out)
-run_this = BashOperator(
-    task_id="run_me_first",
-    bash_command="echo 1",
-    dag=dag,
+
+run_this = BashOperator(    
+    task_id='run_me_first',
+    dag=dag, 
+    bash_command='echo 1', 
     inlets={"datasets": [f_in]},
-    outlets={"datasets": outlets},
+    outlets={"datasets": outlets}
 )
+
 run_this.set_downstream(run_this_last)
 # [END lineage]
