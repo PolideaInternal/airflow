@@ -28,19 +28,10 @@ Example Pipeline definition
 Here is an example of a basic pipeline definition. Do not worry if this looks
 complicated, a line by line explanation follows below.
 
-<<<<<<< HEAD
-.. literalinclude:: ../airflow/example_dags/example_lineage.py
-    :language: python
-    :start-after: [START tutorial]
-    :end-before: [END tutorial]
-
-
-=======
 .. literalinclude:: ../airflow/example_dags/tutorial.py
     :language: python
     :start-after: [START tutorial]
     :end-before: [END tutorial]
->>>>>>> Extract example DAGs to separate files in doc
 
 It's a DAG definition file
 --------------------------
