@@ -62,7 +62,9 @@ class ExampleDagsTestCase(unittest.TestCase):
             raise AirflowException(
                 "The Dag {dag_id} could not be found. It's either an import problem or the dag was not "
                 "symlinked to the DAGs folder. The content of the {dag_folder} folder is {dags_list}".format(
-                     dag_id=dag_id, dag_folder=dag_folder, dags_list=os.listdir(dag_folder)
+                    dag_id=dag_id,
+                    dag_folder=dag_folder,
+                    dags_list=os.listdir(dag_folder)
                 )
             )
         dag.clear(reset_dag_runs=True)
