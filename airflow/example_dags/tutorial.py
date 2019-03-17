@@ -26,12 +26,14 @@ Documentation that goes along with the Airflow tutorial located
 from datetime import datetime, timedelta
 
 # [START scheduler_backfill_and_catchup]
-import airflow
+# [START tutorial_import_modules]
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
+# [END tutorial_import_modules]
 
 # These args will get passed on to each operator
 # You can override them on a per-task basis during operator initialization
+# [START tutorial_default_arguments]
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -55,21 +57,27 @@ default_args = {
     # 'on_retry_callback': another_function,
     # 'trigger_rule': u'all_success'
 }
+# [END tutorial_default_arguments]
 
+# [START tutorial_init_dag]
 dag = DAG(
     'tutorial',
     default_args=default_args,
     description='A simple tutorial DAG',
     schedule_interval='@daily',
 )
+# [END tutorial_init_dag]
 # [END scheduler_backfill_and_catchup]
 
 # t1, t2 and t3 are examples of tasks created by instantiating operators
+# [START tutorial_task1]
+# [START tutorial_task1_without_doc]
 t1 = BashOperator(
     task_id='print_date',
     bash_command='date',
     dag=dag,
 )
+# [END tutorial_task1_without_doc]
 
 t1.doc_md = """\
 #### Task Documentation
@@ -80,7 +88,9 @@ rendered in the UI's Task Instance Details page.
 """
 
 dag.doc_md = __doc__
+# [END tutorial_task1]
 
+# [START tutorial_task2]
 t2 = BashOperator(
     task_id='sleep',
     depends_on_past=False,
@@ -88,7 +98,9 @@ t2 = BashOperator(
     retries=3,
     dag=dag,
 )
+# [END tutorial_task2]
 
+# [START tutorial_task3]
 templated_command = """
 {% for i in range(5) %}
     echo "{{ ds }}"
@@ -104,6 +116,8 @@ t3 = BashOperator(
     params={'my_param': 'Parameter I passed in'},
     dag=dag,
 )
+# [END tutorial_task3]
 
 t1 >> [t2, t3]
+
 #[END tutorial]

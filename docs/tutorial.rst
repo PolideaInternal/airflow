@@ -62,7 +62,8 @@ We'll need the DAG object to instantiate a DAG and BashOperator to operate!
 
 .. literalinclude:: ../airflow/example_dags/tutorial.py
     :language: python
-    :lines: 29-30
+    :start-after: [START tutorial_import_modules]
+    :end-before: [END tutorial_import_modules]
 
 Default Arguments
 -----------------
@@ -73,7 +74,8 @@ of default parameters that we can use when creating tasks.
 
 .. literalinclude:: ../airflow/example_dags/tutorial.py
     :language: python
-    :lines: 34-56
+    :start-after: [START tutorial_default_arguments]
+    :end-before: [END tutorial_default_arguments]
 
 Also, note that you could easily define different sets of arguments that
 would serve different purposes. An example of that would be to have
@@ -90,7 +92,8 @@ define a ``schedule_interval`` of 1 day for the DAG.
 
 .. literalinclude:: ../airflow/example_dags/tutorial.py
     :language: python
-    :lines: 58-63
+    :start-after: [START tutorial_init_dag]
+    :end-before: [END tutorial_init_dag]
 
 Tasks
 -----
@@ -100,7 +103,13 @@ instantiated from an operator is called a constructor. The first argument
 
 .. literalinclude:: ../airflow/example_dags/tutorial.py
     :language: python
-    :lines: 66-71, 82-89
+    :start-after: [START tutorial_task1_without_doc]
+    :end-before: [END tutorial_task1_without_doc]
+
+.. literalinclude:: ../airflow/example_dags/tutorial.py
+    :language: python
+    :start-after: [START tutorial_task2]
+    :end-before: [END tutorial_task2]
 
 Notice how we pass a mix of operator specific arguments (``bash_command``) and
 an argument common to all operators (``retries``) inherited
@@ -136,7 +145,8 @@ stamp").
 
 .. literalinclude:: ../airflow/example_dags/tutorial.py
     :language: python
-    :lines: 90-105
+    :start-after: [START tutorial_task3]
+    :end-before: [END tutorial_task3]
 
 Notice that the ``templated_command`` contains code logic in ``{% %}`` blocks,
 references parameters like ``{{ ds }}``, calls a function as in

@@ -17,7 +17,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-[START latest_only_with_trigger]
+# [START latest_only_with_trigger]
 import datetime as dt
 
 import airflow
@@ -40,4 +40,4 @@ task4 = DummyOperator(task_id='task4', dag=dag, trigger_rule=TriggerRule.ALL_DON
 
 latest_only >> task1 >> [task3, task4]
 task2 >> [task3, task4]
-[END latest_only_with_trigger]
+# [END latest_only_with_trigger]
