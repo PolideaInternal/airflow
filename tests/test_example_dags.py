@@ -36,9 +36,14 @@ from airflow import models, AirflowException, example_dags, DAG
 class ExampleDagsTestCase(unittest.TestCase):
 
     @parameterized.expand([
+        # ("subdags/main_dag.py", "parent_dag", ),
+        # ("subdags/subdag.py", "parent_dag.child_dag", ),
+        # ("example_bash_operator.py", 'example_bash_operator', ),
         # ("example_branch_operator.py", 'example_branch_operator', ),
         # ('example_branch_dop_operator_3.py', 'example_branch_dop_operator_v3', ),
+        # ("example_branch_operator.py", 'example_branch_operator', ),
         # ('example_default_args.py', 'example_default_args'),
+        # ('example_documentation.py', 'example_documentation', ),
         # ('example_dynamic_dag.py', 'foo_1', ),
         # ('example_dynamic_dag.py', 'foo_10', ),
         # ('example_http_operator.py', 'example_http_operator', ),
@@ -53,6 +58,8 @@ class ExampleDagsTestCase(unittest.TestCase):
         ('example_trigger_controller_dag.py', 'example_trigger_controller', ),
         # ('example_trigger_target_dag.py', 'example_trigger_target_dag', ),
         # ("example_xcom.py", 'example_xcom', ),
+        # ('test_utils.py', 'test_utils', ),
+        # ('tutorial.py', 'tutorial', )
     ], name_func=lambda func, num, p: "{}_{}".format(func.__name__, p.args[0]))
     def test_run_dag(self, filename, dag_id):
         dag_folder = example_dags.__path__[0]
