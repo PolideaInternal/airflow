@@ -18,11 +18,22 @@
 # under the License.
 
 # [START branch_python_operator]
+import airflow
 from airflow.models import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import BranchPythonOperator
 
+args = {
+    'owner': 'airflow',
+    'start_date': airflow.utils.dates.days_ago(2),
+}
+
+dag = DAG(
+    dag_id='example_branch_python_operator',
+    default_args=args,
+    schedule_interval="@daily",
+)
 
 def branch_func(**kwargs):
     ti = kwargs['ti']
