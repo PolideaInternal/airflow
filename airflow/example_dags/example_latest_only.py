@@ -19,8 +19,6 @@
 """
 Example of the LatestOnlyOperator
 """
-import datetime as dt
-
 import airflow
 from airflow.models import DAG
 from airflow.operators.dummy_operator import DummyOperator

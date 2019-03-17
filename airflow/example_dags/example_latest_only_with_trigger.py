@@ -18,8 +18,6 @@
 # under the License.
 
 # [START latest_only_with_trigger]
-import datetime as dt
-
 import airflow
 from airflow.models import DAG
 from airflow.operators.dummy_operator import DummyOperator
