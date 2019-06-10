@@ -55,11 +55,243 @@ class DataprocOperationBaseOperator(BaseOperator):
             api_version='v1beta2'
         )
 
+    @staticmethod
+    def _convert_time(value):
+        if value is None:
+            return value
+
+        match = re.match(r"^(\d+)(s|m|h|d)$", value)
+        if match:
+            if match.group(2) == "s":
+                return value
+            elif match.group(2) == "m":
+                val = float(match.group(1))
+                return "{}s".format(timedelta(minutes=val).seconds)
+            elif match.group(2) == "h":
+                val = float(match.group(1))
+                return "{}s".format(timedelta(hours=val).seconds)
+            elif match.group(2) == "d":
+                val = float(match.group(1))
+                return "{}s".format(timedelta(days=val).seconds)
+
+        raise AirflowException(
+            "Time value should be expressed in day, hours, minutes or seconds. "
+            " i.e. 1d, 4h, 10m, 30s")
+
     def execute(self, context):
         self.hook.wait(self.start())
 
     def start(self, context):
         raise AirflowException('Please submit an operation')
+
+
+class DataprocAutoscalingPolicyCreateOperator(DataprocOperationBaseOperator):
+    """
+    Creates new autoscaling policy on Google Dataproc.
+
+    :param project_id: The ID of the Google cloud project.
+    :type project_id: str
+    :param policy_id: The policy id.
+    :type policy_id: str
+    :param primary_max: Maximum number of instances for workerConfig group.
+    :type primary_max: int
+    :param secondary_max: Maximum number of instances for secondaryWorkerConfig group.
+    :type secondary_max: int
+    :param graceful_decommission_timeout:  Timeout for YARN graceful decommissioning of Node Managers.
+        Specifies the duration to wait for jobs to complete before forcefully removing workers
+        (and potentially interrupting jobs). Only applicable to downscaling operations.
+    :type graceful_decommission_timeout: str
+    :param scale_up_factor: Fraction of average pending memory in the last cooldown
+        period for which to add workers.
+    :type scale_up_factor: float
+    :param scale_down_factor: Fraction of average pending memory in the last cooldown
+        period for which to remove workers.
+    :type scale_down_factor: float
+    :param region: The region for the policy.
+    :type region: str
+    :param cooldown_period:  Duration between scaling events. A scaling period starts after the
+        update operation from the previous event has completed.
+    :type cooldown_period: str
+    :param primary_min: Minimum number of instances for workerConfig group.
+    :type primary_min: int
+    :param secondary_min: Minimum num
+    :param secondary_min: Minimum number of instances for secondaryWorkerConfig group.
+    :type secondary_min: int
+    :param scale_up_min_fraction: Minimum scale-up threshold as a fraction of total cluster
+        size before scaling occurs
+    :type scale_up_min_fraction: float
+    :param scale_down_min_fraction: Minimum scale-down threshold as a fraction of total cluster
+        size before scaling occurs.
+    :type scale_down_min_fraction: float
+    """
+    template_fields = ['policy_id', 'project_id', 'region']
+
+    @apply_defaults
+    def __init__(self,
+                 project_id,
+                 policy_id,
+                 primary_max,
+                 secondary_max,
+                 graceful_decommission_timeout,
+                 scale_up_factor,
+                 scale_down_factor,
+                 region='global',
+                 cooldown_period=None,
+                 primary_min=0,
+                 secondary_min=0,
+                 scale_up_min_fraction=None,
+                 scale_down_min_fraction=None,
+                 *args,
+                 **kwargs
+                 ):
+        super().__init__(project_id=project_id, region=region, *args, **kwargs)
+        self.policy_id = policy_id
+
+        # Primary worker
+        self.primary_min = primary_min
+        self.primary_max = primary_max
+
+        # Secondary worker
+        self.secondary_min = secondary_min
+        self.secondary_max = secondary_max
+
+        # Basic Algorithm
+        self.cooldown_period = self._convert_time(cooldown_period)
+
+        # Yarn config
+        self.graceful_decommission_timeout = self._convert_time(graceful_decommission_timeout)
+
+        if scale_up_factor:
+            assert (0.0 <= scale_up_factor <= 1.0), "scale_up_factor bounds: [0.0, 1.0]."
+        self.scale_up_factor = scale_up_factor
+
+        if scale_down_factor:
+            assert (0.0 <= scale_down_factor <= 1.0), "scale_down_factor bounds: [0.0, 1.0]."
+        self.scale_down_factor = scale_down_factor
+
+        if scale_up_min_fraction:
+            assert (0.0 <= scale_up_min_fraction <= 1.0), "scale_up_min_fraction bounds: [0.0, 1.0]."
+        self.scale_up_min_fraction = scale_up_min_fraction
+
+        if scale_down_min_fraction:
+            assert (0.0 <= scale_down_min_fraction <= 1.0), "scale_down_min_fraction bounds: [0.0, 1.0]."
+        self.scale_down_min_fraction = scale_down_min_fraction
+
+    def _build_worker_config(self, worker):
+        config = {
+            "minInstances": getattr(self, "{}_min".format(worker)),
+            "maxInstances": getattr(self, "{}_max".format(worker))
+        }
+
+        return config
+
+    def _build_policy_data(self):
+        policy = {
+            "id": self.policy_id,
+            "workerConfig": self._build_worker_config('primary'),
+            "secondaryWorkerConfig": self._build_worker_config('secondary'),
+            "basicAlgorithm": {
+                "yarnConfig": {
+                    "gracefulDecommissionTimeout": self.graceful_decommission_timeout,
+                    "scaleUpFactor": self.scale_up_factor,
+                    "scaleDownFactor": self.scale_down_factor
+                }
+            }
+        }
+
+        if self.cooldown_period:
+            policy['basicAlgorithm']['cooldownPeriod'] = self.cooldown_period
+
+        if self.scale_down_min_fraction:
+            policy['basicAlgorithm']['yarnConfig']['scaleDownMinWorkerFraction'] = \
+                self.scale_down_min_fraction
+
+        if self.scale_up_min_fraction:
+            policy['basicAlgorithm']['yarnConfig']['scaleUpMinWorkerFraction'] = \
+                self.scale_up_min_fraction
+
+        return policy
+
+    @property
+    def _parent(self):
+        """
+        The "resource name" of the region, as described in
+        https://cloud.google.com/apis/design/resource_names of the form
+        ``projects/{projectId}/locations/{region}``.
+
+        :return: policy parent
+        :rtype: str
+        """
+        parent = "projects/{projectId}/locations/{region}".format(
+            projectId=self.project_id,
+            region=self.region
+        )
+        return parent
+
+    def start(self):
+        self.log.info('Creating autoscaling policy: %s', self.policy_id)
+        policy = self._build_policy_data()
+        hook = self.hook.get_conn().projects().locations().autoscalingPolicies()
+        hook.create(parent=self._parent, body=policy).execute()
+
+    def execute(self, context):
+        # TODO: hack to handle Google inconsistency
+        try:
+            self.hook.wait(self.start())
+        except (TypeError, KeyError):
+            self.log.warning("\u001b[31mThere was an error but the policy was probably created.\u001b[0m")
+            pass
+
+
+class DataprocAutoscalingPolicyDeleteOperator(DataprocOperationBaseOperator):
+    """
+    Deletes Dataproc autoscaling policy.
+
+    :param project_id: The ID of the Google cloud project.
+    :type project_id: str
+    :param policy_id: The policy id.
+    :type policy_id: str
+    :param region: The region for the policy.
+    :type region: str
+    """
+    def __init__(self,
+                 project_id,
+                 policy_id,
+                 region,
+                 *args,
+                 **kwargs):
+        super().__init__(project_id=project_id, region=region, *args, **kwargs)
+        self.policy_id = policy_id
+
+    @property
+    def _name(self):
+        """
+         The "resource name" of the autoscaling policy, as described in
+         https://cloud.google.com/apis/design/resource_names of the form
+         ``projects/{projectId}/regions/{region}/autoscalingPolicies/{policy_id}``.
+
+        :return: policy name
+        :rtype: str
+        """
+        policy = "projects/{project_id}/locations/{region}/autoscalingPolicies/{policy_id}".format(
+            project_id=self.project_id,
+            region=self.region,
+            policy_id=self.policy_id
+        )
+        return policy
+
+    def start(self):
+        self.log.info('Deleting policy: %s', self._name)
+        hook = self.hook.get_conn().projects().locations().autoscalingPolicies()
+        return hook.delete(name=self._name).execute()
+
+    def execute(self, context):
+        # TODO: hack to handle Google inconsistency
+        try:
+            self.hook.wait(self.start())
+        except (TypeError, KeyError):
+            self.log.warning("\u001b[31mThere was an error but the policy was probably deleted.\u001b[0m")
+            pass
 
 
 class DataprocClusterCreateOperator(DataprocOperationBaseOperator):
@@ -465,8 +697,7 @@ class DataprocClusterScaleOperator(DataprocOperationBaseOperator):
         self.optional_arguments = {}
         if graceful_decommission_timeout:
             self.optional_arguments['gracefulDecommissionTimeout'] = \
-                self._get_graceful_decommission_timeout(
-                    graceful_decommission_timeout)
+                self._convert_time(graceful_decommission_timeout)
 
     def _build_scale_cluster_data(self):
         scale_data = {
@@ -480,27 +711,6 @@ class DataprocClusterScaleOperator(DataprocOperationBaseOperator):
             }
         }
         return scale_data
-
-    @staticmethod
-    def _get_graceful_decommission_timeout(timeout):
-        match = re.match(r"^(\d+)(s|m|h|d)$", timeout)
-        if match:
-            if match.group(2) == "s":
-                return timeout
-            elif match.group(2) == "m":
-                val = float(match.group(1))
-                return "{}s".format(timedelta(minutes=val).seconds)
-            elif match.group(2) == "h":
-                val = float(match.group(1))
-                return "{}s".format(timedelta(hours=val).seconds)
-            elif match.group(2) == "d":
-                val = float(match.group(1))
-                return "{}s".format(timedelta(days=val).seconds)
-
-        raise AirflowException(
-            "DataprocClusterScaleOperator "
-            " should be expressed in day, hours, minutes or seconds. "
-            " i.e. 1d, 4h, 10m, 30s")
 
     def start(self):
         self.log.info("Scaling cluster: %s", self.cluster_name)
