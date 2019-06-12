@@ -24,6 +24,10 @@ assists users migrating to a new version.
 
 ## Airflow Master
 
+### Changes in  Google Cloud Transfer Hook
+ To obtain pylint compatibility the `filter` argument in `GCPTransferServiceHook.list_transfer_job` and 
+ `GCPTransferServiceHook.list_transfer_operations` has been renamed to `request_filter`.
+
 ### Changes in writing Logs to Elasticsearch
 
 The `elasticsearch_` prefix has been removed from all config items under the `[elasticsearch]` section. For example `elasticsearch_host` is now just `host`.

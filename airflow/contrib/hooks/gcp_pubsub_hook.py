@@ -16,6 +16,9 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+"""
+This module contains a Google Pub/Sub Hook.
+"""
 
 from uuid import uuid4
 
@@ -33,12 +36,13 @@ def _format_topic(project, topic):
     return 'projects/{}/topics/{}'.format(project, topic)
 
 
-class PubSubException(Exception):
-    pass
+# Alias for Exception
+PubSubException = Exception
 
 
 class PubSubHook(GoogleCloudBaseHook):
-    """Hook for accessing Google Pub/Sub.
+    """
+    Hook for accessing Google Pub/Sub.
 
     The GCP project against which actions are applied is determined by
     the project embedded in the Connection referenced by gcp_conn_id.
@@ -49,7 +53,8 @@ class PubSubHook(GoogleCloudBaseHook):
         self.num_retries = self._get_field('num_retries', 5)
 
     def get_conn(self):
-        """Returns a Pub/Sub service object.
+        """
+        Returns a Pub/Sub service object.
 
         :rtype: googleapiclient.discovery.Resource
         """
@@ -58,7 +63,8 @@ class PubSubHook(GoogleCloudBaseHook):
             'pubsub', 'v1', http=http_authorized, cache_discovery=False)
 
     def publish(self, project, topic, messages):
-        """Publishes messages to a Pub/Sub topic.
+        """
+        Publishes messages to a Pub/Sub topic.
 
         :param project: the GCP project ID in which to publish
         :type project: str
@@ -72,7 +78,7 @@ class PubSubHook(GoogleCloudBaseHook):
         """
         body = {'messages': messages}
         full_topic = _format_topic(project, topic)
-        request = self.get_conn().projects().topics().publish(
+        request = self.get_conn().projects().topics().publish(  # pylint: disable=no-member
             topic=full_topic, body=body)
         try:
             request.execute(num_retries=self.num_retries)
@@ -81,7 +87,8 @@ class PubSubHook(GoogleCloudBaseHook):
                 'Error publishing to topic {}'.format(full_topic), e)
 
     def create_topic(self, project, topic, fail_if_exists=False):
-        """Creates a Pub/Sub topic, if it does not already exist.
+        """
+        Creates a Pub/Sub topic, if it does not already exist.
 
         :param project: the GCP project ID in which to create
             the topic
@@ -96,7 +103,7 @@ class PubSubHook(GoogleCloudBaseHook):
         service = self.get_conn()
         full_topic = _format_topic(project, topic)
         try:
-            service.projects().topics().create(
+            service.projects().topics().create(  # pylint: disable=no-member
                 name=full_topic, body={}).execute(num_retries=self.num_retries)
         except HttpError as e:
             # Status code 409 indicates that the topic already exists.
@@ -110,7 +117,8 @@ class PubSubHook(GoogleCloudBaseHook):
                     'Error creating topic {}'.format(full_topic), e)
 
     def delete_topic(self, project, topic, fail_if_not_exists=False):
-        """Deletes a Pub/Sub topic if it exists.
+        """
+        Deletes a Pub/Sub topic if it exists.
 
         :param project: the GCP project ID in which to delete the topic
         :type project: str
@@ -124,7 +132,8 @@ class PubSubHook(GoogleCloudBaseHook):
         service = self.get_conn()
         full_topic = _format_topic(project, topic)
         try:
-            service.projects().topics().delete(topic=full_topic).execute(num_retries=self.num_retries)
+            service.projects().topics().delete(  # pylint: disable=no-member
+                topic=full_topic).execute(num_retries=self.num_retries)
         except HttpError as e:
             # Status code 409 indicates that the topic was not found
             if str(e.resp['status']) == '404':
@@ -139,7 +148,8 @@ class PubSubHook(GoogleCloudBaseHook):
     def create_subscription(self, topic_project, topic, subscription=None,
                             subscription_project=None, ack_deadline_secs=10,
                             fail_if_exists=False):
-        """Creates a Pub/Sub subscription, if it does not already exist.
+        """
+        Creates a Pub/Sub subscription, if it does not already exist.
 
         :param topic_project: the GCP project ID of the topic that the
             subscription will be bound to.
@@ -177,7 +187,7 @@ class PubSubHook(GoogleCloudBaseHook):
             'ackDeadlineSeconds': ack_deadline_secs
         }
         try:
-            service.projects().subscriptions().create(
+            service.projects().subscriptions().create(  # pylint: disable=no-member
                 name=full_subscription, body=body).execute(num_retries=self.num_retries)
         except HttpError as e:
             # Status code 409 indicates that the subscription already exists.
@@ -195,7 +205,8 @@ class PubSubHook(GoogleCloudBaseHook):
 
     def delete_subscription(self, project, subscription,
                             fail_if_not_exists=False):
-        """Deletes a Pub/Sub subscription, if it exists.
+        """
+        Deletes a Pub/Sub subscription, if it exists.
 
         :param project: the GCP project ID where the subscription exists
         :type project: str
@@ -209,7 +220,7 @@ class PubSubHook(GoogleCloudBaseHook):
         service = self.get_conn()
         full_subscription = _format_subscription(project, subscription)
         try:
-            service.projects().subscriptions().delete(
+            service.projects().subscriptions().delete(  # pylint: disable=no-member
                 subscription=full_subscription).execute(num_retries=self.num_retries)
         except HttpError as e:
             # Status code 404 indicates that the subscription was not found
@@ -226,7 +237,8 @@ class PubSubHook(GoogleCloudBaseHook):
 
     def pull(self, project, subscription, max_messages,
              return_immediately=False):
-        """Pulls up to ``max_messages`` messages from Pub/Sub subscription.
+        """
+        Pulls up to ``max_messages`` messages from Pub/Sub subscription.
 
         :param project: the GCP project ID where the subscription exists
         :type project: str
@@ -252,7 +264,7 @@ class PubSubHook(GoogleCloudBaseHook):
             'returnImmediately': return_immediately
         }
         try:
-            response = service.projects().subscriptions().pull(
+            response = service.projects().subscriptions().pull(  # pylint: disable=no-member
                 subscription=full_subscription, body=body).execute(num_retries=self.num_retries)
             return response.get('receivedMessages', [])
         except HttpError as e:
@@ -261,7 +273,8 @@ class PubSubHook(GoogleCloudBaseHook):
                     full_subscription), e)
 
     def acknowledge(self, project, subscription, ack_ids):
-        """Pulls up to ``max_messages`` messages from Pub/Sub subscription.
+        """
+        Pulls up to ``max_messages`` messages from Pub/Sub subscription.
 
         :param project: the GCP project name or ID in which to create
             the topic
@@ -276,7 +289,7 @@ class PubSubHook(GoogleCloudBaseHook):
         service = self.get_conn()
         full_subscription = _format_subscription(project, subscription)
         try:
-            service.projects().subscriptions().acknowledge(
+            service.projects().subscriptions().acknowledge(  # pylint: disable=no-member
                 subscription=full_subscription, body={'ackIds': ack_ids}
             ).execute(num_retries=self.num_retries)
         except HttpError as e:
