@@ -135,7 +135,7 @@ class MsSqlToGoogleCloudStorageOperatorTest(unittest.TestCase):
 
         gcs_hook_mock = gcs_hook_mock_class.return_value
 
-        def _assert_upload(bucket, obj, tmp_filename, mime_type, gzip):
+        def _assert_upload(bucket, obj, tmp_filename, mime_type, gzip):  # pylint:disable=unused-argument
             if obj == SCHEMA_FILENAME:
                 with open(tmp_filename, 'rb') as file:
                     self.assertEqual(b''.join(SCHEMA_JSON), file.read())

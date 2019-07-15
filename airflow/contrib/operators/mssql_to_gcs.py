@@ -16,15 +16,18 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+"""
+This module contains MsSQL to Google Cloud Storage operator.
+"""
 
 import json
 import decimal
+from tempfile import NamedTemporaryFile
 
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from airflow.contrib.hooks.gcs_hook import GoogleCloudStorageHook
 from airflow.hooks.mssql_hook import MsSqlHook
-from tempfile import NamedTemporaryFile
 
 
 class MsSqlToGoogleCloudStorageOperator(BaseOperator):
@@ -154,9 +157,9 @@ class MsSqlToGoogleCloudStorageOperator(BaseOperator):
             row = map(self.convert_types, row)
             row_dict = dict(zip(schema, row))
 
-            s = json.dumps(row_dict, sort_keys=True)
-            s = s.encode('utf-8')
-            tmp_file_handle.write(s)
+            dump = json.dumps(row_dict, sort_keys=True)
+            dump = dump.encode('utf-8')
+            tmp_file_handle.write(dump)
 
             # Append newline to make dumps BQ compatible
             tmp_file_handle.write(b'\n')
@@ -193,9 +196,9 @@ class MsSqlToGoogleCloudStorageOperator(BaseOperator):
 
         self.log.info('Using schema for %s: %s', self.schema_filename, schema)
         tmp_schema_file_handle = NamedTemporaryFile(delete=True)
-        s = json.dumps(schema, sort_keys=True)
-        s = s.encode('utf-8')
-        tmp_schema_file_handle.write(s)
+        dump = json.dumps(schema, sort_keys=True)
+        dump = dump.encode('utf-8')
+        tmp_schema_file_handle.write(dump)
         return {self.schema_filename: tmp_schema_file_handle}
 
     def _upload_to_gcs(self, files_to_upload):
@@ -227,9 +230,9 @@ class MsSqlToGoogleCloudStorageOperator(BaseOperator):
         Helper function that maps from MSSQL fields to BigQuery fields. Used
         when a schema_filename is set.
         """
-        d = {
+        filed_map = {
             3: 'INTEGER',
             4: 'TIMESTAMP',
             5: 'NUMERIC'
         }
-        return d[mssql_type] if mssql_type in d else 'STRING'
+        return filed_map[mssql_type] if mssql_type in filed_map else 'STRING'

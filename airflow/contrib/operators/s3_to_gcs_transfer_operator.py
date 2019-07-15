@@ -16,6 +16,9 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+
+# pylint:disable=unused-import,missing-docstring
+
 import warnings
 
 from airflow.contrib.operators.gcp_transfer_operator import S3ToGoogleCloudStorageTransferOperator  # noqa

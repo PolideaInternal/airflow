@@ -255,7 +255,7 @@ class BigQueryOperatorTest(unittest.TestCase):
         self.assertTrue(isinstance(ti.task.sql, str))
 
     @mock.patch('airflow.contrib.operators.bigquery_operator.BigQueryHook')
-    def test_bigquery_operator_extra_link(self, mock_hook):
+    def test_bigquery_operator_extra_link(self, mock_hook):  # pylint:disable=unused-argument
         bigquery_task = BigQueryOperator(
             task_id=TASK_ID,
             sql='SELECT * FROM test_table',

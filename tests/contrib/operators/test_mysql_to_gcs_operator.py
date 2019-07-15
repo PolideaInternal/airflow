@@ -21,10 +21,12 @@ import datetime
 import decimal
 import unittest
 
-from airflow.contrib.operators.mysql_to_gcs import \
-    MySqlToGoogleCloudStorageOperator
 from parameterized import parameterized
 from tests.compat import mock
+
+from airflow.contrib.operators.mysql_to_gcs import \
+    MySqlToGoogleCloudStorageOperator
+
 
 TASK_ID = 'test-mysql-to-gcs'
 MYSQL_CONN_ID = 'mysql_conn_test'
@@ -262,7 +264,7 @@ class MySqlToGoogleCloudStorageOperatorTest(unittest.TestCase):
 
         gcs_hook_mock = gcs_hook_mock_class.return_value
 
-        def _assert_upload(bucket, obj, tmp_filename, mime_type):
+        def _assert_upload(bucket, obj, tmp_filename, mime_type):  # pylint:disable=unused-argument
             if obj == SCHEMA_FILENAME:
                 with open(tmp_filename, 'rb') as file:
                     self.assertEqual(b''.join(SCHEMA_JSON), file.read())

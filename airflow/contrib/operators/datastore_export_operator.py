@@ -16,7 +16,10 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-#
+"""
+This module contains Google Cloud Datastore to CGS operator.
+"""
+
 from airflow.contrib.hooks.datastore_hook import DatastoreHook
 from airflow.contrib.hooks.gcs_hook import GoogleCloudStorageHook
 from airflow.exceptions import AirflowException
@@ -83,13 +86,13 @@ class DatastoreExportOperator(BaseOperator):
             raise AirflowException("'xcom_push' was deprecated, use 'BaseOperator.do_xcom_push' instead")
 
     def execute(self, context):
-        self.log.info('Exporting data to Cloud Storage bucket ' + self.bucket)
+        self.log.info('Exporting data to Cloud Storage bucket %s', self.bucket)
 
         if self.overwrite_existing and self.namespace:
             gcs_hook = GoogleCloudStorageHook(self.cloud_storage_conn_id)
             objects = gcs_hook.list(self.bucket, prefix=self.namespace)
-            for o in objects:
-                gcs_hook.delete(self.bucket, o)
+            for obj in objects:
+                gcs_hook.delete(self.bucket, obj)
 
         ds_hook = DatastoreHook(self.datastore_conn_id, self.delegate_to)
         result = ds_hook.export_to_storage_bucket(bucket=self.bucket,

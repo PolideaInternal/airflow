@@ -16,6 +16,9 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+"""
+This module contains GCP PubSub operators.
+"""
 
 from airflow.contrib.hooks.gcp_pubsub_hook import PubSubHook
 from airflow.models import BaseOperator

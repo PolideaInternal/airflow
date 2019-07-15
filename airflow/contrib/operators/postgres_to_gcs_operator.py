@@ -16,17 +16,21 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+"""
+This module contains Postgres to Google Cloud Storage operator.
+"""
 
 import json
 import time
 import datetime
 
+from decimal import Decimal
+from tempfile import NamedTemporaryFile
+
 from airflow.contrib.hooks.gcs_hook import GoogleCloudStorageHook
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
-from decimal import Decimal
-from tempfile import NamedTemporaryFile
 
 
 class PostgresToGoogleCloudStorageOperator(BaseOperator):
@@ -148,8 +152,8 @@ class PostgresToGoogleCloudStorageOperator(BaseOperator):
                 row = map(self.convert_types, row)
                 row_dict = dict(zip(schema, row))
 
-                s = json.dumps(row_dict, sort_keys=True).encode('utf-8')
-                tmp_file_handle.write(s)
+                dump = json.dumps(row_dict, sort_keys=True).encode('utf-8')
+                tmp_file_handle.write(dump)
 
                 # Append newline to make dumps BigQuery compatible.
                 tmp_file_handle.write(b'\n')
@@ -187,8 +191,8 @@ class PostgresToGoogleCloudStorageOperator(BaseOperator):
 
         self.log.info('Using schema for %s: %s', self.schema_filename, schema)
         tmp_schema_file_handle = NamedTemporaryFile(delete=True)
-        s = json.dumps(schema, sort_keys=True).encode('utf-8')
-        tmp_schema_file_handle.write(s)
+        dump = json.dumps(schema, sort_keys=True).encode('utf-8')
+        tmp_schema_file_handle.write(dump)
         return {self.schema_filename: tmp_schema_file_handle}
 
     def _upload_to_gcs(self, files_to_upload):
@@ -199,8 +203,8 @@ class PostgresToGoogleCloudStorageOperator(BaseOperator):
         hook = GoogleCloudStorageHook(
             google_cloud_storage_conn_id=self.google_cloud_storage_conn_id,
             delegate_to=self.delegate_to)
-        for object, tmp_file_handle in files_to_upload.items():
-            hook.upload(self.bucket, object, tmp_file_handle.name,
+        for obj, tmp_file_handle in files_to_upload.items():
+            hook.upload(self.bucket, obj, tmp_file_handle.name,
                         'application/json')
 
     @classmethod
@@ -210,9 +214,9 @@ class PostgresToGoogleCloudStorageOperator(BaseOperator):
         JSON/Google Cloud Storage/BigQuery. Dates are converted to UTC seconds.
         Decimals are converted to floats. Times are converted to seconds.
         """
-        if type(value) in (datetime.datetime, datetime.date):
+        if isinstance(value, (datetime.datetime, datetime.date)):
             return time.mktime(value.timetuple())
-        elif type(value) == datetime.time:
+        elif isinstance(value, datetime.time):
             formated_time = time.strptime(str(value), "%H:%M:%S")
             return datetime.timedelta(
                 hours=formated_time.tm_hour,
@@ -229,7 +233,7 @@ class PostgresToGoogleCloudStorageOperator(BaseOperator):
         Helper function that maps from Postgres fields to BigQuery fields. Used
         when a schema_filename is set.
         """
-        d = {
+        function_map = {
             1114: 'TIMESTAMP',
             1184: 'TIMESTAMP',
             1082: 'TIMESTAMP',
@@ -246,4 +250,4 @@ class PostgresToGoogleCloudStorageOperator(BaseOperator):
             1700: 'FLOAT'
         }
 
-        return d[postgres_type] if postgres_type in d else 'STRING'
+        return function_map[postgres_type] if postgres_type in function_map else 'STRING'

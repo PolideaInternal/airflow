@@ -16,20 +16,24 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
+"""
+This module contains MySQL to GCS operator.
+"""
 import base64
 import calendar
 import json
+
+from datetime import date, datetime, timedelta
+from decimal import Decimal
+from tempfile import NamedTemporaryFile
+import unicodecsv as csv
+
+from MySQLdb.constants import FIELD_TYPE
 
 from airflow.contrib.hooks.gcs_hook import GoogleCloudStorageHook
 from airflow.hooks.mysql_hook import MySqlHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
-from datetime import date, datetime, timedelta
-from decimal import Decimal
-from MySQLdb.constants import FIELD_TYPE
-from tempfile import NamedTemporaryFile
-import unicodecsv as csv
 
 
 class MySqlToGoogleCloudStorageOperator(BaseOperator):
@@ -105,7 +109,7 @@ class MySqlToGoogleCloudStorageOperator(BaseOperator):
     }
 
     @apply_defaults
-    def __init__(self,
+    def __init__(self,  # pylint:disable=too-many-arguments
                  sql,
                  bucket,
                  filename,
@@ -206,8 +210,8 @@ class MySqlToGoogleCloudStorageOperator(BaseOperator):
                 row_dict = dict(zip(schema, row))
 
                 # TODO validate that row isn't > 2MB. BQ enforces a hard row size of 2MB.
-                s = json.dumps(row_dict, sort_keys=True).encode('utf-8')
-                tmp_file_handle.write(s)
+                dump = json.dumps(row_dict, sort_keys=True).encode('utf-8')
+                tmp_file_handle.write(dump)
 
                 # Append newline to make dumps BigQuery compatible.
                 tmp_file_handle.write(b'\n')
@@ -335,14 +339,14 @@ class MySqlToGoogleCloudStorageOperator(BaseOperator):
         elif isinstance(self.schema, list):
             schema = self.schema
         elif self.schema is not None:
-            self.log.warn('Using default schema due to unexpected type.'
-                          'Should be a string or list.')
+            self.log.warning('Using default schema due to unexpected type.'
+                             'Should be a string or list.')
 
         col_type_dict = {}
         try:
             col_type_dict = {col['name']: col['type'] for col in schema}
         except KeyError:
-            self.log.warn('Using default schema due to missing name or type. Please '
-                          'refer to: https://cloud.google.com/bigquery/docs/schemas'
-                          '#specifying_a_json_schema_file')
+            self.log.warning('Using default schema due to missing name or type. Please '
+                             'refer to: https://cloud.google.com/bigquery/docs/schemas'
+                             '#specifying_a_json_schema_file')
         return col_type_dict

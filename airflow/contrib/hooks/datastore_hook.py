@@ -16,7 +16,9 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-#
+"""
+This module contains Google Cloud Datastore hook.
+"""
 
 import time
 
@@ -73,7 +75,7 @@ class DatastoreHook(GoogleCloudBaseHook):
         """
         conn = self.get_conn()
 
-        resp = (conn
+        resp = (conn  # pylint:disable=no-member
                 .projects()
                 .allocateIds(projectId=self.project_id, body={'keys': partial_keys})
                 .execute(num_retries=self.num_retries))
@@ -92,7 +94,7 @@ class DatastoreHook(GoogleCloudBaseHook):
         """
         conn = self.get_conn()
 
-        resp = (conn
+        resp = (conn  # pylint:disable=no-member
                 .projects()
                 .beginTransaction(projectId=self.project_id, body={})
                 .execute(num_retries=self.num_retries))
@@ -113,7 +115,7 @@ class DatastoreHook(GoogleCloudBaseHook):
         """
         conn = self.get_conn()
 
-        resp = (conn
+        resp = (conn  # pylint:disable=no-member
                 .projects()
                 .commit(projectId=self.project_id, body=body)
                 .execute(num_retries=self.num_retries))
@@ -144,7 +146,7 @@ class DatastoreHook(GoogleCloudBaseHook):
             body['readConsistency'] = read_consistency
         if transaction:
             body['transaction'] = transaction
-        resp = (conn
+        resp = (conn  # pylint:disable=no-member
                 .projects()
                 .lookup(projectId=self.project_id, body=body)
                 .execute(num_retries=self.num_retries))
@@ -163,7 +165,7 @@ class DatastoreHook(GoogleCloudBaseHook):
         """
         conn = self.get_conn()
 
-        conn.projects().rollback(
+        conn.projects().rollback(  # pylint:disable=no-member
             projectId=self.project_id, body={'transaction': transaction}
         ).execute(num_retries=self.num_retries)
 
@@ -181,7 +183,7 @@ class DatastoreHook(GoogleCloudBaseHook):
         """
         conn = self.get_conn()
 
-        resp = (conn
+        resp = (conn  # pylint:disable=no-member
                 .projects()
                 .runQuery(projectId=self.project_id, body=body)
                 .execute(num_retries=self.num_retries))
@@ -202,7 +204,7 @@ class DatastoreHook(GoogleCloudBaseHook):
         """
         conn = self.get_conn()
 
-        resp = (conn
+        resp = (conn  # pylint:disable=no-member
                 .projects()
                 .operations()
                 .get(name=name)
@@ -224,7 +226,7 @@ class DatastoreHook(GoogleCloudBaseHook):
         """
         conn = self.get_conn()
 
-        resp = (conn
+        resp = (conn  # pylint:disable=no-member
                 .projects()
                 .operations()
                 .delete(name=name)
@@ -287,7 +289,7 @@ class DatastoreHook(GoogleCloudBaseHook):
             'entityFilter': entity_filter,
             'labels': labels,
         }
-        resp = (admin_conn
+        resp = (admin_conn  # pylint:disable=no-member
                 .projects()
                 .export(projectId=self.project_id, body=body)
                 .execute(num_retries=self.num_retries))
@@ -329,7 +331,7 @@ class DatastoreHook(GoogleCloudBaseHook):
             'entityFilter': entity_filter,
             'labels': labels,
         }
-        resp = (admin_conn
+        resp = (admin_conn  # pylint:disable=no-member
                 .projects()
                 .import_(projectId=self.project_id, body=body)
                 .execute(num_retries=self.num_retries))

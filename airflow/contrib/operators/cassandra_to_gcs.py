@@ -16,14 +16,18 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+"""
+This module contains Cassandra to Google Cloud Storage operator.
+"""
 
 import json
 from base64 import b64encode
-from cassandra.util import Date, Time, SortedSet, OrderedMapSerializedKey
 from datetime import datetime
 from decimal import Decimal
 from tempfile import NamedTemporaryFile
 from uuid import UUID
+
+from cassandra.util import Date, Time, SortedSet, OrderedMapSerializedKey
 
 from airflow.contrib.hooks.gcs_hook import GoogleCloudStorageHook
 from airflow.contrib.hooks.cassandra_hook import CassandraHook
@@ -163,9 +167,9 @@ class CassandraToGoogleCloudStorageOperator(BaseOperator):
         tmp_file_handle = NamedTemporaryFile(delete=True)
         tmp_file_handles = {self.filename.format(file_no): tmp_file_handle}
         for row in cursor:
-            row_dict = self.generate_data_dict(row._fields, row)
-            s = json.dumps(row_dict).encode('utf-8')
-            tmp_file_handle.write(s)
+            row_dict = self._generate_data_dict(row._fields, row)
+            dump = json.dumps(row_dict).encode('utf-8')
+            tmp_file_handle.write(dump)
 
             # Append newline to make dumps BigQuery compatible.
             tmp_file_handle.write(b'\n')
@@ -189,8 +193,8 @@ class CassandraToGoogleCloudStorageOperator(BaseOperator):
         schema = []
         tmp_schema_file_handle = NamedTemporaryFile(delete=True)
 
-        for name, type in zip(cursor.column_names, cursor.column_types):
-            schema.append(self.generate_schema_dict(name, type))
+        for name, type_ in zip(cursor.column_names, cursor.column_types):
+            schema.append(self._generate_schema_dict(name, type_))
         json_serialized_schema = json.dumps(schema).encode('utf-8')
 
         tmp_schema_file_handle.write(json_serialized_schema)
@@ -200,71 +204,75 @@ class CassandraToGoogleCloudStorageOperator(BaseOperator):
         hook = GoogleCloudStorageHook(
             google_cloud_storage_conn_id=self.google_cloud_storage_conn_id,
             delegate_to=self.delegate_to)
-        for object, tmp_file_handle in files_to_upload.items():
-            hook.upload(self.bucket, object, tmp_file_handle.name, 'application/json')
+        for obj, tmp_file_handle in files_to_upload.items():
+            hook.upload(self.bucket, obj, tmp_file_handle.name, 'application/json')
 
-    @classmethod
-    def generate_data_dict(cls, names, values):
+    def _generate_data_dict(self, names, values):
         row_dict = {}
         for name, value in zip(names, values):
-            row_dict.update({name: cls.convert_value(name, value)})
+            row_dict.update({name: self._convert_value(name, value)})
         return row_dict
 
-    @classmethod
-    def convert_value(cls, name, value):
+    def _convert_value(self, name, value):  # pylint:disable=too-many-return-statements
         if not value:
             return value
-        elif isinstance(value, (str, int, float, bool, dict)):
+
+        if isinstance(value, (str, int, float, bool, dict)):
             return value
-        elif isinstance(value, bytes):
+
+        if isinstance(value, bytes):
             return b64encode(value).decode('ascii')
-        elif isinstance(value, UUID):
+
+        if isinstance(value, UUID):
             return b64encode(value.bytes).decode('ascii')
-        elif isinstance(value, (datetime, Date)):
+
+        if isinstance(value, (datetime, Date)):
             return str(value)
-        elif isinstance(value, Decimal):
+
+        if isinstance(value, Decimal):
             return float(value)
-        elif isinstance(value, Time):
+
+        if isinstance(value, Time):
             return str(value).split('.')[0]
-        elif isinstance(value, (list, SortedSet)):
-            return cls.convert_array_types(name, value)
-        elif hasattr(value, '_fields'):
-            return cls.convert_user_type(name, value)
-        elif isinstance(value, tuple):
-            return cls.convert_tuple_type(name, value)
-        elif isinstance(value, OrderedMapSerializedKey):
-            return cls.convert_map_type(name, value)
-        else:
-            raise AirflowException('unexpected value: ' + str(value))
 
-    @classmethod
-    def convert_array_types(cls, name, value):
-        return [cls.convert_value(name, nested_value) for nested_value in value]
+        if isinstance(value, (list, SortedSet)):
+            return self._convert_array_types(name, value)
 
-    @classmethod
-    def convert_user_type(cls, name, value):
+        if hasattr(value, '_fields'):
+            return self._convert_user_type(value)
+
+        if isinstance(value, tuple):
+            return self._convert_tuple_type(value)
+
+        if isinstance(value, OrderedMapSerializedKey):
+            return self._convert_map_type(value)
+
+        raise AirflowException('Unexpected value: {}'.format(value))
+
+    def _convert_array_types(self, name, value):
+        return [self._convert_value(name, nested_value) for nested_value in value]
+
+    def _convert_user_type(self, value):
         """
         Converts a user type to RECORD that contains n fields, where n is the
         number of attributes. Each element in the user type class will be converted to its
         corresponding data type in BQ.
         """
         names = value._fields
-        values = [cls.convert_value(name, getattr(value, name)) for name in names]
-        return cls.generate_data_dict(names, values)
+        values = [self._convert_value(name, getattr(value, name)) for name in names]
+        return self._generate_data_dict(names, values)
 
-    @classmethod
-    def convert_tuple_type(cls, name, value):
+    def _convert_tuple_type(self, value):
         """
         Converts a tuple to RECORD that contains n fields, each will be converted
         to its corresponding data type in bq and will be named 'field_<index>', where
         index is determined by the order of the tuple elements defined in cassandra.
         """
         names = ['field_' + str(i) for i in range(len(value))]
-        values = [cls.convert_value(name, value) for name, value in zip(names, value)]
-        return cls.generate_data_dict(names, values)
+        values = [self._convert_value(name, value) for name, value in zip(names, value)]
+        return self._generate_data_dict(names, values)
 
-    @classmethod
-    def convert_map_type(cls, name, value):
+    def _convert_map_type(self, value):
         """
         Converts a map to a repeated RECORD that contains two fields: 'key' and 'value',
         each will be converted to its corresponding data type in BQ.
@@ -272,75 +280,71 @@ class CassandraToGoogleCloudStorageOperator(BaseOperator):
         converted_map = []
         for k, v in zip(value.keys(), value.values()):
             converted_map.append({
-                'key': cls.convert_value('key', k),
-                'value': cls.convert_value('value', v)
+                'key': self._convert_value('key', k),
+                'value': self._convert_value('value', v)
             })
         return converted_map
 
-    @classmethod
-    def generate_schema_dict(cls, name, type):
+    def _generate_schema_dict(self, name, type_):
         field_schema = dict()
         field_schema.update({'name': name})
-        field_schema.update({'type': cls.get_bq_type(type)})
-        field_schema.update({'mode': cls.get_bq_mode(type)})
-        fields = cls.get_bq_fields(name, type)
+        field_schema.update({'type': self._get_bq_type(type_)})
+        field_schema.update({'mode': self._get_bq_mode(type_)})
+        fields = self._get_bq_fields(type_)
         if fields:
             field_schema.update({'fields': fields})
         return field_schema
 
-    @classmethod
-    def get_bq_fields(cls, name, type):
+    def _get_bq_fields(self, type_):
         fields = []
 
-        if not cls.is_simple_type(type):
+        if not self._is_simple_type(type_):
             names, types = [], []
 
-            if cls.is_array_type(type) and cls.is_record_type(type.subtypes[0]):
-                names = type.subtypes[0].fieldnames
-                types = type.subtypes[0].subtypes
-            elif cls.is_record_type(type):
-                names = type.fieldnames
-                types = type.subtypes
+            if self._is_array_type(type_) and self._is_record_type(type_.subtypes[0]):
+                names = type_.subtypes[0].fieldnames
+                types = type_.subtypes[0].subtypes
+            elif self._is_record_type(type_):
+                names = type_.fieldnames
+                types = type_.subtypes
 
-            if types and not names and type.cassname == 'TupleType':
+            if types and not names and type_.cassname == 'TupleType':
                 names = ['field_' + str(i) for i in range(len(types))]
-            elif types and not names and type.cassname == 'MapType':
+            elif types and not names and type_.cassname == 'MapType':
                 names = ['key', 'value']
 
-            for name, type in zip(names, types):
-                field = cls.generate_schema_dict(name, type)
+            for name, type_ in zip(names, types):  # pylint:disable=redefined-argument-from-local
+                field = self._generate_schema_dict(name, type_)
                 fields.append(field)
 
         return fields
 
-    @classmethod
-    def is_simple_type(cls, type):
-        return type.cassname in CassandraToGoogleCloudStorageOperator.CQL_TYPE_MAP
+    @staticmethod
+    def _is_simple_type(type_):
+        return type_.cassname in CassandraToGoogleCloudStorageOperator.CQL_TYPE_MAP
 
-    @classmethod
-    def is_array_type(cls, type):
-        return type.cassname in ['ListType', 'SetType']
+    @staticmethod
+    def _is_array_type(type_):
+        return type_.cassname in ['ListType', 'SetType']
 
-    @classmethod
-    def is_record_type(cls, type):
-        return type.cassname in ['UserType', 'TupleType', 'MapType']
+    @staticmethod
+    def _is_record_type(type_):
+        return type_.cassname in ['UserType', 'TupleType', 'MapType']
 
-    @classmethod
-    def get_bq_type(cls, type):
-        if cls.is_simple_type(type):
-            return CassandraToGoogleCloudStorageOperator.CQL_TYPE_MAP[type.cassname]
-        elif cls.is_record_type(type):
+    def _get_bq_type(self, type_):
+        if self._is_simple_type(type_):
+            return CassandraToGoogleCloudStorageOperator.CQL_TYPE_MAP[type_.cassname]
+        elif self._is_record_type(type_):
             return 'RECORD'
-        elif cls.is_array_type(type):
-            return cls.get_bq_type(type.subtypes[0])
+        elif self._is_array_type(type_):
+            return self._get_bq_type(type_.subtypes[0])
         else:
-            raise AirflowException('Not a supported type: ' + type.cassname)
+            raise AirflowException('Not a supported type: ' + type_.cassname)
 
-    @classmethod
-    def get_bq_mode(cls, type):
-        if cls.is_array_type(type) or type.cassname == 'MapType':
+    def _get_bq_mode(self, type_):
+        if self._is_array_type(type_) or type_.cassname == 'MapType':
             return 'REPEATED'
-        elif cls.is_record_type(type) or cls.is_simple_type(type):
+        elif self._is_record_type(type_) or self._is_simple_type(type_):
             return 'NULLABLE'
         else:
-            raise AirflowException('Not a supported type: ' + type.cassname)
+            raise AirflowException('Not a supported type: ' + type_.cassname)

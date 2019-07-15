@@ -16,7 +16,10 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-#
+"""
+This module contains GCS to Google Cloud Store operator.
+"""
+
 from airflow.contrib.hooks.datastore_hook import DatastoreHook
 from airflow.exceptions import AirflowException
 from airflow.models import BaseOperator

@@ -16,7 +16,9 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
+"""
+This module contains S3 to GCS operator.
+"""
 from tempfile import NamedTemporaryFile
 
 from airflow.contrib.hooks.gcs_hook import (GoogleCloudStorageHook,
@@ -130,7 +132,7 @@ class S3ToGoogleCloudStorageOperator(S3ListOperator):
             google_cloud_storage_conn_id=self.dest_gcs_conn_id,
             delegate_to=self.delegate_to)
 
-        if not self.replace:
+        if not self.replace:  # pylint:disable=too-many-nested-blocks
             # if we are not replacing -> list all files in the GCS bucket
             # and only keep those files which are present in
             # S3 and not in Google Cloud Storage
@@ -153,7 +155,7 @@ class S3ToGoogleCloudStorageOperator(S3ListOperator):
                         existing_files.append(f)
 
             files = list(set(files) - set(existing_files))
-            if len(files) > 0:
+            if files:
                 self.log.info(
                     '%s files are going to be synced: %s.', len(files), files
                 )
@@ -201,7 +203,7 @@ class S3ToGoogleCloudStorageOperator(S3ListOperator):
     # Following functionality may be better suited in
     # airflow/contrib/hooks/gcs_hook.py
     @staticmethod
-    def _gcs_object_is_directory(object):
-        bucket, blob = _parse_gcs_url(object)
+    def _gcs_object_is_directory(object):  # pylint:disable=redefined-builtin
+        _, blob = _parse_gcs_url(object)
 
         return len(blob) == 0 or blob.endswith('/')

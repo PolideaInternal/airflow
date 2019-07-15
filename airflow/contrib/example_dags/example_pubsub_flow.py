@@ -70,6 +70,7 @@ echo_template = '''
 
 with DAG('pubsub-end-to-end', default_args=default_args,
          schedule_interval=datetime.timedelta(days=1)) as dag:
+    # pylint: disable=no-value-for-parameter
     t1 = PubSubTopicCreateOperator(task_id='create-topic')
     t2 = PubSubSubscriptionCreateOperator(
         task_id='create-subscription', topic_project=project,
@@ -84,3 +85,4 @@ with DAG('pubsub-end-to-end', default_args=default_args,
 
     t1 >> t2 >> t3
     t2 >> t4 >> t5 >> t6 >> t7
+    # pylint: enable=no-value-for-parameter

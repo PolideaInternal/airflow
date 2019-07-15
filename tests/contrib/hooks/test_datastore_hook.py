@@ -20,13 +20,13 @@
 
 import unittest
 
-from airflow.contrib.hooks.datastore_hook import DatastoreHook
 from unittest.mock import call, patch
 
 from tests.compat import mock
+from airflow.contrib.hooks.datastore_hook import DatastoreHook
 
 
-def mock_init(self, gcp_conn_id, delegate_to=None):
+def mock_init(self, gcp_conn_id, delegate_to=None):  # pylint:disable=unused-argument
     pass
 
 
