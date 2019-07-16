@@ -4,6 +4,7 @@
 ./airflow/config_templates/default_celery.py
 ./airflow/config_templates/default_webserver_config.py
 ./airflow/contrib/auth/backends/github_enterprise_auth.py
+./airflow/contrib/auth/backends/google_auth.py
 ./airflow/contrib/auth/backends/kerberos_auth.py
 ./airflow/contrib/auth/backends/ldap_auth.py
 ./airflow/contrib/auth/backends/password_auth.py

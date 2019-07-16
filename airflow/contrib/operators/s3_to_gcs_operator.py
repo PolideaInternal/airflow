@@ -203,7 +203,7 @@ class S3ToGoogleCloudStorageOperator(S3ListOperator):
     # Following functionality may be better suited in
     # airflow/contrib/hooks/gcs_hook.py
     @staticmethod
-    def _gcs_object_is_directory(object):  # pylint:disable=redefined-builtin
-        _, blob = _parse_gcs_url(object)
+    def _gcs_object_is_directory(obj):
+        _, blob = _parse_gcs_url(obj)
 
         return len(blob) == 0 or blob.endswith('/')

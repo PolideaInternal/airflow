@@ -17,7 +17,7 @@
 # specific language governing permissions and limitations
 # under the License.
 """
-This module contains SFTP to Amazon S# operator.
+This module contains SFTP to Amazon S3 operator.
 """
 
 from tempfile import NamedTemporaryFile
