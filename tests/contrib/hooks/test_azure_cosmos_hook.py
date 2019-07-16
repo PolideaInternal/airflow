@@ -57,7 +57,7 @@ class TestAzureCosmosDbHook(unittest.TestCase):
 
     @mock.patch('azure.cosmos.cosmos_client.CosmosClient')
     def test_create_database(self, cosmos_mock):
-        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')
+        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
         self.cosmos.create_database(self.test_database_name)
         expected_calls = [mock.call().CreateDatabase({'id': self.test_database_name})]
         cosmos_mock.assert_any_call(self.test_end_point, {'masterKey': self.test_master_key})
@@ -65,17 +65,17 @@ class TestAzureCosmosDbHook(unittest.TestCase):
 
     @mock.patch('azure.cosmos.cosmos_client.CosmosClient')
     def test_create_database_exception(self, cosmos_mock):
-        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')
+        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
         self.assertRaises(AirflowException, self.cosmos.create_database, None)
 
     @mock.patch('azure.cosmos.cosmos_client.CosmosClient')
     def test_create_container_exception(self, cosmos_mock):
-        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')
+        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
         self.assertRaises(AirflowException, self.cosmos.create_collection, None)
 
     @mock.patch('azure.cosmos.cosmos_client.CosmosClient')
     def test_create_container(self, cosmos_mock):
-        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')
+        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
         self.cosmos.create_collection(self.test_collection_name, self.test_database_name)
         expected_calls = [mock.call().CreateContainer(
             'dbs/test_database_name',
@@ -85,7 +85,7 @@ class TestAzureCosmosDbHook(unittest.TestCase):
 
     @mock.patch('azure.cosmos.cosmos_client.CosmosClient')
     def test_create_container_default(self, cosmos_mock):
-        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')
+        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
         self.cosmos.create_collection(self.test_collection_name)
         expected_calls = [mock.call().CreateContainer(
             'dbs/test_database_default',
@@ -97,7 +97,7 @@ class TestAzureCosmosDbHook(unittest.TestCase):
     def test_upsert_document_default(self, cosmos_mock):
         test_id = str(uuid.uuid4())
         cosmos_mock.return_value.CreateItem.return_value = {'id': test_id}
-        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')
+        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
         returned_item = self.cosmos.upsert_document({'id': test_id})
         expected_calls = [mock.call().CreateItem(
             'dbs/' + self.test_database_default + '/colls/' + self.test_collection_default,
@@ -111,7 +111,7 @@ class TestAzureCosmosDbHook(unittest.TestCase):
     def test_upsert_document(self, cosmos_mock):
         test_id = str(uuid.uuid4())
         cosmos_mock.return_value.CreateItem.return_value = {'id': test_id}
-        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')
+        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
         returned_item = self.cosmos.upsert_document(
             {'data1': 'somedata'},
             database_name=self.test_database_name,
@@ -137,7 +137,7 @@ class TestAzureCosmosDbHook(unittest.TestCase):
             {'id': test_id2, 'data': 'data2'},
             {'id': test_id3, 'data': 'data3'}]
 
-        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')
+        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
         returned_item = self.cosmos.insert_documents(documents)
         expected_calls = [
             mock.call().CreateItem(
@@ -155,7 +155,7 @@ class TestAzureCosmosDbHook(unittest.TestCase):
 
     @mock.patch('azure.cosmos.cosmos_client.CosmosClient')
     def test_delete_database(self, cosmos_mock):
-        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')
+        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
         self.cosmos.delete_database(self.test_database_name)
         expected_calls = [mock.call().DeleteDatabase('dbs/test_database_name')]
         cosmos_mock.assert_any_call(self.test_end_point, {'masterKey': self.test_master_key})
@@ -163,17 +163,17 @@ class TestAzureCosmosDbHook(unittest.TestCase):
 
     @mock.patch('azure.cosmos.cosmos_client.CosmosClient')
     def test_delete_database_exception(self, cosmos_mock):
-        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')
+        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
         self.assertRaises(AirflowException, self.cosmos.delete_database, None)
 
     @mock.patch('azure.cosmos.cosmos_client.CosmosClient')
     def test_delete_container_exception(self, cosmos_mock):
-        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')
+        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
         self.assertRaises(AirflowException, self.cosmos.delete_collection, None)
 
     @mock.patch('azure.cosmos.cosmos_client.CosmosClient')
     def test_delete_container(self, cosmos_mock):
-        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')
+        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
         self.cosmos.delete_collection(self.test_collection_name, self.test_database_name)
         expected_calls = [mock.call().DeleteContainer('dbs/test_database_name/colls/test_collection_name')]
         cosmos_mock.assert_any_call(self.test_end_point, {'masterKey': self.test_master_key})
@@ -181,7 +181,7 @@ class TestAzureCosmosDbHook(unittest.TestCase):
 
     @mock.patch('azure.cosmos.cosmos_client.CosmosClient')
     def test_delete_container_default(self, cosmos_mock):
-        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')
+        self.cosmos = AzureCosmosDBHook(azure_cosmos_conn_id='azure_cosmos_test_key_id')  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
         self.cosmos.delete_collection(self.test_collection_name)
         expected_calls = [mock.call().DeleteContainer('dbs/test_database_default/colls/test_collection_name')]
         cosmos_mock.assert_any_call(self.test_end_point, {'masterKey': self.test_master_key})

@@ -32,7 +32,7 @@ class mock_conf_get(ContextDecorator):
         self.mock_return_value = mock_return_value
 
     def __enter__(self):
-        self.old_conf_get = conf.getint
+        self.old_conf_get = conf.getint  # pylint:disable=attribute-defined-outside-init
 
         def side_effect(section, key):
             if section == self.mock_section and key == self.mock_key:

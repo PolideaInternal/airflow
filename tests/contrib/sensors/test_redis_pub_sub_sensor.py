@@ -49,7 +49,7 @@ class TestRedisPubSubSensor(unittest.TestCase):
             redis_conn_id='redis_default'
         )
 
-        self.mock_redis_conn = mock_redis_conn
+        self.mock_redis_conn = mock_redis_conn  # pylint:disable=attribute-defined-outside-init
         self.mock_redis_conn().pubsub().get_message.return_value = \
             {'type': 'message', 'channel': b'test', 'data': b'd1'}
 
@@ -69,7 +69,7 @@ class TestRedisPubSubSensor(unittest.TestCase):
             channels='test',
             redis_conn_id='redis_default'
         )
-        self.mock_redis_conn = mock_redis_conn
+        self.mock_redis_conn = mock_redis_conn  # pylint:disable=attribute-defined-outside-init
         self.mock_redis_conn().pubsub().get_message.return_value = \
             {'type': 'subscribe', 'channel': b'test', 'data': b'd1'}
 

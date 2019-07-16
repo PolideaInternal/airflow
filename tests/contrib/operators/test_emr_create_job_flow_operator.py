@@ -107,7 +107,7 @@ class TestEmrCreateJobFlowOperator(unittest.TestCase):
         # Mock out the emr_client creator
         emr_session_mock = MagicMock()
         emr_session_mock.client.return_value = self.emr_client_mock
-        self.boto3_session_mock = MagicMock(return_value=emr_session_mock)
+        self.boto3_session_mock = MagicMock(return_value=emr_session_mock)  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
 
         with patch('boto3.session.Session', self.boto3_session_mock):
             self.assertEqual(self.operator.execute(None), 'j-8989898989')

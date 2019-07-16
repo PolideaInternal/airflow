@@ -996,20 +996,20 @@ class TaskInstanceTest(unittest.TestCase):
     def test_success_callbak_no_race_condition(self):
         class CallbackWrapper:
             def wrap_task_instance(self, ti):
-                self.task_id = ti.task_id
-                self.dag_id = ti.dag_id
-                self.execution_date = ti.execution_date
-                self.task_state_in_callback = ""
-                self.callback_ran = False
+                self.task_id = ti.task_id  # pylint:disable=attribute-defined-outside-init
+                self.dag_id = ti.dag_id  # pylint:disable=attribute-defined-outside-init
+                self.execution_date = ti.execution_date  # pylint:disable=attribute-defined-outside-init
+                self.task_state_in_callback = ""  # pylint:disable=attribute-defined-outside-init
+                self.callback_ran = False  # pylint:disable=attribute-defined-outside-init
 
             def success_handler(self, context):
-                self.callback_ran = True
+                self.callback_ran = True  # pylint:disable=attribute-defined-outside-init
                 session = settings.Session()
                 temp_instance = session.query(TI).filter(
                     TI.task_id == self.task_id).filter(
                     TI.dag_id == self.dag_id).filter(
                     TI.execution_date == self.execution_date).one()
-                self.task_state_in_callback = temp_instance.state
+                self.task_state_in_callback = temp_instance.state  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
 
         cw = CallbackWrapper()
         dag = DAG('test_success_callbak_no_race_condition', start_date=DEFAULT_DATE,

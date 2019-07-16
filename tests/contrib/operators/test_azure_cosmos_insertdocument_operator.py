@@ -54,7 +54,7 @@ class TestAzureCosmosDbHook(unittest.TestCase):
     def test_insert_document(self, cosmos_mock):
         test_id = str(uuid.uuid4())
         cosmos_mock.return_value.CreateItem.return_value = {'id': test_id}
-        self.cosmos = AzureCosmosInsertDocumentOperator(
+        self.cosmos = AzureCosmosInsertDocumentOperator(  # pylint:disable=attribute-defined-outside-init
             database_name=self.test_database_name,
             collection_name=self.test_collection_name,
             document={'id': test_id, 'data': 'sometestdata'},

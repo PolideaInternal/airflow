@@ -271,7 +271,7 @@ class BranchOperatorTest(unittest.TestCase):
 
     def test_without_dag_run(self):
         """This checks the defensive against non existent tasks in a dag run"""
-        self.branch_op = BranchPythonOperator(task_id='make_choice',
+        self.branch_op = BranchPythonOperator(task_id='make_choice',  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
                                               dag=self.dag,
                                               python_callable=lambda: 'branch_1')
         self.branch_1.set_upstream(self.branch_op)
@@ -299,12 +299,12 @@ class BranchOperatorTest(unittest.TestCase):
 
     def test_branch_list_without_dag_run(self):
         """This checks if the BranchPythonOperator supports branching off to a list of tasks."""
-        self.branch_op = BranchPythonOperator(task_id='make_choice',
+        self.branch_op = BranchPythonOperator(task_id='make_choice',  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
                                               dag=self.dag,
                                               python_callable=lambda: ['branch_1', 'branch_2'])
         self.branch_1.set_upstream(self.branch_op)
         self.branch_2.set_upstream(self.branch_op)
-        self.branch_3 = DummyOperator(task_id='branch_3', dag=self.dag)
+        self.branch_3 = DummyOperator(task_id='branch_3', dag=self.dag)  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
         self.branch_3.set_upstream(self.branch_op)
         self.dag.clear()
 
@@ -330,7 +330,7 @@ class BranchOperatorTest(unittest.TestCase):
                     raise Exception
 
     def test_with_dag_run(self):
-        self.branch_op = BranchPythonOperator(task_id='make_choice',
+        self.branch_op = BranchPythonOperator(task_id='make_choice',  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
                                               dag=self.dag,
                                               python_callable=lambda: 'branch_1')
 
@@ -359,7 +359,7 @@ class BranchOperatorTest(unittest.TestCase):
                 raise Exception
 
     def test_with_skip_in_branch_downstream_dependencies(self):
-        self.branch_op = BranchPythonOperator(task_id='make_choice',
+        self.branch_op = BranchPythonOperator(task_id='make_choice',  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
                                               dag=self.dag,
                                               python_callable=lambda: 'branch_1')
 
@@ -388,7 +388,7 @@ class BranchOperatorTest(unittest.TestCase):
                 raise Exception
 
     def test_with_skip_in_branch_downstream_dependencies2(self):
-        self.branch_op = BranchPythonOperator(task_id='make_choice',
+        self.branch_op = BranchPythonOperator(task_id='make_choice',  # pylint:disable=attribute-defined-outside-init,line-too-long  # noqa
                                               dag=self.dag,
                                               python_callable=lambda: 'branch_2')
 

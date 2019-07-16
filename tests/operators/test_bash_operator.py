@@ -42,7 +42,7 @@ class BashOperatorTest(unittest.TestCase):
         now = datetime.utcnow()
         now = now.replace(tzinfo=timezone.utc)
 
-        self.dag = DAG(
+        self.dag = DAG(  # pylint:disable=attribute-defined-outside-init
             dag_id='bash_op_test', default_args={
                 'owner': 'airflow',
                 'retries': 100,
