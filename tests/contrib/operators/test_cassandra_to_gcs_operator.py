@@ -41,7 +41,8 @@ class CassandraToGCSTest(unittest.TestCase):
         self.assertTrue(upload.called_once())
 
     def test_convert_value(self):
-        op = CassandraToGoogleCloudStorageOperator(cql="test",
+        op = CassandraToGoogleCloudStorageOperator(task_id="test_task",
+                                                   cql="test",
                                                    bucket="test",
                                                    filename="test")
         self.assertEqual(op._convert_value('None', None), None)
