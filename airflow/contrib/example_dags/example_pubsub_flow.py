@@ -70,17 +70,17 @@ echo_template = '''
 
 with DAG('pubsub-end-to-end', default_args=default_args,
          schedule_interval=datetime.timedelta(days=1)) as dag:
-    t1 = PubSubTopicCreateOperator(task_id='create-topic')
-    t2 = PubSubSubscriptionCreateOperator(
+    t1 = PubSubTopicCreateOperator(task_id='create-topic')  # pylint:disable=no-value-for-parameter
+    t2 = PubSubSubscriptionCreateOperator(  # pylint:disable=no-value-for-parameter
         task_id='create-subscription', topic_project=project,
         subscription=subscription)
-    t3 = PubSubPublishOperator(
+    t3 = PubSubPublishOperator(  # pylint:disable=no-value-for-parameter
         task_id='publish-messages', messages=messages)
-    t4 = PubSubPullSensor(task_id='pull-messages', ack_messages=True)
+    t4 = PubSubPullSensor(task_id='pull-messages', ack_messages=True)  # pylint:disable=no-value-for-parameter,line-too-long  # noqa
     t5 = BashOperator(task_id='echo-pulled-messages',
                       bash_command=echo_template)
-    t6 = PubSubSubscriptionDeleteOperator(task_id='delete-subscription')
-    t7 = PubSubTopicDeleteOperator(task_id='delete-topic')
+    t6 = PubSubSubscriptionDeleteOperator(task_id='delete-subscription')  # pylint:disable=no-value-for-parameter,line-too-long  # noqa
+    t7 = PubSubTopicDeleteOperator(task_id='delete-topic')  # pylint:disable=no-value-for-parameter
 
     t1 >> t2 >> t3
     t2 >> t4 >> t5 >> t6 >> t7

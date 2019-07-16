@@ -955,7 +955,7 @@ class SchedulerJobTest(unittest.TestCase):
         test_executor = TestExecutor(do_update=False)
         scheduler_job.executor = test_executor
         scheduler_job._logger = mock_logger
-        scheduler_job._change_state_for_tasks_failed_to_execute()
+        scheduler_job._change_state_for_tasks_failed_to_execute()  # pylint:disable=no-value-for-parameter
         mock_logger.info.assert_not_called()
 
         # Tasks failed to execute with QUEUED state will be set to SCHEDULED state.
@@ -968,7 +968,7 @@ class SchedulerJobTest(unittest.TestCase):
         session.merge(ti)
         session.commit()
 
-        scheduler_job._change_state_for_tasks_failed_to_execute()
+        scheduler_job._change_state_for_tasks_failed_to_execute()  # pylint:disable=no-value-for-parameter
 
         ti.refresh_from_db()
         self.assertEqual(State.SCHEDULED, ti.state)
@@ -981,7 +981,7 @@ class SchedulerJobTest(unittest.TestCase):
         session.merge(ti)
         session.commit()
 
-        scheduler_job._change_state_for_tasks_failed_to_execute()
+        scheduler_job._change_state_for_tasks_failed_to_execute()  # pylint:disable=no-value-for-parameter
 
         ti.refresh_from_db()
         self.assertEqual(State.RUNNING, ti.state)
@@ -1835,11 +1835,11 @@ class SchedulerJobTest(unittest.TestCase):
             scheduler.heartrate = 0
             scheduler.run()
 
-        do_schedule()
+        do_schedule()  # pylint:disable=no-value-for-parameter
         self.assertEqual(1, len(executor.queued_tasks))
         executor.queued_tasks.clear()
 
-        do_schedule()
+        do_schedule()  # pylint:disable=no-value-for-parameter
         self.assertEqual(2, len(executor.queued_tasks))
 
     def test_scheduler_sla_miss_callback(self):
@@ -2077,7 +2077,7 @@ class SchedulerJobTest(unittest.TestCase):
             scheduler.heartrate = 0
             scheduler.run()
 
-        do_schedule()
+        do_schedule()  # pylint:disable=no-value-for-parameter
         self.assertEqual(1, len(executor.queued_tasks))
 
         def run_with_error(task):
@@ -2103,7 +2103,7 @@ class SchedulerJobTest(unittest.TestCase):
         session.commit()
 
         # do not schedule
-        do_schedule()
+        do_schedule()  # pylint:disable=no-value-for-parameter
         self.assertTrue(executor.has_task(ti))
         ti.refresh_from_db()
         # removing self.assertEqual(ti.state, State.SCHEDULED)
@@ -2113,7 +2113,7 @@ class SchedulerJobTest(unittest.TestCase):
         # but tasks stay in the executor.queued_tasks after executor.heartbeat()
         # will be set back to SCHEDULED state
         executor.queued_tasks.clear()
-        do_schedule()
+        do_schedule()  # pylint:disable=no-value-for-parameter
         ti.refresh_from_db()
 
         self.assertEqual(ti.state, State.SCHEDULED)
@@ -2121,7 +2121,7 @@ class SchedulerJobTest(unittest.TestCase):
         # To verify that task does get re-queued.
         executor.queued_tasks.clear()
         executor.do_update = True
-        do_schedule()
+        do_schedule()  # pylint:disable=no-value-for-parameter
         ti.refresh_from_db()
         self.assertIn(ti.state, [State.RUNNING, State.SUCCESS])
 

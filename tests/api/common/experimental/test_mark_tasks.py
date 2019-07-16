@@ -310,7 +310,7 @@ class TestMarkDAGRun(unittest.TestCase):
         # All except the SUCCESS task should be altered.
         self.assertEqual(len(altered), 5)
         self._verify_dag_run_state(self.dag1, date, State.SUCCESS)
-        self._verify_task_instance_states(self.dag1, date, State.SUCCESS)
+        self._verify_task_instance_states(self.dag1, date, State.SUCCESS)  # pylint:disable=no-value-for-parameter,line-too-long  # noqa
         self._verify_dag_run_dates(self.dag1, date, State.SUCCESS, middle_time)
 
     def test_set_running_dag_run_to_failed(self):
@@ -352,7 +352,7 @@ class TestMarkDAGRun(unittest.TestCase):
         # All except the SUCCESS task should be altered.
         self.assertEqual(len(altered), 5)
         self._verify_dag_run_state(self.dag1, date, State.SUCCESS)
-        self._verify_task_instance_states(self.dag1, date, State.SUCCESS)
+        self._verify_task_instance_states(self.dag1, date, State.SUCCESS)  # pylint:disable=no-value-for-parameter,line-too-long  # noqa
         self._verify_dag_run_dates(self.dag1, date, State.SUCCESS, middle_time)
 
     def test_set_success_dag_run_to_failed(self):
@@ -394,7 +394,7 @@ class TestMarkDAGRun(unittest.TestCase):
         # All except the SUCCESS task should be altered.
         self.assertEqual(len(altered), 5)
         self._verify_dag_run_state(self.dag1, date, State.SUCCESS)
-        self._verify_task_instance_states(self.dag1, date, State.SUCCESS)
+        self._verify_task_instance_states(self.dag1, date, State.SUCCESS)  # pylint:disable=no-value-for-parameter,line-too-long  # noqa
         self._verify_dag_run_dates(self.dag1, date, State.SUCCESS, middle_time)
 
     def test_set_failed_dag_run_to_failed(self):

@@ -492,7 +492,7 @@ class TaskInstanceTest(unittest.TestCase):
             self.assertEqual(ti.start_date, expected_start_date)
             self.assertEqual(ti.end_date, expected_end_date)
             self.assertEqual(ti.duration, expected_duration)
-            trs = TaskReschedule.find_for_task_instance(ti)
+            trs = TaskReschedule.find_for_task_instance(ti)  # pylint:disable=no-value-for-parameter
             self.assertEqual(len(trs), expected_task_reschedule_count)
 
         date1 = timezone.utcnow()
@@ -630,7 +630,7 @@ class TaskInstanceTest(unittest.TestCase):
         run_date = task.start_date + datetime.timedelta(days=5)
 
         ti = TI(downstream, run_date)
-        dep_results = TriggerRuleDep()._evaluate_trigger_rule(
+        dep_results = TriggerRuleDep()._evaluate_trigger_rule(  # pylint:disable=no-value-for-parameter
             ti=ti,
             successes=successes,
             skipped=skipped,

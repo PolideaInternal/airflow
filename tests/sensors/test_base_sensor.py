@@ -183,7 +183,7 @@ class BaseSensorTest(unittest.TestCase):
                 # verify task start date is the initial one
                 self.assertEqual(ti.start_date, date1)
                 # verify one row in task_reschedule table
-                task_reschedules = TaskReschedule.find_for_task_instance(ti)
+                task_reschedules = TaskReschedule.find_for_task_instance(ti)  # pylint:disable=no-value-for-parameter,line-too-long  # noqa
                 self.assertEqual(len(task_reschedules), 1)
                 self.assertEqual(task_reschedules[0].start_date, date1)
                 self.assertEqual(task_reschedules[0].reschedule_date,
@@ -204,7 +204,7 @@ class BaseSensorTest(unittest.TestCase):
                 # verify task start date is the initial one
                 self.assertEqual(ti.start_date, date1)
                 # verify two rows in task_reschedule table
-                task_reschedules = TaskReschedule.find_for_task_instance(ti)
+                task_reschedules = TaskReschedule.find_for_task_instance(ti)  # pylint:disable=no-value-for-parameter,line-too-long  # noqa
                 self.assertEqual(len(task_reschedules), 2)
                 self.assertEqual(task_reschedules[1].start_date, date2)
                 self.assertEqual(task_reschedules[1].reschedule_date,
@@ -310,7 +310,7 @@ class BaseSensorTest(unittest.TestCase):
             if ti.task_id == SENSOR_OP:
                 self.assertEqual(ti.state, State.UP_FOR_RESCHEDULE)
                 # verify one row in task_reschedule table
-                task_reschedules = TaskReschedule.find_for_task_instance(ti)
+                task_reschedules = TaskReschedule.find_for_task_instance(ti)  # pylint:disable=no-value-for-parameter,line-too-long  # noqa
                 self.assertEqual(len(task_reschedules), 1)
                 self.assertEqual(task_reschedules[0].start_date, date1)
                 self.assertEqual(task_reschedules[0].reschedule_date,
@@ -342,7 +342,7 @@ class BaseSensorTest(unittest.TestCase):
             if ti.task_id == SENSOR_OP:
                 self.assertEqual(ti.state, State.UP_FOR_RESCHEDULE)
                 # verify one row in task_reschedule table
-                task_reschedules = TaskReschedule.find_for_task_instance(ti)
+                task_reschedules = TaskReschedule.find_for_task_instance(ti)  # pylint:disable=no-value-for-parameter,line-too-long  # noqa
                 self.assertEqual(len(task_reschedules), 1)
                 self.assertEqual(task_reschedules[0].start_date, date3)
                 self.assertEqual(task_reschedules[0].reschedule_date,
@@ -398,7 +398,7 @@ class BaseSensorTest(unittest.TestCase):
                 # verify task is re-scheduled, i.e. state set to NONE
                 self.assertEqual(ti.state, State.UP_FOR_RESCHEDULE)
                 # verify one row in task_reschedule table
-                task_reschedules = TaskReschedule.find_for_task_instance(ti)
+                task_reschedules = TaskReschedule.find_for_task_instance(ti)  # pylint:disable=no-value-for-parameter,line-too-long  # noqa
                 self.assertEqual(len(task_reschedules), 1)
                 self.assertEqual(task_reschedules[0].start_date, date1)
                 self.assertEqual(task_reschedules[0].reschedule_date, date2)
@@ -415,7 +415,7 @@ class BaseSensorTest(unittest.TestCase):
                 # verify task is re-scheduled, i.e. state set to NONE
                 self.assertEqual(ti.state, State.UP_FOR_RESCHEDULE)
                 # verify two rows in task_reschedule table
-                task_reschedules = TaskReschedule.find_for_task_instance(ti)
+                task_reschedules = TaskReschedule.find_for_task_instance(ti)  # pylint:disable=no-value-for-parameter,line-too-long  # noqa
                 self.assertEqual(len(task_reschedules), 2)
                 self.assertEqual(task_reschedules[1].start_date, date2)
                 self.assertEqual(task_reschedules[1].reschedule_date, date3)
@@ -456,7 +456,7 @@ class BaseSensorTest(unittest.TestCase):
                 # in test mode state is not modified
                 self.assertEqual(ti.state, State.NONE)
                 # in test mode no reschedule request is recorded
-                task_reschedules = TaskReschedule.find_for_task_instance(ti)
+                task_reschedules = TaskReschedule.find_for_task_instance(ti)  # pylint:disable=no-value-for-parameter,line-too-long  # noqa
                 self.assertEqual(len(task_reschedules), 0)
             if ti.task_id == DUMMY_OP:
                 self.assertEqual(ti.state, State.NONE)

@@ -60,10 +60,10 @@ class PoolTest(unittest.TestCase):
         session.commit()
         session.close()
 
-        self.assertEqual(3, pool.open_slots())
-        self.assertEqual(1, pool.used_slots())
-        self.assertEqual(1, pool.queued_slots())
-        self.assertEqual(2, pool.occupied_slots())
+        self.assertEqual(3, pool.open_slots())  # pylint:disable=no-value-for-parameter
+        self.assertEqual(1, pool.used_slots())  # pylint:disable=no-value-for-parameter
+        self.assertEqual(1, pool.queued_slots())  # pylint:disable=no-value-for-parameter
+        self.assertEqual(2, pool.occupied_slots())  # pylint:disable=no-value-for-parameter
 
     def test_default_pool_open_slots(self):
         set_default_pool_slots(5)
