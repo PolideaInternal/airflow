@@ -21,10 +21,22 @@ if [[ "${ASSUME_YES:=false}" == "true" ]]; then
     exit 0
 fi
 
-read -r -p "${1}. Are you sure? [y/N] " response
+if [[ "${ASSUME_NO:=false}" == "true" ]]; then
+    exit 1
+fi
+
+if [[ "${ASSUME_QUIT:=false}" == "true" ]]; then
+    exit 2
+fi
+
+
+read -r -p "${1}. Are you sure? [y/N/q] " response
 case "$response" in
     [yY][eE][sS]|[yY])
         exit 0
+        ;;
+    [qQ][uU][iI|[tT]|[qQ])
+        exit 2
         ;;
     *)
         exit 1

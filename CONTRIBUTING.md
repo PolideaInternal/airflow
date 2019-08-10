@@ -142,6 +142,9 @@ environment and you can easily debug the code locally. You can also have access 
 contains all the necessary requirements and use it in your local IDE - this aids autocompletion, and
 running tests directly from within the IDE.
 
+It is **STRONGLY** encouraged to also install and use [Pre commit hooks](#pre-commit-hooks) for your lokal
+development environment. They will speed up your development cycle speed a lot.
+
 The disadvantage is that you have to maintain your dependencies and local environment consistent with
 other development environments that you have on your local machine.
 
@@ -163,7 +166,7 @@ managers like yum, apt-get for Linux, or Homebrew for Mac OS at first.
 Refer to the [Dockerfile](Dockerfile) for a comprehensive list of required packages.
 
 In order to use your IDE you need you can use the virtual environment. Ideally
-you should setup virtualenv for all python versions that Airflow supports (2.7, 3.5, 3.6).
+you should setup virtualenv for all python versions that Airflow supports (3.5, 3.6).
 An easy way to create the virtualenv is to use
 [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/) - it allows
 you to easily switch between virtualenvs using `workon` command and mange
@@ -174,7 +177,14 @@ mkvirtualenv <ENV_NAME> --python=python<VERSION>
 ```
 
 Then you need to install python PIP requirements. Typically it can be done with:
-`pip install -e ".[devel]"`. Then you need to run `airflow db init` to create sqlite database.
+`pip install -e ".[devel]"`.
+
+Note - if you have trouble installing mysqlclient on MacOS and you have an error
+`ld: library not found for -lssl` - you should run this before running `pip install` command:
+
+Run: `export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/openssl/lib/`
+
+After creating the virtualenv you need to run `airflow db init` to create sqlite database.
 
 Once initialization is done, you should select the virtualenv you initialized as the
 project's default virtualenv in your IDE and run tests efficiently.
@@ -331,7 +341,7 @@ PYTHON_VERSION=3.5 BACKEND=postgres ENV=docker ./scripts/ci/local_ci_enter_envir
 Once you are inside the environment you can run individual tests as described in
 [Running individual tests](#running-individual-tests).
 
-### Running static code analysis
+## Running static code analysis
 
 We have a number of static code checks that are run in Travis CI but you can run them locally as well.
 All the scripts are available in [scripts/ci](scripts/ci) folder.
@@ -583,67 +593,76 @@ class LoginForm(Form):
 # pylint: enable=too-few-public-methods
 ```
 
-# Git hooks
+## Pre-commit hooks
 
-Another great way of automating linting and testing is to use
- [Git Hooks](https://git-scm.com/book/uz/v2/Customizing-Git-Git-Hooks). For example you could create a
-`pre-commit` file based on the Travis CI Pipeline so that before each commit a local pipeline will be
-triggered and if this pipeline fails (returns an exit code other than `0`) the commit does not come through.
-This "in theory" has the advantage that you can not commit any code that fails that again reduces the
-errors in the Travis CI Pipelines.
+Pre-commit hooks are fantastic way of speeding up your local development - you can run exactly the same
+static code checks as are run in TravisCI but only limit the checks to the files you are just committing.
 
-Since there are a lot of tests the script would last very long so you probably only should test your
- new
-feature locally.
+You are *STRONGLY* encouraged to install pre-commit hooks as they speed up your development and place less
+burden on the Travis CI infrastructure.
 
-The following example of a `pre-commit` file allows you..
-- to lint your code via flake8
-- to test your code via nosetests in a docker container based on python 2
-- to test your code via nosetests in a docker container based on python 3
+We have integrated the fantastic [pre-commit](https://pre-commit.com/) framework in our development workflow.
+You need to have python 3.6 installed in your host in order to install and use it. It's best to run your
+commits when you have your local virtualenv for Airflow activated (then pre-commit and other
+dependencies such as yamllint are automatically installed). You can also install pre-commit and
+yamllint manually using `pip install`.
 
-```
-#!/bin/sh
+You need Docker engine configured as most static checks are executed in docker environment.
 
-GREEN='\033[0;32m'
-NO_COLOR='\033[0m'
+### Installing pre-commit hooks
 
-setup_python_env() {
-    local venv_path=${1}
+`pre-commit install`
 
-    echo -e "${GREEN}Activating python virtual environment ${venv_path}..${NO_COLOR}"
-    source ${venv_path}
-}
-run_linting() {
-    local project_dir=$(git rev-parse --show-toplevel)
+Once you do it - all the commits by default will have to pass the static code analysis checks in order to
+be able to add commit.
 
-    echo -e "${GREEN}Running flake8 over directory ${project_dir}..${NO_COLOR}"
-    flake8 ${project_dir}
-}
-run_testing_in_docker() {
-    local feature_path=${1}
-    local airflow_py2_container=${2}
-    local airflow_py3_container=${3}
+The first time you run pre-commit hooks, it might take some time to setup and prepare (pull and build)
+docker image that is used to run some of the static checks.
 
-    echo -e "${GREEN}Running tests in ${feature_path} in airflow python 2 docker container..${NO_COLOR}"
-    docker exec -i -w /airflow/ ${airflow_py2_container} nosetests -v ${feature_path}
-    echo -e "${GREEN}Running tests in ${feature_path} in airflow python 3 docker container..${NO_COLOR}"
-    docker exec -i -w /airflow/ ${airflow_py3_container} nosetests -v ${feature_path}
-}
-
-set -e
-# NOTE: Before running this make sure you have set the function arguments correctly.
-setup_python_env /Users/feluelle/venv/bin/activate
-run_linting
-run_testing_in_docker tests/contrib/hooks/test_imap_hook.py dazzling_chatterjee quirky_stallman
+If you are on a Mac you might experience a problem similar to this when running doctoc test:
 
 ```
+ssl.SSLError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:852)
+```
 
-For more information on how to run a subset of the tests, take a look at the
-nosetests docs.
+You need to run this command to fix it (it will install missing certificates on MacOS):
 
-See also the list of test classes and methods in `tests/core.py`.
+```
+/Applications/Python\ 3.6/Install\ Certificates.command
+```
 
-Feel free to customize based on the extras available in [setup.py](./setup.py)
+### Pre-commit hooks installed
+
+The following checks are executed:
+
+
+```text
+run-docker-build                 Docker build - fails in case you need to build images
+lint-dockerfile                  Lint dockerfile
+mypy                             Run mypy
+pylint                           Run pylint
+flake8                           Run flake8
+```
+### Using pre-commit hooks
+
+After installing pre-commit hooks are run automatically when you commit the code, but you can also
+run pre-commit hooks manually.
+
+*You can run all checks on your staged files by running:*
+`pre-commit run`
+
+*You can run only one check on your staged files by running:*
+`pre-commit run run-mypy`
+
+*You can run all the checks manually on all files by running:*
+`pre-commit run --all-files`
+
+*You can also skip some of the checks by specifying comma-separated list of checks to skip in SKIP variable:*
+`SKIP=run-pylint,run-mypy pre-commit run --all-files`
+
+Note! You can always skip running the tests by providing `--no-verify` flag to `git commit` command.
+
+You can check other usages of pre-commit framework at [Pre-commit website](https://pre-commit.com/)
 
 # Pull Request Guidelines
 
@@ -670,8 +689,8 @@ are often sufficient.  Make sure to follow the Sphinx compatible standards.
 1. The pull request should work for Python 3.5 and 3.6.
 1. As Airflow grows as a project, we try to enforce a more consistent style and try to follow the Python
 community guidelines. We currently enforce most [PEP8](https://www.python.org/dev/peps/pep-0008/) and a
-few other linting rules - described in [Running linting and tests](#running-linting-and-tests). It's a good
-idea to run tests locally before opening PR.
+few other linting rules - described in [Running static code analysis locally](#running-static-code-analysis-locally).
+It's a good idea to run tests locally before opening PR.
 1. Please read this excellent [article](http://chris.beams.io/posts/git-commit/) on commit messages and
 adhere to them. It makes the lives of those who come after you a lot easier.
 

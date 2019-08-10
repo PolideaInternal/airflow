@@ -18,6 +18,8 @@ set -euo pipefail
 
 MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+export AIRFLOW_CI_SILENT=${AIRFLOW_CI_SILENT:="true"}
+
 # shellcheck source=./_utils.sh
 . "${MY_DIR}/_utils.sh"
 
@@ -25,7 +27,10 @@ basic_sanity_checks
 
 script_start
 
-docker run -v "$(pwd)/Dockerfile:/root/Dockerfile" -v "$(pwd)/.hadolint.yaml:/root/.hadolint.yaml" \
-    -w /root hadolint/hadolint /bin/hadolint Dockerfile
+docker run \
+    -v "$(pwd)/Dockerfile:/root/Dockerfile" \
+    -v "$(pwd)/.hadolint.yaml:/root/.hadolint.yaml" \
+    -w /root \
+    hadolint/hadolint /bin/hadolint Dockerfile
 
 script_end
