@@ -30,7 +30,7 @@ in_container_basic_sanity_check
 in_container_script_start
 
 # any argument received is overriding the default nose execution arguments:
-NOSE_ARGS=( "$@" )
+PYTEST_ARGS=( "$@" )
 
 KUBERNETES_VERSION=${KUBERNETES_VERSION:=""}
 
@@ -43,10 +43,13 @@ if [[ "${KUBERNETES_VERSION}" == "" ]]; then
 fi
 
 echo
-echo "Starting the tests with those nose arguments: ${NOSE_ARGS[*]}"
+echo "Starting the tests with those pytest arguments: ${PYTEST_ARGS[*]}"
 echo
 set +e
-nosetests "${NOSE_ARGS[@]}"
+
+#pytest "${PYTESTS_ARGS[@]}" tests/
+pytest tests/
+
 RES=$?
 
 set +x

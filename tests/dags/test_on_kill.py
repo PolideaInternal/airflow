@@ -25,13 +25,12 @@ from airflow.utils.timezone import datetime
 
 class DummyWithOnKill(DummyOperator):
     def execute(self, context):
-        time.sleep(10)
+        time.sleep(1)
 
     def on_kill(self):
         self.log.info("Executing on_kill")
-        f = open("/tmp/airflow_on_kill", "w")
-        f.write("ON_KILL_TEST")
-        f.close()
+        with open("/tmp/airflow_on_kill", "w") as f:
+            f.write("ON_KILL_TEST")
 
 
 # DAG tests backfill with pooled tasks

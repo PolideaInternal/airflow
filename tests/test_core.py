@@ -27,7 +27,6 @@ import signal
 import subprocess
 import tempfile
 import unittest
-import warnings
 from datetime import timedelta
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
@@ -442,18 +441,15 @@ class TestCore(unittest.TestCase):
         """
         Tests that Operators reject illegal arguments
         """
-        with warnings.catch_warnings(record=True) as w:
+        msg = 'Invalid arguments were passed to BashOperator '
+        '(task_id: test_illegal_args).'
+        with self.assertWarns(PendingDeprecationWarning) as warning:
             BashOperator(
                 task_id='test_illegal_args',
                 bash_command='echo success',
                 dag=self.dag,
                 illegal_argument_1234='hello?')
-            self.assertTrue(
-                issubclass(w[0].category, PendingDeprecationWarning))
-            self.assertIn(
-                ('Invalid arguments were passed to BashOperator '
-                 '(task_id: test_illegal_args).'),
-                w[0].message.args[0])
+            assert any(msg in str(w) for w in warning.warnings)
 
     def test_bash_operator(self):
         t = BashOperator(
@@ -2222,9 +2218,6 @@ class TestHDFSHook(unittest.TestCase):
         self.assertIsInstance(client, snakebite.client.HAClient)
 
 
-send_email_test = mock.Mock()
-
-
 class TestEmail(unittest.TestCase):
     def setUp(self):
         conf.remove_option('email', 'EMAIL_BACKEND')
@@ -2237,7 +2230,8 @@ class TestEmail(unittest.TestCase):
 
     @mock.patch('airflow.utils.email.send_email_smtp')
     def test_custom_backend(self, mock_send_email):
-        with conf_vars({('email', 'email_backend'): 'tests.core.send_email_test'}):
+        from tests.test_utils.mocks import send_email_test
+        with conf_vars({('email', 'email_backend'): 'tests.test_utils.mocks.send_email_test'}):
             utils.email.send_email('to', 'subject', 'content')
         send_email_test.assert_called_once_with(
             'to', 'subject', 'content', files=None, dryrun=False,

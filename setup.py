@@ -297,6 +297,9 @@ devel = [
     'pylint~=2.3.1',  # to be upgraded after fixing https://github.com/PyCQA/pylint/issues/3123
                       # We should also disable checking docstring at the module level
     'pysftp',
+    'pytest',
+    'pytest-cov==2.8.1',
+    # 'pytest-randomly'
     'pywinrm',
     'qds-sdk>=1.9.6',
     'rednose',

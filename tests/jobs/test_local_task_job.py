@@ -33,7 +33,7 @@ from airflow.utils.db import create_session
 from airflow.utils.net import get_hostname
 from airflow.utils.state import State
 from tests.compat import patch
-from tests.core import TEST_DAG_FOLDER
+from tests.test_core import TEST_DAG_FOLDER
 from tests.executors.test_executor import TestExecutor
 from tests.test_utils.db import clear_db_runs
 
