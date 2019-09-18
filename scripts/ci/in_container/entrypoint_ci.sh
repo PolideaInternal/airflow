@@ -220,18 +220,7 @@ if [[ "${RUN_TESTS}" == "false" ]]; then
 fi
 
 if [[ ${#ARGS} == 0 ]]; then
-    ARGS=("--with-coverage"
-          "--cover-erase"
-          "--cover-html"
-          "--cover-package=airflow"
-          "--cover-html-dir=airflow/www/static/coverage"
-          "--with-ignore-docstrings"
-          "--rednose"
-          "--with-xunit"
-          "--xunit-file=${XUNIT_FILE}"
-          "--with-timer"
-          "-v"
-          "--logging-level=INFO")
+    ARGS=("--junitxml=${XUNIT_FILE}" "tests/")
     echo
     echo "Running ALL Tests"
     echo
@@ -257,7 +246,7 @@ else
     echo
     echo "Running CI tests with ${ARGS[*]}"
     echo
-    "${MY_DIR}/run_ci_tests.sh" tests.integration.kubernetes "${ARGS[@]}"
+    "${MY_DIR}/run_ci_tests.sh" tests/integration/kubernetes "${ARGS[@]}"
 fi
 
 in_container_script_end

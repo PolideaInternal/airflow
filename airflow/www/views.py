@@ -1024,12 +1024,12 @@ class Airflow(AirflowBaseView):
             )
             if 'all_dags' not in filter_dag_ids:
                 dags = dags.filter(DR.dag_id.in_(filter_dag_ids))
-            dags = dags.all()
+            else:
+                dags = dags.all()
 
             for dag_id, active_dag_runs in dags:
                 max_active_runs = 0
                 dag = dagbag.get_dag(dag_id)
-                max_active_runs = dagbag.dags[dag_id].max_active_runs
                 if dag:
                     # TODO: Make max_active_runs a column so we can query for it directly
                     max_active_runs = dag.max_active_runs

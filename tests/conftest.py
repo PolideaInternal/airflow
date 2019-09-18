@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -17,7 +15,33 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# flake8: noqa
+import os
+from copy import deepcopy
 
-from .api import *  # type: ignore
-from .test_core import *  # type: ignore
+import pytest
+
+from airflow.utils import db
+
+
+@pytest.fixture(autouse=True)
+def reset_environment():
+    """
+    Resets env variables.
+    """
+    init_env = deepcopy(os.environ)
+    yield
+    changed_env = os.environ
+    for key in changed_env:
+        if key not in init_env:
+            del os.environ[key]
+        else:
+            os.environ[key] = init_env[key]
+
+
+@pytest.fixture()
+def reset_db():
+    """
+    Resets Airflow db.
+    """
+    db.resetdb()
+    yield
