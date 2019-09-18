@@ -20,4 +20,4 @@
 # flake8: noqa
 
 from .api import *  # type: ignore
-from .core import *  # type: ignore
+from .test_core import *  # type: ignore

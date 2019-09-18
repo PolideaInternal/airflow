@@ -31,7 +31,7 @@ from airflow.utils.state import State
 
 from logging.config import dictConfig
 
-from tests.core import TEST_DAG_FOLDER
+from tests.test_core import TEST_DAG_FOLDER
 
 DEFAULT_DATE = timezone.datetime(2016, 1, 1)
 

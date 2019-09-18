@@ -1431,6 +1431,7 @@ class TestCli(unittest.TestCase):
                  for ii, line in enumerate(stdout.split('\n'))
                  if ii % 2 == 1]
         conns = [conn for conn in conns if len(conn) > 0]
+        print(conns)
 
         # Assert that some of the connections are present in the output as
         # expected:
@@ -2234,7 +2235,7 @@ class TestHDFSHook(unittest.TestCase):
         self.assertIsInstance(client, snakebite.client.HAClient)
 
 
-send_email_test = mock.Mock()
+send_email_test = None
 
 
 class TestEmail(unittest.TestCase):
@@ -2248,13 +2249,14 @@ class TestEmail(unittest.TestCase):
         self.assertEqual(mock_send_email.return_value, res)
 
     @mock.patch('airflow.utils.email.send_email_smtp')
-    def test_custom_backend(self, mock_send_email):
-        with conf_vars({('email', 'email_backend'): 'tests.core.send_email_test'}):
+    @mock.patch('tests.test_core.send_email_test')
+    def test_custom_backend(self, mock_send_email_test, mock_send_email):
+        with conf_vars({('email', 'email_backend'): 'tests.test_core.send_email_test'}):
             utils.email.send_email('to', 'subject', 'content')
-        send_email_test.assert_called_once_with(
-            'to', 'subject', 'content', files=None, dryrun=False,
-            cc=None, bcc=None, mime_charset='utf-8', mime_subtype='mixed')
-        self.assertFalse(mock_send_email.called)
+            mock_send_email_test.assert_called_once_with(
+                'to', 'subject', 'content', files=None, dryrun=False,
+                cc=None, bcc=None, mime_charset='utf-8', mime_subtype='mixed')
+            self.assertFalse(mock_send_email.called)
 
 
 class TestEmailSmtp(unittest.TestCase):
