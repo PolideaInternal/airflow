@@ -46,7 +46,9 @@ echo
 echo "Starting the tests with those nose arguments: ${NOSE_ARGS[*]}"
 echo
 set +e
-nosetests "${NOSE_ARGS[@]}"
+
+pytest tests/
+
 RES=$?
 
 set +x

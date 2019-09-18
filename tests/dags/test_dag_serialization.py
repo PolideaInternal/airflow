@@ -55,6 +55,7 @@ EXAMPLE_DAGS = [
 ]
 
 # airflow/contrib/example_dags/
+# FIXME: do we require those dags? GCP stuff has been removed
 CONTRIB_EXAMPLE_DAGS = [
     'aci_example',
     'example_azure_cosmosdb_sensor',
@@ -229,7 +230,7 @@ class TestStringifiedDAGs(unittest.TestCase):
                        '}')))
 
     def test_serialization(self):
-        """Serailzation and deserialization should work for every DAG and Operator."""
+        """Serialization and deserialization should work for every DAG and Operator."""
         dags = collect_dags()
         serialized_dags = {}
         for _, v in dags.items():

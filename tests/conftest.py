@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -17,7 +15,22 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# flake8: noqa
+import os
+import pytest
 
-from .api import *  # type: ignore
-from .test_core import *  # type: ignore
+
+@pytest.fixture(autouse=True)
+def reset_environment():
+    """
+    Resets env variables.
+    """
+    init_env = os.environ
+    yield
+    changed_env = os.environ
+    for key, value in changed_env.items():
+        if key not in init_env:
+            del os.environ[key]
+
+        init_value = init_env[key]
+        if value != init_value:
+            os.environ[key] = init_value
