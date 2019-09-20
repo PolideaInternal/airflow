@@ -48,13 +48,15 @@ echo
 set +e
 #nosetests "${NOSE_ARGS[@]}"
 # TODO this is a bad idea but want to check if all tests works
-find tests/ -type f -not -path '*/\.*' \
-| grep ".py" \
-| grep -v ".pyc" \
-| grep -v "__init__.py" \
-| grep -v ".*_system.py" \
-| grep -E "test_.*|.*_test.py" \
-| xargs -L1 pytest
+#find tests/ -type f -not -path '*/\.*' \
+#| grep ".py" \
+#| grep -v ".pyc" \
+#| grep -v "__init__.py" \
+#| grep -v ".*_system.py" \
+#| grep -E "test_.*|.*_test.py" \
+#| xargs -L1 pytest
+
+pytest tests/
 
 RES=$?
 

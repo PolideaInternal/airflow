@@ -15,14 +15,22 @@
 # specific language governing permissions and limitations
 # under the License.
 
-[pytest]
-addopts = -ra --doctest-modules --doctest-continue-on-failure
-norecursedirs = tests/dags_with_system_exit tests/dags tests/test_utils tests/jobs
-faulthandler_timeout=180
-log_print = False
-log_level = INFO
-filterwarnings =
-    ignore::DeprecationWarning
-    ignore::UserWarning
-    ignore::RuntimeWarning
-    ignore::PendingDeprecationWarning
+import os
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def reset_environment():
+    """
+    Resets env variables.
+    """
+    init_env = os.environ
+    yield
+    changed_env = os.environ
+    for key, value in changed_env.items():
+        if key not in init_env:
+            del os.environ[key]
+
+        init_value = init_env[key]
+        if value != init_value:
+            os.environ[key] = init_value

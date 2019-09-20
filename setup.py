@@ -299,6 +299,7 @@ devel = [
                       # We should also disable checking docstring at the module level
     'pysftp',
     'pytest',
+    # 'pytest-randomly'
     'pywinrm',
     'qds-sdk>=1.9.6',
     'rednose',
