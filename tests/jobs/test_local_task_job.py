@@ -17,7 +17,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-
+import os
 import multiprocessing
 import time
 import unittest
@@ -33,9 +33,12 @@ from airflow.utils.db import create_session
 from airflow.utils.net import get_hostname
 from airflow.utils.state import State
 from tests.compat import patch
-from tests.test_core import TEST_DAG_FOLDER
+# from tests.test_core import TEST_DAG_FOLDER
 from tests.executors.test_executor import TestExecutor
 from tests.test_utils.db import clear_db_runs
+
+TEST_DAG_FOLDER = os.path.join(
+    os.path.dirname(os.path.realpath('../test_core.py')), 'dags')
 
 DEFAULT_DATE = timezone.datetime(2016, 1, 1)
 
