@@ -50,7 +50,7 @@ from tests.test_utils.db import clear_db_dags, clear_db_errors, clear_db_pools, 
     clear_db_runs, clear_db_sla_miss, set_default_pool_slots
 
 TEST_DAG_FOLDER = os.path.join(
-    os.path.dirname(os.path.realpath('../test_core.py')), 'dags')
+    os.path.dirname(os.path.realpath('../{}'.format(__file__))), 'dags')
 
 DEFAULT_DATE = timezone.datetime(2016, 1, 1)
 TRY_NUMBER = 1

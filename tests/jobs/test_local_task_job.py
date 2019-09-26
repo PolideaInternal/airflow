@@ -38,7 +38,7 @@ from tests.executors.test_executor import TestExecutor
 from tests.test_utils.db import clear_db_runs
 
 TEST_DAG_FOLDER = os.path.join(
-    os.path.dirname(os.path.realpath('../test_core.py')), 'dags')
+    os.path.dirname(os.path.realpath('../{}'.format(__file__))), 'dags')
 
 DEFAULT_DATE = timezone.datetime(2016, 1, 1)
 

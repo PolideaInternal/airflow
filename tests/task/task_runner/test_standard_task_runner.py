@@ -33,7 +33,7 @@ from logging.config import dictConfig
 
 # from tests.test_core import TEST_DAG_FOLDER
 TEST_DAG_FOLDER = os.path.join(
-    os.path.dirname(os.path.realpath('../../test_core.py')), 'dags')
+    os.path.dirname(os.path.realpath('../{}'.format(__file__))), 'dags')
 
 DEFAULT_DATE = timezone.datetime(2016, 1, 1)
 
