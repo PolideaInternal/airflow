@@ -18,6 +18,8 @@
 import os
 import pytest
 
+from airflow.utils import db
+
 
 @pytest.fixture(autouse=True)
 def reset_environment():
@@ -34,3 +36,9 @@ def reset_environment():
         init_value = init_env[key]
         if value != init_value:
             os.environ[key] = init_value
+
+
+@pytest.fixture(autouse=True, scope="module")
+def reset_db():
+    db.resetdb()
+    yield
