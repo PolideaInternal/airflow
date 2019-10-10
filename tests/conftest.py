@@ -16,10 +16,11 @@
 # under the License.
 
 import os
+
 import pytest
 
 
-@pytest.fixture(autouse=True)
+# @pytest.fixture(autouse=True)
 def reset_environment():
     """
     Resets env variables.
