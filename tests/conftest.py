@@ -18,6 +18,9 @@
 import os
 import pytest
 
+from airflow.utils.db import merge_conn
+from airflow.models.connection import Connection
+
 
 @pytest.fixture(autouse=True)
 def reset_environment():
@@ -34,3 +37,17 @@ def reset_environment():
         init_value = init_env[key]
         if value != init_value:
             os.environ[key] = init_value
+
+
+@pytest.fixture(scope="class")
+def provide_empty_conn_id():
+    conn = Connection(
+        conn_id="",
+        conn_type="test",
+        host="host",
+        password="password",
+    )
+    merge_conn(conn)
+    yield
+
+
