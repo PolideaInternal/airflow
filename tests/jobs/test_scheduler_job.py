@@ -63,7 +63,6 @@ UNPARSEABLE_DAG_FILE_CONTENTS = 'airflow DAG'
 TEMP_DAG_FILENAME = "temp_dag.py"
 
 
-@pytest.mark.skip(reason="This test fails on pytest CI")
 class TestSchedulerJob(unittest.TestCase):
 
     def setUp(self):

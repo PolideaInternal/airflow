@@ -47,7 +47,7 @@ echo "Starting the tests with those nose arguments: ${NOSE_ARGS[*]}"
 echo
 set +e
 
-pytest tests/
+pytest tests/jobs/test_scheduler_job.py tests/utils/test_dag_processing.py tests/
 
 RES=$?
 

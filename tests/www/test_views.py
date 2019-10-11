@@ -27,7 +27,6 @@ import sys
 import tempfile
 import unittest
 import urllib
-import pytest
 from datetime import timedelta
 from unittest import mock
 from urllib.parse import quote_plus
@@ -53,7 +52,6 @@ from airflow.utils.timezone import datetime
 from airflow.www import app as application
 from tests.test_utils.config import conf_vars
 
-@pytest.mark.usefixtures("provide_empty_conn_id")
 class TestBase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -113,7 +111,6 @@ class TestBase(unittest.TestCase):
         return urllib.parse.quote_plus(str(obj))
 
 
-@pytest.mark.usefixtures("provide_empty_conn_id")
 class TestConnectionModelView(TestBase):
     def setUp(self):
         super().setUp()
@@ -137,7 +134,6 @@ class TestConnectionModelView(TestBase):
         self.check_content_in_response('Added Row', resp)
 
 
-@pytest.mark.usefixtures("provide_empty_conn_id")
 class TestVariableModelView(TestBase):
     def setUp(self):
         super().setUp()
@@ -226,7 +222,6 @@ class TestVariableModelView(TestBase):
         self.check_content_in_response('4 variable(s) successfully updated.', resp)
 
 
-@pytest.mark.usefixtures("provide_empty_conn_id")
 class TestPoolModelView(TestBase):
     def setUp(self):
         super().setUp()
@@ -285,7 +280,6 @@ class TestPoolModelView(TestBase):
         self.check_content_in_response(queued_tag, resp)
 
 
-@pytest.mark.usefixtures("provide_empty_conn_id")
 class TestMountPoint(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -316,7 +310,6 @@ class TestMountPoint(unittest.TestCase):
         self.assertEqual(resp.headers['Location'], 'http://localhost/test/home')
 
 
-@pytest.mark.usefixtures("provide_empty_conn_id")
 class TestAirflowBaseViews(TestBase):
     EXAMPLE_DAG_DEFAULT_DATE = dates.days_ago(2)
     run_id = "test_{}".format(models.DagRun.id_for_date(EXAMPLE_DAG_DEFAULT_DATE))
@@ -628,7 +621,6 @@ class TestAirflowBaseViews(TestBase):
         self.session.commit()
 
 
-@pytest.mark.usefixtures("provide_empty_conn_id")
 class TestConfigurationView(TestBase):
     def test_configuration_do_not_expose_config(self):
         self.logout()
@@ -648,7 +640,6 @@ class TestConfigurationView(TestBase):
             ['Airflow Configuration', 'Running Configuration'], resp)
 
 
-@pytest.mark.usefixtures("provide_empty_conn_id")
 class TestLogView(TestBase):
     DAG_ID = 'dag_for_testing_log_view'
     TASK_ID = 'task_for_testing_log_view'
@@ -822,7 +813,6 @@ class TestLogView(TestBase):
         self.assertEqual(200, response.status_code)
 
 
-@pytest.mark.usefixtures("provide_empty_conn_id")
 class TestVersionView(TestBase):
     def test_version(self):
         resp = self.client.get('version', data=dict(
@@ -1008,7 +998,6 @@ class ViewWithDateTimeAndNumRunsAndDagRunsFormTester:
         self.assertRunIsSelected(self.runs[3], data)
 
 
-@pytest.mark.usefixtures("provide_empty_conn_id")
 class TestGraphView(TestBase):
     GRAPH_ENDPOINT = '/graph?dag_id={dag_id}'.format(
         dag_id=ViewWithDateTimeAndNumRunsAndDagRunsFormTester.DAG_ID
@@ -1048,7 +1037,6 @@ class TestGraphView(TestBase):
         self.tester.test_with_base_date_and_num_runs_and_execution_date_within()
 
 
-@pytest.mark.usefixtures("provide_empty_conn_id")
 class TestGanttView(TestBase):
     GANTT_ENDPOINT = '/gantt?dag_id={dag_id}'.format(
         dag_id=ViewWithDateTimeAndNumRunsAndDagRunsFormTester.DAG_ID
@@ -1088,7 +1076,6 @@ class TestGanttView(TestBase):
         self.tester.test_with_base_date_and_num_runs_and_execution_date_within()
 
 
-@pytest.mark.usefixtures("provide_empty_conn_id")
 class TestDagACLView(TestBase):
     """
     Test Airflow DAG acl
@@ -1690,7 +1677,6 @@ class TestDagACLView(TestBase):
         self.check_content_in_response('Redirecting', resp, resp_code=302)
 
 
-@pytest.mark.usefixtures("provide_empty_conn_id")
 class TestTaskInstanceView(TestBase):
     TI_ENDPOINT = '/taskinstance/list/?_flt_0_execution_date={}'
 
@@ -1703,7 +1689,6 @@ class TestTaskInstanceView(TestBase):
         self.check_content_in_response('List Task Instance', resp)
 
 
-@pytest.mark.usefixtures("provide_empty_conn_id")
 class TestTriggerDag(TestBase):
 
     def setUp(self):
@@ -1733,7 +1718,6 @@ class TestTriggerDag(TestBase):
         self.assertIn("manual__", run.run_id)
 
 
-@pytest.mark.usefixtures("provide_empty_conn_id")
 class TestExtraLinks(TestBase):
     def setUp(self):
         super().setUp()
@@ -1870,7 +1854,6 @@ class TestExtraLinks(TestBase):
             'error': 'No URL found for no_response'})
 
 
-@pytest.mark.usefixtures("provide_empty_conn_id")
 class TestDagRunModelView(TestBase):
     @classmethod
     def setUpClass(cls):
@@ -1898,7 +1881,6 @@ class TestDagRunModelView(TestBase):
         self.assertEqual(dr.execution_date, timezone.convert_to_utc(datetime(2018, 7, 6, 5, 4, 3)))
 
 
-@pytest.mark.usefixtures("provide_empty_conn_id")
 class TestDecorators(TestBase):
     EXAMPLE_DAG_DEFAULT_DATE = dates.days_ago(2)
     run_id = "test_{}".format(models.DagRun.id_for_date(EXAMPLE_DAG_DEFAULT_DATE))
