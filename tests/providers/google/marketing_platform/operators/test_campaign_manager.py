@@ -56,8 +56,7 @@ class TestGoogleCampaignManagerDeleteReportOperator(TestCase):
 
 class TestGoogleCampaignManagerGetReportOperator(TestCase):
     @mock.patch(
-        "airflow.providers.google.marketing_platform.operators."
-        "campaign_manager.http"
+        "airflow.providers.google.marketing_platform.operators." "campaign_manager.http"
     )
     @mock.patch(
         "airflow.providers.google.marketing_platform.operators."

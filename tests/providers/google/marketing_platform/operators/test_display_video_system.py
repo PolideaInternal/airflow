@@ -17,7 +17,10 @@
 
 import unittest
 
-from tests.gcp.operators.test_display_video_system_helper import GcpDisplayVideoSystemTestHelper
+from providers.google.marketing_platform.operators.test_display_video_system_helper import (
+    GcpDisplayVideoSystemTestHelper,
+)
+
 from tests.gcp.utils.base_gcp_system_test_case import SKIP_TEST_WARNING, TestDagGcpSystem
 from tests.gcp.utils.gcp_authenticator import GCP_DISPLAY_VIDEO_KEY
 

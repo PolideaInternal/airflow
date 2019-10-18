@@ -40,8 +40,7 @@ class TestGoogleCampaignManagerHook(TestCase):
         "campaign_manager.GoogleCampaignManagerHook._authorize"
     )
     @mock.patch(
-        "airflow.providers.google.marketing_platform.hooks."
-        "campaign_manager.build"
+        "airflow.providers.google.marketing_platform.hooks." "campaign_manager.build"
     )
     def test_gen_conn(self, mock_build, mock_authorize):
         result = self.hook.get_conn()
@@ -172,11 +171,12 @@ class TestGoogleCampaignManagerHook(TestCase):
         scope = "SCOPE"
         sort_field = "SORT_FIELD"
         sort_order = "SORT_ORDER"
-        items = ['item']
+        items = ["item"]
 
         return_value = {"nextPageToken": None, "items": items}
-        get_conn_mock.return_value.reports.return_value.list.return_value.\
-            execute.return_value = return_value
+        get_conn_mock.return_value.reports.return_value.list.return_value.execute.return_value = (
+            return_value
+        )
 
         request_mock = mock.MagicMock()
         request_mock.execute.return_value = {"nextPageToken": None, "items": items}
@@ -184,7 +184,7 @@ class TestGoogleCampaignManagerHook(TestCase):
             request_mock,
             request_mock,
             request_mock,
-            None
+            None,
         ]
 
         result = self.hook.list_reports(
