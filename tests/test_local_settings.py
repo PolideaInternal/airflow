@@ -21,17 +21,19 @@ import os
 import sys
 import tempfile
 import unittest
+import site
+import importlib
 from unittest.mock import MagicMock, call
 
 SETTINGS_FILE_POLICY = """
-def test_policy(task_instance):
+def policy(task_instance):
     task_instance.run_as_user = "myself"
 """
 
 SETTINGS_FILE_POLICY_WITH_DUNDER_ALL = """
-__all__ = ["test_policy"]
+__all__ = ["policy"]
 
-def test_policy(task_instance):
+def policy(task_instance):
     task_instance.run_as_user = "myself"
 
 def not_policy():
@@ -59,6 +61,8 @@ class SettingsContext:
 
     def __exit__(self, *exc_info):
         sys.path.remove(self.settings_root)
+        from airflow import settings
+        importlib.reload(settings)
 
 
 class TestLocalSettings(unittest.TestCase):
@@ -109,7 +113,7 @@ class TestLocalSettings(unittest.TestCase):
             settings.import_local_settings()  # pylint: ignore
 
             task_instance = MagicMock()
-            settings.test_policy(task_instance)
+            settings.policy(task_instance)
 
             assert task_instance.run_as_user == "myself"
 
@@ -133,7 +137,7 @@ class TestLocalSettings(unittest.TestCase):
             settings.import_local_settings()  # pylint: ignore
 
             task_instance = MagicMock()
-            settings.test_policy(task_instance)
+            settings.policy(task_instance)
 
             assert task_instance.run_as_user == "myself"
 
