@@ -299,6 +299,7 @@ devel = [
     'pysftp',
     'pytest',
     'pytest-cov==2.8.1',
+    'pytest-xdist==1.30.0',
     # 'pytest-randomly'
     'pywinrm',
     'qds-sdk>=1.9.6',
