@@ -16,11 +16,13 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+import argparse
 import os
 import unittest
-from typing import Optional, Sequence
+from typing import List, Optional, Sequence
 
 from airflow.gcp.utils.credentials_provider import provide_gcp_conn_and_credentials
+from tests.contrib.utils.logging_command_executor import LoggingCommandExecutor
 
 AIRFLOW_MAIN_FOLDER = os.path.realpath(
     os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir)
@@ -141,3 +143,45 @@ def provide_gcp_context(
     return provide_gcp_conn_and_credentials(
         key_file_path=key_file_path, scopes=scopes, project_id=project_id
     )
+
+
+class GcpResourceHelper(LoggingCommandExecutor):
+    cmd_list: List[str] = []
+
+    @classmethod
+    def cli(cls):
+        parser = argparse.ArgumentParser(description="Create and delete bucket for system tests.")
+        parser.add_argument(
+            "--action",
+            dest="action",
+            required=True,
+            choices=cls.commands()
+        )
+        action = parser.parse_args().action
+        if hasattr(cls, action):
+            func = getattr(cls, action)
+            func()
+        else:
+            raise Exception(f"Unknown action: {action}")
+
+    @classmethod
+    def commands(cls):
+        tests = [name for name in dir(cls) if name.startswith("test")]
+        return tests + cls.cmd_list
+
+    def create_gcs_bucket(self, name: str, location: Optional[str] = None) -> None:
+        cmd = ["gsutil", "mb"]
+        if location:
+            cmd += ["-c", "regional", "-l", location]
+        cmd += ["gs://{}".format(name)]
+        with provide_gcp_context('gcp_gcs.json'):
+            self.execute_cmd(cmd)
+
+    def delete_gcs_bucket(self, name: str):
+        cmd = ["gsutil", "-m", "rm", "-r", name]
+        with provide_gcp_context('gcp_gcs.json'):
+            self.execute_cmd(cmd)
+
+    def upload_to_gcs(self, bucket_uri: str, filename: str):
+        with provide_gcp_context('gcp_gcs.json'):
+            self.execute_cmd(["gsutil", "cp", f"{filename}" f"{bucket_uri}"])
