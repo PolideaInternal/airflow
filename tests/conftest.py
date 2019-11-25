@@ -16,7 +16,6 @@
 # under the License.
 
 import os
-from copy import deepcopy
 
 import pytest
 
@@ -28,7 +27,7 @@ def reset_environment():
     """
     Resets env variables.
     """
-    init_env = deepcopy(os.environ)
+    init_env = os.environ.copy()
     yield
     changed_env = os.environ
     for key in changed_env:

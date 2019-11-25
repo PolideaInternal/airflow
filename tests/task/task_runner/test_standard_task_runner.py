@@ -126,7 +126,11 @@ class TestStandardTaskRunner(unittest.TestCase):
         runner.terminate()
 
         # Wait some time for the result
-        time.sleep(40)
+        for _ in range(5):
+            if os.path.exists(path):
+                break
+            time.sleep(8)
+
         with open(path, "r") as f:
             self.assertEqual("ON_KILL_TEST", f.readline())
 

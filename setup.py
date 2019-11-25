@@ -301,7 +301,6 @@ devel = [
     'pytest-cov==2.8.1',
     'pywinrm',
     'qds-sdk>=1.9.6',
-    'rednose',
     'requests_mock',
     'yamllint'
 ]
