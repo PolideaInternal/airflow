@@ -291,9 +291,6 @@ devel = [
     'jira',
     'mongomock',
     'moto==1.3.5',
-    'nose',
-    'nose-ignore-docstring==0.2',
-    'nose-timer',
     'parameterized',
     'paramiko',
     'pre-commit',
@@ -302,7 +299,6 @@ devel = [
     'pysftp',
     'pytest',
     'pytest-cov==2.8.1',
-    # 'pytest-randomly'
     'pywinrm',
     'qds-sdk>=1.9.6',
     'rednose',

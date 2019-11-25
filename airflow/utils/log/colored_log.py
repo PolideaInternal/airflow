@@ -21,7 +21,7 @@ Class responsible for colouring logs based on log level.
 """
 import re
 import sys
-from logging import Formatter, LogRecord
+from logging import LogRecord
 from typing import Any, Union
 
 from colorlog import TTYColoredFormatter
@@ -94,4 +94,5 @@ class CustomTTYColoredFormatter(TTYColoredFormatter):
             record = self._color_record_traceback(record)
             return super().format(record)
         except ValueError:  # I/O operation on closed file
+            from logging import Formatter
             return Formatter().format(record)

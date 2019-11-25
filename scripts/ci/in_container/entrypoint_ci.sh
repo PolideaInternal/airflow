@@ -219,34 +219,20 @@ if [[ "${RUN_TESTS}" == "false" ]]; then
     fi
 fi
 
-if [[ ${#ARGS} == 0 ]]; then
-    ARGS=("--junitxml=${XUNIT_FILE}" "tests/")
-    echo
-    echo "Running ALL Tests"
-    echo
-else
-    echo
-    echo "Running tests with ${ARGS[*]}"
-    echo
-fi
 set -u
 
 KUBERNETES_VERSION=${KUBERNETES_VERSION:=""}
 
 if [[ -z "${KUBERNETES_VERSION}" ]]; then
-    echo
-    echo "Running CI tests with ${ARGS[*]}"
-    echo
+    ARGS=("--junitxml=${XUNIT_FILE}" "tests/")
     "${MY_DIR}/run_ci_tests.sh" "${ARGS[@]}"
 else
     echo "Set up Kubernetes cluster for tests"
     "${MY_DIR}/../kubernetes/setup_kubernetes.sh"
     "${MY_DIR}/../kubernetes/app/deploy_app.sh" -d "${KUBERNETES_MODE}"
 
-    echo
-    echo "Running CI tests with ${ARGS[*]}"
-    echo
-    "${MY_DIR}/run_ci_tests.sh" tests/integration/kubernetes "${ARGS[@]}"
+    ARGS=("--junitxml=${XUNIT_FILE}" "tests/integration/kubernetes")
+    "${MY_DIR}/run_ci_tests.sh" "${ARGS[@]}"
 fi
 
 in_container_script_end
