@@ -27,7 +27,7 @@ import mock
 
 from airflow import conf, utils
 from airflow.utils.email import get_email_address_list
-from tests import conf_vars
+from tests.test_utils.config import conf_vars
 
 EMAILS = ['test1@example.com', 'test2@example.com']
 
