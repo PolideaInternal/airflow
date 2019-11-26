@@ -223,15 +223,26 @@ set -u
 
 KUBERNETES_VERSION=${KUBERNETES_VERSION:=""}
 
+if [[ "${TRAVIS}" == "true" ]]; then
+    TRAVIS_ARGS=(
+        "--junitxml=${XUNIT_FILE}"
+        "-W ignore::DeprecationWarning"
+        "-W ignore::PendingDeprecationWarning"
+        )
+else
+    TRAVIS_ARGS=()
+fi
+
+
 if [[ -z "${KUBERNETES_VERSION}" ]]; then
-    ARGS=("--junitxml=${XUNIT_FILE}" "tests/")
+    ARGS=("${TRAVIS_ARGS[*]}" "tests/")
     "${MY_DIR}/run_ci_tests.sh" "${ARGS[@]}"
 else
     echo "Set up Kubernetes cluster for tests"
     "${MY_DIR}/../kubernetes/setup_kubernetes.sh"
     "${MY_DIR}/../kubernetes/app/deploy_app.sh" -d "${KUBERNETES_MODE}"
 
-    ARGS=("--junitxml=${XUNIT_FILE}" "tests/integration/kubernetes")
+    ARGS=("${TRAVIS_ARGS[*]}" "tests/integration/kubernetes")
     "${MY_DIR}/run_ci_tests.sh" "${ARGS[@]}"
 fi
 
