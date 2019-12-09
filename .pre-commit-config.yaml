@@ -191,13 +191,13 @@ repos:
         pass_filenames: false
         require_serial: true
         entry: tests/test_order_setup.py
-      - id: update-breeze-file
-        name: Update output of breeze command in BREEZE.rst
-        entry: "./scripts/ci/pre_commit_breeze_cmd_line.sh"
-        language: system
-        files: ^BREEZE.rst$|^breeze$|^breeze-complete$
-        pass_filenames: false
-        require_serial: true
+#      - id: update-breeze-file
+#        name: Update output of breeze command in BREEZE.rst
+#        entry: "./scripts/ci/pre_commit_breeze_cmd_line.sh"
+#        language: system
+#        files: ^BREEZE.rst$|^breeze$|^breeze-complete$
+#        pass_filenames: false
+#        require_serial: true
       - id: pydevd
         language: pygrep
         name: Check for pydevd debug statements accidentally left

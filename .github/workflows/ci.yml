@@ -1,0 +1,131 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+name: Airflow
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+env:
+  BUILD_ID: ${{ github.sha }}
+  MOUNT_LOCAL_SOURCES: "false"
+  AIRFLOW_MOUNT_HOST_VOLUMES_FOR_STATIC_CHECKS: "true"
+  FORCE_ANSWER_TO_QUESTIONS: "yes"
+  AIRFLOW_CI_SILENT: "true"
+  CI: "true"
+  # Should be a target branch
+  TRAVIS_BRANCH: "master"
+  TRAVIS: "true"
+jobs:
+#  statics:
+#    name: Static checks
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@master
+#      - uses: actions/setup-python@v1
+#        with:
+#          python-version: '3.6'
+#          architecture: 'x64'
+#      - name: "Before install"
+#        env:
+#          TRAVIS_JOB_NAME: "Static"
+#        run: ./scripts/ci/ci_before_install.sh
+#      - name: "Static checks"
+#        if: success()
+#        env:
+#          PYTHON_VERSION: 3.6
+#        run: chmod -x .github/workflows/ci.yml ; ./scripts/ci/ci_run_all_static_tests.sh
+#
+#  docs:
+#    name: Build docs
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@master
+#      - uses: actions/setup-python@v1
+#        with:
+#          python-version: '3.6'
+#          architecture: 'x64'
+#      - name: "Build documentation"
+#        env:
+#          TRAVIS_JOB_NAME: "Build documentation"
+#          PYTHON_VERSION: 3.6
+#        run: ./scripts/ci/ci_docs.sh
+
+#  tests:
+#    runs-on: ubuntu-latest
+#    strategy:
+#      matrix:
+#        python: ['3.6', '3.7']
+#        backend: ['postgres', 'sqlite', 'mysql']
+#        exclude:
+#          - python: '3.6'
+#            backend: 'mysql'
+#          - python: '3.7'
+#            backend: 'sqlite'
+#          - python: '3.7'
+#            backend: 'mysql'
+#    name: Python ${{ matrix.python }} / ${{ matrix.backend }}
+#    needs: [statics, docs]
+#    steps:
+#      - uses: actions/checkout@master
+#      - uses: actions/setup-python@v1
+#        with:
+#          python-version: ${{ matrix.python }}
+#          architecture: 'x64'
+#      - name: Run tests
+#        env:
+#          TRAVIS_JOB_NAME: "Tests"
+#          BACKEND: ${{ matrix.backend }}
+#          ENV: docker
+#          PYTHON_VERSION: ${{ matrix.python }}
+#        run: ./scripts/ci/ci_run_airflow_testing.sh
+
+  tests-k8s-persistent:
+    name: Tests k8s persistent
+    runs-on: ubuntu-latest
+#    needs: [statics, docs]
+    steps:
+      - uses: actions/checkout@master
+      - name: "Tests postgres kubernetes python 3.6 (persistent)"
+        env:
+          TRAVIS_JOB_NAME: "Tests kubernetes"
+          PYTHON_VERSION: 3.6
+          BACKEND: postgres
+          ENV: kubernetes
+          START_KUBERNETES_CLUSTER: true
+          KUBERNETES_VERSION: v1.15.0
+          KUBERNETES_MODE: persistent_mode
+        run: ./scripts/ci/ci_run_airflow_testing.sh
+
+  tests-k8s-git:
+    name: Tests k8s git
+    runs-on: ubuntu-latest
+#    needs: [statics, docs]
+    steps:
+      - uses: actions/checkout@master
+      - name: "Tests postgres kubernetes python 3.6 (git)"
+        env:
+          TRAVIS_JOB_NAME: "Tests kubernetes"
+          BACKEND: postgres
+          ENV: kubernetes
+          KUBERNETES_VERSION: v1.15.0
+          KUBERNETES_MODE: git_mode
+          PYTHON_VERSION: 3.6
+        run: ./scripts/ci/ci_run_airflow_testing.sh
