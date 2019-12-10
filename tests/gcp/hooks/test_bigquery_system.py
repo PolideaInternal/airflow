@@ -32,7 +32,7 @@ class BigQueryDataframeResultsSystemTest(unittest.TestCase):
         self.instance = hook.BigQueryHook()
 
     @mock.patch(
-        'airflow.gcp.hooks.base.GoogleCloudBaseHook.project_id',
+        'airflow.gcp.hooks.base.CloudBaseHook.project_id',
         new_callable=mock.PropertyMock,
         return_value=None
     )
@@ -42,7 +42,7 @@ class BigQueryDataframeResultsSystemTest(unittest.TestCase):
         self.assertIsInstance(df, pd.DataFrame)
 
     @mock.patch(
-        'airflow.gcp.hooks.base.GoogleCloudBaseHook.project_id',
+        'airflow.gcp.hooks.base.CloudBaseHook.project_id',
         new_callable=mock.PropertyMock,
         return_value=None
     )
@@ -52,7 +52,7 @@ class BigQueryDataframeResultsSystemTest(unittest.TestCase):
         self.assertIn('Reason: ', str(context.exception), "")
 
     @mock.patch(
-        'airflow.gcp.hooks.base.GoogleCloudBaseHook.project_id',
+        'airflow.gcp.hooks.base.CloudBaseHook.project_id',
         new_callable=mock.PropertyMock,
         return_value=None
     )
@@ -61,7 +61,7 @@ class BigQueryDataframeResultsSystemTest(unittest.TestCase):
         self.assertEqual(df.iloc(0)[0][0], 1)
 
     @mock.patch(
-        'airflow.gcp.hooks.base.GoogleCloudBaseHook.project_id',
+        'airflow.gcp.hooks.base.CloudBaseHook.project_id',
         new_callable=mock.PropertyMock,
         return_value=None
     )
@@ -71,7 +71,7 @@ class BigQueryDataframeResultsSystemTest(unittest.TestCase):
         self.assertEqual(df.iloc(0)[0][0], 1)
 
     @mock.patch(
-        'airflow.gcp.hooks.base.GoogleCloudBaseHook.project_id',
+        'airflow.gcp.hooks.base.CloudBaseHook.project_id',
         new_callable=mock.PropertyMock,
         return_value=None
     )
