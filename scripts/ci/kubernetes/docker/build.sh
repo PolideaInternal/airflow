@@ -17,7 +17,7 @@
 # under the License.
 
 IMAGE=${IMAGE:-airflow}
-TAG=${TAG:-latest}
+TAG="${TAG:-latest}-${RANDOM}"
 DIRNAME=$(cd "$(dirname "$0")" && pwd)
 AIRFLOW_ROOT="${DIRNAME}/../../../.."
 
@@ -26,6 +26,12 @@ set -e
 echo "Airflow directory ${AIRFLOW_ROOT}"
 echo "Airflow Docker directory ${DIRNAME}"
 
-cd "${DIRNAME}" && docker build --build-arg AIRFLOW_CI_IMAGE="${AIRFLOW_CONTAINER_DOCKER_IMAGE}" --pull "${DIRNAME}" --tag="${IMAGE}:${TAG}"
+cd "${DIRNAME}"
+docker build --build-arg AIRFLOW_CI_IMAGE="${AIRFLOW_CONTAINER_DOCKER_IMAGE}" --pull "${DIRNAME}" --tag="${IMAGE}:${TAG}"
 
-kind load docker-image "${IMAGE}:${TAG}"
+docker images
+kubectl cluster-info
+
+docker image inspect -f "{{ .Id }}" "${IMAGE}:${TAG}"
+
+kind load --loglevel trace docker-image "${IMAGE}:${TAG}" --name kind
