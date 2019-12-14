@@ -19,7 +19,7 @@
 
 import unittest
 
-from airflow.operators.gcs_to_s3 import GoogleCloudStorageToS3Operator
+from airflow.operators.gcs_to_s3 import GCSToS3Operator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from tests.compat import mock
 
@@ -47,7 +47,7 @@ class TestGoogleCloudStorageToS3Operator(unittest.TestCase):
         mock_hook.return_value.download.return_value = b"testing"
         mock_hook2.return_value.list.return_value = MOCK_FILES
 
-        operator = GoogleCloudStorageToS3Operator(task_id=TASK_ID,
+        operator = GCSToS3Operator(task_id=TASK_ID,
                                                   bucket=GCS_BUCKET,
                                                   prefix=PREFIX,
                                                   delimiter=DELIMITER,
@@ -77,7 +77,7 @@ class TestGoogleCloudStorageToS3Operator(unittest.TestCase):
         mock_hook.return_value.download.return_value = b"testing"
         mock_hook2.return_value.list.return_value = MOCK_FILES
 
-        operator = GoogleCloudStorageToS3Operator(task_id=TASK_ID,
+        operator = GCSToS3Operator(task_id=TASK_ID,
                                                   bucket=GCS_BUCKET,
                                                   prefix=PREFIX,
                                                   delimiter=DELIMITER,
@@ -107,7 +107,7 @@ class TestGoogleCloudStorageToS3Operator(unittest.TestCase):
         mock_hook.return_value.download.return_value = b"testing"
         mock_hook2.return_value.list.return_value = MOCK_FILES
 
-        operator = GoogleCloudStorageToS3Operator(task_id=TASK_ID,
+        operator = GCSToS3Operator(task_id=TASK_ID,
                                                   bucket=GCS_BUCKET,
                                                   prefix=PREFIX,
                                                   delimiter=DELIMITER,
@@ -136,7 +136,7 @@ class TestGoogleCloudStorageToS3Operator(unittest.TestCase):
         mock_hook.return_value.download.return_value = b"testing"
         mock_hook2.return_value.list.return_value = MOCK_FILES
 
-        operator = GoogleCloudStorageToS3Operator(task_id=TASK_ID,
+        operator = GCSToS3Operator(task_id=TASK_ID,
                                                   bucket=GCS_BUCKET,
                                                   prefix=PREFIX,
                                                   delimiter=DELIMITER,
@@ -166,7 +166,7 @@ class TestGoogleCloudStorageToS3Operator(unittest.TestCase):
         mock_hook.return_value.download.return_value = b"testing"
         mock_hook2.return_value.list.return_value = MOCK_FILES
 
-        operator = GoogleCloudStorageToS3Operator(task_id=TASK_ID,
+        operator = GCSToS3Operator(task_id=TASK_ID,
                                                   bucket=GCS_BUCKET,
                                                   prefix=PREFIX,
                                                   delimiter=DELIMITER,
