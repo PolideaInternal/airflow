@@ -99,7 +99,7 @@ jobs:
 
   tests-k8s-persistent:
     name: Tests k8s persistent
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 #    needs: [statics, docs]
     steps:
       - uses: actions/checkout@master
@@ -116,7 +116,7 @@ jobs:
 
   tests-k8s-git:
     name: Tests k8s git
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 #    needs: [statics, docs]
     steps:
       - uses: actions/checkout@master

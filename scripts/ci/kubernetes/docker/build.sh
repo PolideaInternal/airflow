@@ -32,6 +32,4 @@ docker build --build-arg AIRFLOW_CI_IMAGE="${AIRFLOW_CONTAINER_DOCKER_IMAGE}" --
 docker images
 kubectl cluster-info
 
-docker image inspect -f "{{ .Id }}" "${IMAGE}:${TAG}"
-
 kind load --loglevel trace docker-image "${IMAGE}:${TAG}" --name kind
