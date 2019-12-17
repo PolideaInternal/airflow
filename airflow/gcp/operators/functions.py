@@ -82,7 +82,7 @@ CLOUD_FUNCTION_VALIDATION = [
 ]  # type: List[Dict[str, Any]]
 
 
-class GcfFunctionDeployOperator(BaseOperator):
+class CloudFunctionDeployFunctionOperator(BaseOperator):
     """
     Creates a function in Google Cloud Functions.
     If a function with this name already exists, it will be updated.
@@ -292,7 +292,7 @@ FUNCTION_NAME_PATTERN = '^projects/[^/]+/locations/[^/]+/functions/[^/]+$'
 FUNCTION_NAME_COMPILED_PATTERN = re.compile(FUNCTION_NAME_PATTERN)
 
 
-class GcfFunctionDeleteOperator(BaseOperator):
+class CloudFunctionDeleteFunctionOperator(BaseOperator):
     """
     Deletes the specified function from Google Cloud Functions.
 
@@ -346,7 +346,7 @@ class GcfFunctionDeleteOperator(BaseOperator):
                 raise e
 
 
-class GcfFunctionInvokeOperator(BaseOperator):
+class CloudFunctionInvokeOperator(BaseOperator):
     """
     Invokes a deployed Cloud Function. To be used for testing
     purposes as very limited traffic is allowed.
