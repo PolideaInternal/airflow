@@ -30,7 +30,7 @@ from airflow.kubernetes.volume import Volume
 from airflow.kubernetes.volume_mount import VolumeMount
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
-from airflow.utils.helpers import validate_key
+from airflow.utils.key_validation import validate_key
 from airflow.utils.state import State
 from airflow.version import version as airflow_version
 

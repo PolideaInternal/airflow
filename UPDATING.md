@@ -41,6 +41,11 @@ assists users migrating to a new version.
 
 ## Airflow Master
 
+### Chain and cross_downstream moved from helpers to BaseOperator
+
+The chain and cross_downstream methods are now static methods in BaseOperator and not
+top-level methods in airflow.utils.helpers module.
+
 ### Logging configuration has been moved to new section
 
 The following configurations have been moved from `[core]` to the new `[logging]` section.
