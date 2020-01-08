@@ -47,7 +47,7 @@ basic_sanity_checks
 script_start
 
 # Sets width of the screen
-SEPARATOR_WIDTH="$(tput cols)"
+SEPARATOR_WIDTH="$(tput cols 2>/dev/null || echo 100)"
 
 # Name of the script
 CMDNAME="$(basename -- "$0")"
