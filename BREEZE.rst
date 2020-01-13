@@ -24,16 +24,18 @@
 Airflow Breeze CI Environment
 =============================
 
-Airflow Breeze is an easy-to-use integration test environment managed via
+Airflow Breeze is an easy-to-use development environment using
 `Docker Compose <https://docs.docker.com/compose/>`_.
-The environment is available for local use and is also integrated into Airflow's CI Travis tests.
+The environment is available for local use and is also used in Airflow's CI tests.
 
 We called it *Airflow Breeze* as **It's a Breeze to develop Airflow**.
 
 The advantages and disadvantages of using the Breeze environment vs. other ways of testing Airflow
 are described in `CONTRIBUTING.rst <CONTRIBUTING.rst#integration-test-development-environment>`_.
 
-Here is a short 10-minute video about Airflow Breeze:
+Here is a short 10-minute video about Airflow Breeze (note that it shows an old version of Breeze. Some
+of the points in the video are not valid any more. The video will be updated shortly with more up-to-date
+version):
 
 .. image:: http://img.youtube.com/vi/ffKFHV6f3PQ/0.jpg
    :width: 480px
@@ -74,7 +76,7 @@ Docker Compose
 Docker Images Used by Breeze
 ----------------------------
 
-For all development tasks, related integration tests and static code checks, we use the
+For all development tasks, unit tests, integration tests and static code checks, we use the
 **CI image** maintained on the Docker Hub in the ``apache/airflow`` repository.
 This Docker image contains a lot test-related packages (size of ~1GB).
 Its tag follows the pattern of ``<BRANCH>-python<PYTHON_VERSION>-ci``
@@ -179,7 +181,7 @@ Breeze script allows performing the following tasks:
 Entering Breeze
 ---------------
 
-You enter the Breeze integration test environment by running the ``./breeze`` script. You can run it with
+You enter the Breeze test environment by running the ``./breeze`` script. You can run it with
 the ``--help`` option to see the list of available flags. See `Airflow Breeze flags <#airflow-breeze-flags>`_
 for details.
 
@@ -236,10 +238,12 @@ When Breeze starts, it can start additional integrations. Those are additional d
 that are started in the same docker-compose command. Those are required by some of the tests
 as described in `TESTING.rst <TESTING.rst#airflow-integration-tests>`_.
 
-By default Breeze starts only airflow-testing container without any integration enabled.
-You can start the additional integrations by passing ``--integration`` flag when starting Breeze
-You can specify several ``--integration`` flags to start more than one integration at a time.
-Also you can specify ``--integration all`` to start all integrations.
+By default Breeze starts only airflow-testing container without any integration enabled. If you selected
+``postgres` or ``mysql`` backend, also container with the selected backend is started (but only the one
+that is selected). You can start the additional integrations by passing ``--integration`` flag
+with appropriate integration name when starting Breeze. You can specify several ``--integration`` flags
+to start more than one integration at a time.
+Finally you can specify ``--integration all`` to start all integrations.
 
 Once integration is started, it will continue to run until the environment is stopped with
 ``breeze --stop-environment`` flag.
@@ -522,68 +526,9 @@ The Breeze environment is also used to run some of the static checks as describe
 Running Tests in Breeze
 =======================
 
-As soon as you enter the Breeze environment, you can run Airflow unit tests via the ``run-tests`` command.
+As soon as you enter the Breeze environment, you can run Airflow unit tests via the ``pytest`` command.
 
 For supported CI test suites, types of unit tests, and other tests, see `TESTING.rst <TESTING.rst>`_.
-
-Running Tests with Kubernetes in Breeze
-=======================================
-
-In order to run Kubernetes in Breeze you can start Breeze with ``--start-kind-cluster`` switch. This will
-automatically create a Kind Kubernetes cluster in the same ``docker`` engine that is used to run Breeze
-Setting up the Kubernetes cluster takes some time so the cluster continues running
-until the cluster is stopped with ``--stop-kind-cluster`` switch or until ``--recreate-kind-cluster``
-switch is used rather than ``--start-kind-cluster``.
-
-The cluster name follows the pattern ``airflow-python-X.Y.Z-vA.B.C`` where X.Y.Z is Python version
-and A.B.C is kubernetes version. This way you can have multiple clusters setup and running at the same
-time for different python versions and different kubernetes versions.
-
-The Control Plane is available from inside the docker image via ``<CLUSTER_NAME>-control-plane:6443``
-host:port, the worker of the kind cluster is available at  <CLUSTER_NAME>-worker
-and webserver port for the worker is 30809.
-
-The Kubernetes Cluster is started but in order to deploy airflow to Kubernetes cluster you need to:
-
-1. Build the image.
-2. Load it to Kubernetes cluster.
-3. Deploy airflow application.
-
-It can be done with single script: ``./scripts/ci/in_container/kubernetes/deploy_airflow_to_kubernetes.sh``
-
-You can, however, work separately on the image in Kubernetes and deploying the Airflow app in the cluster.
-
-Building Airflow Images and Loading them to Kubernetes cluster
---------------------------------------------------------------
-
-This is done using ``./scripts/ci/in_container/kubernetes/docker/rebuild_airflow_image.sh`` script:
-
-1. Latest ``apache/airflow:master-pythonX.Y-ci`` images are rebuilt using latest sources.
-2. New Kubernetes image based on the  ``apache/airflow:master-pythonX.Y-ci`` is built with
-   necessary scripts added to run in kubernetes. The image is tagged with
-   ``apache/airflow:master-pythonX.Y-ci-kubernetes`` tag.
-3. The image is loaded to the kind cluster using ``kind load`` command
-
-Deploying Airflow Application in the Kubernetes cluster
--------------------------------------------------------
-
-This is done using ``./scripts/ci/in_container/kubernetes/app/deploy_app.sh`` script:
-
-1. Kubernetes resources are prepared by processing template from ``template`` directory, replacing
-   variables with the right images and locations:
-   - configmaps.yaml
-   - airflow.yaml
-2. The existing resources are used without replacing any variables inside:
-   - secrets.yaml
-   - postgres.yaml
-   - volumes.yaml
-3. All the resources are applied in the Kind cluster
-4. The script will wait until all the applications are ready and reachable
-
-After the deployment is finished you can run Kubernetes tests immediately in the same way as other tests.
-The Kubernetes tests are in ``tests/integration/kubernetes`` folder.
-
-You can run all the integration tests for Kubernetes with ``pytest tests/integration/kubernetes``.
 
 Breeze Command-Line Interface Reference
 =======================================

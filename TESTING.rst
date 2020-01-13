@@ -284,8 +284,8 @@ Running backend-specific tests
 Some tests that are using a specific backend are marked with custom pytest marker ``pytest.mark.backend``.
 The marker has single parameter - name of the backend. It correspond with the ``--backend`` switch of
 the Breeze environment (one of ``mysql``, ``sqlite``, ``postgres``). Those tests will only run when
-the Breeze environment is running with the right backend. You can specify more than one backen
-in the marker in case the test should run for all those backends specified.
+the Breeze environment is running with the right backend. You can specify more than one backend
+in the marker - then the test will run for all those backends specified.
 
 Example postgres-only test:
 
@@ -296,7 +296,7 @@ Example postgres-only test:
         ...
 
 
-Example postgres,mysql test:
+Example postgres,mysql test (they are skipped with sqlite backend):
 
 .. code-block:: python
 
@@ -312,17 +312,83 @@ Here is an example of only running postgres-specific backend tests:
 
     pytest --backend postgres
 
+Running Tests with Kubernetes
+-----------------------------
+
+Starting Kubernetes Cluster when starting Breeze
+................................................
+
+In order to run Kubernetes in Breeze you can start Breeze with ``--start-kind-cluster`` switch. This will
+automatically create a Kind Kubernetes cluster in the same ``docker`` engine that is used to run Breeze
+Setting up the Kubernetes cluster takes some time so the cluster continues running
+until the cluster is stopped with ``--stop-kind-cluster`` switch or until ``--recreate-kind-cluster``
+switch is used rather than ``--start-kind-cluster``. Starting breeze with kind cluster automatically
+sets ``runtime`` to ``kubernetes`` (see below).
+
+The cluster name follows the pattern ``airflow-python-X.Y.Z-vA.B.C`` where X.Y.Z is Python version
+and A.B.C is kubernetes version. This way you can have multiple clusters setup and running at the same
+time for different python versions and different kubernetes versions.
+
+The Control Plane is available from inside the docker image via ``<CLUSTER_NAME>-control-plane:6443``
+host:port, the worker of the kind cluster is available at  <CLUSTER_NAME>-worker
+and webserver port for the worker is 30809.
+
+The Kubernetes Cluster is started but in order to deploy airflow to Kubernetes cluster you need to:
+
+1. Build the image.
+2. Load it to Kubernetes cluster.
+3. Deploy airflow application.
+
+It can be done with single script: ``./scripts/ci/in_container/kubernetes/deploy_airflow_to_kubernetes.sh``
+
+You can, however, work separately on the image in Kubernetes and deploying the Airflow app in the cluster.
+
+Building Airflow Images and Loading them to Kubernetes cluster
+..............................................................
+
+This is done using ``./scripts/ci/in_container/kubernetes/docker/rebuild_airflow_image.sh`` script:
+
+1. Latest ``apache/airflow:master-pythonX.Y-ci`` images are rebuilt using latest sources.
+2. New Kubernetes image based on the  ``apache/airflow:master-pythonX.Y-ci`` is built with
+   necessary scripts added to run in kubernetes. The image is tagged with
+   ``apache/airflow:master-pythonX.Y-ci-kubernetes`` tag.
+3. The image is loaded to the kind cluster using ``kind load`` command
+
+Deploying Airflow Application in the Kubernetes cluster
+.......................................................
+
+This is done using ``./scripts/ci/in_container/kubernetes/app/deploy_app.sh`` script:
+
+1. Kubernetes resources are prepared by processing template from ``template`` directory, replacing
+   variables with the right images and locations:
+   - configmaps.yaml
+   - airflow.yaml
+2. The existing resources are used without replacing any variables inside:
+   - secrets.yaml
+   - postgres.yaml
+   - volumes.yaml
+3. All the resources are applied in the Kind cluster
+4. The script will wait until all the applications are ready and reachable
+
+After the deployment is finished you can run Kubernetes tests immediately in the same way as other tests.
+The Kubernetes tests are in ``tests/integration/kubernetes`` folder.
+
+You can run all the integration tests for Kubernetes with ``pytest tests/integration/kubernetes``.
+
 
 Running runtime-specific tests
 ------------------------------
 
 Some tests that are using a specific runtime are marked with custom pytest marker ``pytest.mark.runtime``.
 The marker has single parameter - name of the runtime. For the moment the only supported runtime is
-kubernetes. This runtime is set when you run Breeze with ``--start-kind-cluster`` option).
-Those tests will only run when the Breeze environment is running with the right runtime.
+``kubernetes``. This runtime is set when you run Breeze with ``--start-kind-cluster`` option.
+Those tests will only run when the selectd runtime is started.
 
-@pytest.mark.runtime("kubernetes")
-class TestKubernetesExecutor(unittest.TestCase):
+
+.. code-block:: python
+
+    @pytest.mark.runtime("kubernetes")
+    class TestKubernetesExecutor(unittest.TestCase):
 
 
 You can use custom ``--runtime`` switch in pytest to only run tests specific for that backend.
@@ -333,7 +399,7 @@ Here is an example of only running kubernetes-runtime backend tests:
 
     pytest --runtime kubernetes
 
-Note! For convenience and faster search all runtime tests are stored in ``tests.runtime`` package. You
+Note! For convenience and faster search, all runtime tests are stored in ``tests.runtime`` package. You
 can speed up collection of tests in this case by:
 
 .. code-block:: bash
