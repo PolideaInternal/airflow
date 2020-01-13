@@ -192,21 +192,21 @@ The following integrations are available:
    * - openldap
      - Integration required for OpenLDAP hooks
    * - rabbitmq
-     - Integration required for RabbitMQ queue hooks
+     - Integration required for Celery executor tests
    * - redis
-     - Integration required for Redis hooks
+     - Integration required for Celery executor tests
 
-Below command starts kerberos integration only:
-
-.. code-block:: bash
-
-    ./breeze --integration kerberos
-
-Below command starts kerberos and cassandra integrations:
+Below command starts mongi integration only:
 
 .. code-block:: bash
 
-    ./breeze --integration kerberos --integration cassandra
+    ./breeze --integration mongo
+
+Below command starts mongo and cassandra integrations:
+
+.. code-block:: bash
+
+    ./breeze --integration mongo --integration cassandra
 
 Below command starts all integrations:
 
@@ -218,6 +218,10 @@ In the CI environment integrations can be enabled by specifying ``ENABLED_INTEGR
 storing space-separated list of integrations to start. Thanks to that we can run integration and
 integration-less tests separately in different jobs which is desired from the memory usage point of view.
 
+Note that Kerberos is a special kind of integration. There are some tests that run differently when
+Kerberos integration is enabled (they retrieve and use Kerberos authentication token) and differently when the
+Kerberos integration is disabled (they do not retrieve nor use the token). Therefore one of the test job
+for the CI system should run all tests with kerberos integration enabled to test both scenarios.
 
 Running integration tests
 -------------------------
