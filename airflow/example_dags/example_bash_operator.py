@@ -70,5 +70,6 @@ also_run_this = BashOperator(
 # [END howto_operator_bash_template]
 also_run_this >> run_this_last
 
-if __name__ == "__main__":
-    dag.cli()
+if __name__ == '__main__':
+    dag.clear(reset_dag_runs=True)
+    dag.run()
