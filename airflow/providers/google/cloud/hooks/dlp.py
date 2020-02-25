@@ -254,7 +254,6 @@ class CloudDLPHook(CloudBaseHook):
                 )
         return job
 
-    @CloudBaseHook.catch_http_exception
     def create_inspect_template(
         self,
         organization_id: Optional[str] = None,
