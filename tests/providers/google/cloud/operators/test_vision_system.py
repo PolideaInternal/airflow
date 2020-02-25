@@ -26,7 +26,10 @@ from tests.test_utils.gcp_system_helpers import CLOUD_DAG_FOLDER, GoogleSystemTe
 GCP_BUCKET_NAME = os.environ.get('GCP_VISION_BUCKET_NAME', 'vision-bucket-system-test')
 GCP_REFERENCE_IMAGE_URL = os.environ.get('GCP_VISION_REFERENCE_IMAGE_URL', 'gs://bucket-name/image.png')
 GCP_ANNOTATE_IMAGE_URL = os.environ.get('GCP_VISION_ANNOTATE_IMAGE_URL', 'gs://bucket-name/image.png')
-GCP_VIDEO_SOURCE_URL = os.environ.get('GCP_VISION_SOURCE_IMAGE_URL', "http://google.com/image.jpg")
+GCP_VIDEO_SOURCE_URL = os.environ.get(
+    'GCP_VISION_SOURCE_IMAGE_URL',
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/800px-Google_2015_logo.svg.png"
+)
 
 
 @pytest.mark.system("google.cloud")
