@@ -28,9 +28,10 @@ from airflow.providers.google.marketing_platform.sensors.display_video import (
     GoogleDisplayVideo360ReportSensor,
 )
 from airflow.utils import dates
+from uuid import uuid4
 
 # [START howto_display_video_env_variables]
-BUCKET = "gs://test-display-video-bucket"
+BUCKET = f"test-display-video-bucket-{str(uuid4())[:10]}"
 REPORT = {
     "kind": "doubleclickbidmanager#query",
     "metadata": {
@@ -82,7 +83,7 @@ with models.DAG(
     get_report = GoogleDisplayVideo360DownloadReportOperator(
         report_id=report_id,
         task_id="get_report",
-        bucket_name=BUCKET,
+        bucket_name=f"gs://{BUCKET}",
         report_name="test1.csv",
     )
     # [END howto_google_display_video_getquery_report_operator]

@@ -20,7 +20,7 @@ Example Airflow DAG that shows how to use CampaignManager.
 """
 import os
 import time
-
+from uuid import uuid4
 from airflow import models
 from airflow.providers.google.marketing_platform.operators.campaign_manager import (
     GoogleCampaignManagerBatchInsertConversionsOperator, GoogleCampaignManagerBatchUpdateConversionsOperator,
@@ -32,12 +32,13 @@ from airflow.providers.google.marketing_platform.sensors.campaign_manager import
 )
 from airflow.utils import dates
 
+
 PROFILE_ID = os.environ.get("MARKETING_PROFILE_ID", "123456789")
 FLOODLIGHT_ACTIVITY_ID = os.environ.get("FLOODLIGHT_ACTIVITY_ID", 12345)
 FLOODLIGHT_CONFIGURATION_ID = os.environ.get("FLOODLIGHT_CONFIGURATION_ID", 12345)
 ENCRYPTION_ENTITY_ID = os.environ.get("ENCRYPTION_ENTITY_ID", 12345)
 DEVICE_ID = os.environ.get("DEVICE_ID", "12345")
-BUCKET = os.environ.get("MARKETING_BUCKET", "test-cm-bucket")
+BUCKET = f"test-cm-bucket-{str(uuid4())[:10]}"
 REPORT_NAME = "test-report"
 REPORT = {
     "type": "STANDARD",

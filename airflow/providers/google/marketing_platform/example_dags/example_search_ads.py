@@ -19,7 +19,7 @@
 Example Airflow DAG that shows how to use SearchAds.
 """
 import os
-
+from uuid import uuid4
 from airflow import models
 from airflow.providers.google.marketing_platform.operators.search_ads import (
     GoogleSearchAdsDownloadReportOperator, GoogleSearchAdsInsertReportOperator,
@@ -27,10 +27,12 @@ from airflow.providers.google.marketing_platform.operators.search_ads import (
 from airflow.providers.google.marketing_platform.sensors.search_ads import GoogleSearchAdsReportSensor
 from airflow.utils import dates
 
+
 # [START howto_search_ads_env_variables]
 AGENCY_ID = os.environ.get("GMP_AGENCY_ID")
 ADVERTISER_ID = os.environ.get("GMP_ADVERTISER_ID")
-GCS_BUCKET = os.environ.get("GMP_GCS_BUCKET", "test-cm-bucket")
+BUCKET = BUCKET = f"test-search-ads-bucket-{str(uuid4())[:10]}"
+
 
 REPORT = {
     "reportScope": {"agencyId": AGENCY_ID, "advertiserId": ADVERTISER_ID},
@@ -68,7 +70,7 @@ with models.DAG(
 
     # [START howto_search_ads_getfile_report_operator]
     download_report = GoogleSearchAdsDownloadReportOperator(
-        report_id=report_id, bucket_name=GCS_BUCKET, task_id="download_report"
+        report_id=report_id, bucket_name=BUCKET, task_id="download_report"
     )
     # [END howto_search_ads_getfile_report_operator]
 
