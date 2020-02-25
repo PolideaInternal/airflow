@@ -116,6 +116,7 @@ class GoogleSystemTest(SystemTest):
                 f"--project={GoogleSystemTest._project_id()}",
             ]
         )
+        executor.execute_cmd(["gcloud", "config", "set", "project", GoogleSystemTest._project_id()])
 
     @staticmethod
     def _revoke_authentication():
