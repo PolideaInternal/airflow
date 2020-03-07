@@ -36,11 +36,11 @@ with models.DAG(
     schedule_interval=None,  # Override to match your needs
 ) as dag:
     # [START howto_marketing_platform_list_accounts_operator]
-    list_account = GoogleAnalyticsListAccountsOperator(
-        max_results=1, start_index=1, task_id="list_account"
-    )
+    # list_account = GoogleAnalyticsListAccountsOperator(
+    #     max_results=1, start_index=1, task_id="list_account"
+    # )
     # [END howto_marketing_platform_list_accounts_operator]
-
+    #
     # [START howto_marketing_platform_get_ads_links_operator]
     get_adwords_links = GoogleAnalyticsGetAdsLinksOperator(
         account_id=ACCOUNT_ID,
@@ -49,3 +49,7 @@ with models.DAG(
         task_id="get_link",
     )
     # [END howto_marketing_platform_list_get_ads_links_operator]
+
+if __name__ == '__main__':
+    dag.clear(reset_dag_runs=True)
+    dag.run()
