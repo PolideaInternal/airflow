@@ -77,7 +77,7 @@ class GoogleAnalyticsHook(CloudBaseHook):
         result = [value for key, value in response.items() if key == "username"]
         return result
 
-    def get_adwords_links(
+    def get_ad_words_links(
         self, account_id: str, web_property_id: str, web_property_ad_words_link_id: str
     ) -> dict:
         """
@@ -92,7 +92,7 @@ class GoogleAnalyticsHook(CloudBaseHook):
         """
 
         # pylint: disable=no-member
-        self.log.info("Retrieving ad words links")
+        self.log.info("Retrieving ad words links...")
         ad_words_link = (
             self.get_conn()
             .management()

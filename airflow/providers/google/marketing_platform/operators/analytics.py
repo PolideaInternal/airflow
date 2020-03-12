@@ -92,8 +92,8 @@ class GoogleAnalyticsGetAdsLinksOperator(BaseOperator):
 
     :param account_id: ID of the account which the given web property belongs to.
     :type account_id: str
-    :param web_property_adwords_link_id: Web property-Google Ads link ID.
-    :type web_property_adwords_link_id: str
+    :param web_property_ad_words_link_id: Web property-Google Ads link ID.
+    :type web_property_ad_words_link_id: str
     :param web_property_id: Web property ID to retrieve the Google Ads link for.
     :type web_property_id: str
     """
@@ -102,7 +102,7 @@ class GoogleAnalyticsGetAdsLinksOperator(BaseOperator):
         "api_version",
         "gcp_connection_id",
         "account_id",
-        "web_property_adwords_link_id",
+        "web_property_ad_words_link_id",
         "web_property_id",
     )
 
@@ -110,7 +110,7 @@ class GoogleAnalyticsGetAdsLinksOperator(BaseOperator):
     def __init__(
         self,
         account_id: str,
-        web_property_adwords_link_id: str,
+        web_property_ad_words_link_id: str,
         web_property_id: str,
         api_version: str = "v3",
         gcp_connection_id: str = "google_cloud_default",
@@ -120,7 +120,7 @@ class GoogleAnalyticsGetAdsLinksOperator(BaseOperator):
         super().__init__(*args, **kwargs)
 
         self.account_id = account_id
-        self.web_property_adwords_link_id = web_property_adwords_link_id
+        self.web_property_ad_words_link_id = web_property_ad_words_link_id
         self.web_property_id = web_property_id
         self.api_version = api_version
         self.gcp_connection_id = gcp_connection_id
@@ -129,9 +129,9 @@ class GoogleAnalyticsGetAdsLinksOperator(BaseOperator):
         hook = GoogleAnalyticsHook(
             api_version=self.api_version, gcp_connection_id=self.gcp_connection_id
         )
-        result = hook.get_adwords_links(
+        result = hook.get_ad_words_links(
             account_id=self.account_id,
             web_property_id=self.web_property_id,
-            web_property_ad_words_link_id=self.web_property_adwords_link_id,
+            web_property_ad_words_link_id=self.web_property_ad_words_link_id,
         )
         return result
