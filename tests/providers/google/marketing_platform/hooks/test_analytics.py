@@ -83,7 +83,7 @@ class TestGoogleAnalyticsHook(unittest.TestCase):
         web_property_id = "UA-123456-1"
         web_property_adwords_link_id = "AABBCCDDEEFFGG"
 
-        self.hook.get_adwords_links(
+        self.hook.get_ad_words_links(
             account_id,
             web_property_id,
             web_property_adwords_link_id,

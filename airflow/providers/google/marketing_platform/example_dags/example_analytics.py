@@ -43,10 +43,10 @@ with models.DAG(
     #
     # [START howto_marketing_platform_get_ads_links_operator]
     get_adwords_links = GoogleAnalyticsGetAdsLinksOperator(
-        account_id=ACCOUNT_ID,
         web_property_ad_words_link_id=WEB_PROPERTY_AD_WORDS_LINK_ID,
         web_property_id=WEB_PROPERTY_ID,
-        task_id="get_link",
+        account_id=ACCOUNT_ID,
+        task_id="get_ad_words_link",
     )
     # [END howto_marketing_platform_list_get_ads_links_operator]
 
