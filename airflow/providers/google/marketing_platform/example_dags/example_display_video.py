@@ -23,7 +23,8 @@ import os
 from airflow import models
 from airflow.providers.google.marketing_platform.operators.display_video import (
     GoogleDisplayVideo360CreateReportOperator, GoogleDisplayVideo360DeleteReportOperator,
-    GoogleDisplayVideo360DownloadReportOperator, GoogleDisplayVideo360RunReportOperator,
+    GoogleDisplayVideo360DownloadLineItemsOperator, GoogleDisplayVideo360DownloadReportOperator,
+    GoogleDisplayVideo360RunReportOperator,
 )
 from airflow.providers.google.marketing_platform.sensors.display_video import (
     GoogleDisplayVideo360ReportSensor,
@@ -32,6 +33,8 @@ from airflow.utils import dates
 
 # [START howto_display_video_env_variables]
 BUCKET = os.environ.get("GMP_DISPLAY_VIDEO_BUCKET", "gs://test-display-video-bucket")
+ADVERTISER_ID = os.environ.get("GMP_ADVERTISER_ID", 1234567)
+
 REPORT = {
     "kind": "doubleclickbidmanager#query",
     "metadata": {
@@ -52,6 +55,15 @@ REPORT = {
 
 PARAMS = {"dataRange": "LAST_14_DAYS", "timezoneCode": "America/New_York"}
 # [END howto_display_video_env_variables]
+
+# download_line_items variables
+OBJECT_NAME = "files/report.csv"
+request_body = {
+    "filterType": ADVERTISER_ID,
+    "filterIds": 0,
+    "format": "CSV",
+    "fileSpec": "EWF"
+}
 
 default_args = {"start_date": dates.days_ago(1)}
 
@@ -93,5 +105,15 @@ with models.DAG(
         report_id=report_id, task_id="delete_report"
     )
     # [END howto_google_display_video_deletequery_report_operator]
+
+    # [START howto_google_display_video_download_line_items_operator]
+    download_line_items = GoogleDisplayVideo360DownloadLineItemsOperator(
+        task_id="download_line_items",
+        request_body=request_body,
+        bucket_name=BUCKET,
+        object_name=OBJECT_NAME,
+        gzip=False,
+    )
+    # [END howto_google_display_video_download_line_items_operator]
 
     create_report >> run_report >> wait_for_report >> get_report >> delete_report

@@ -119,3 +119,22 @@ To run Display&Video 360 report use
 Use :ref:`Jinja templating <jinja-templating>` with
 :template-fields:`airflow.providers.google.marketing_platform.operators.display_video.GoogleDisplayVideo360RunReportOperator`
 parameters which allow you to dynamically determine values.
+
+
+.. _howto/operator:GoogleDisplayVideo360DownloadLineItemsOperator:
+
+Downloading Line Items
+^^^^^^^^^^^^^^^^^^^^^^
+
+To download line items in CSV format report use
+:class:`~airflow.providers.google.marketing_platform.operators.display_video.GoogleDisplayVideo360DownloadLineItemsOperator`.
+
+.. exampleinclude:: ../../../../airflow/providers/google/marketing_platform/example_dags/example_display_video.py
+    :language: python
+    :dedent: 4
+    :start-after: [START howto_google_display_video_download_line_items_operator]
+    :end-before: [END howto_google_display_video_download_line_items_operator]
+
+Use :ref:`Jinja templating <jinja-templating>` with
+:template-fields:`airflow.providers.google.marketing_platform.operators.display_video.GoogleDisplayVideo360DownloadLineItemsOperator`
+parameters which allow you to dynamically determine values.
