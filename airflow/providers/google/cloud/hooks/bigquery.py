@@ -26,6 +26,7 @@ import warnings
 from copy import deepcopy
 from typing import Any, Dict, Iterable, List, Mapping, NoReturn, Optional, Tuple, Type, Union
 
+from google.cloud.bigquery import Client, Table
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from pandas import DataFrame
@@ -161,17 +162,20 @@ class BigQueryHook(GoogleBaseHook, DbApiHook):
                 return False
             raise
 
-    def create_empty_table(self,  # pylint: disable=too-many-arguments
-                           project_id: str,
-                           dataset_id: str,
-                           table_id: str,
-                           schema_fields: Optional[List] = None,
-                           time_partitioning: Optional[Dict] = None,
-                           cluster_fields: Optional[List[str]] = None,
-                           labels: Optional[Dict] = None,
-                           view: Optional[Dict] = None,
-                           encryption_configuration: Optional[Dict] = None,
-                           num_retries: int = 5) -> None:
+    @GoogleBaseHook.fallback_to_default_project_id
+    def create_empty_table(  # pylint: disable=too-many-arguments
+        self,
+        dataset_id: str,
+        table_id: str,
+        project_id: Optional[str] = None,
+        schema_fields: Optional[List] = None,
+        time_partitioning: Optional[Dict] = None,
+        cluster_fields: Optional[List[str]] = None,
+        labels: Optional[Dict] = None,
+        view: Optional[Dict] = None,
+        encryption_configuration: Optional[Dict] = None,
+        num_retries: Optional[int] = None
+    ) -> None:
         """
         Creates a new, empty table in the dataset.
         To create a view, which is defined by a SQL query, parse a dictionary to 'view' kwarg
@@ -227,15 +231,20 @@ class BigQueryHook(GoogleBaseHook, DbApiHook):
         :type num_retries: int
         :return: None
         """
-        service = self.get_service()
 
-        project_id = project_id if project_id is not None else self.project_id
+        if not project_id:
+            raise ValueError("The project_id should be set")
 
-        table_resource = {
+        if num_retries:
+            warnings.warn("Parameter `num_retries` is deprecated", DeprecationWarning)
+
+        table_resource: Dict[str, Any] = {
             'tableReference': {
-                'tableId': table_id
+                'tableId': table_id,
+                'projectId': project_id,
+                'datasetId': dataset_id,
             }
-        }  # type: Dict[str, Any]
+        }
 
         if self.location:
             table_resource['location'] = self.location
@@ -260,12 +269,8 @@ class BigQueryHook(GoogleBaseHook, DbApiHook):
         if encryption_configuration:
             table_resource["encryptionConfiguration"] = encryption_configuration
 
-        num_retries = num_retries if num_retries else self.num_retries
-
-        service.tables().insert(  # pylint: disable=no-member
-            projectId=project_id,
-            datasetId=dataset_id,
-            body=table_resource).execute(num_retries=num_retries)
+        table = Table.from_api_repr(table_resource)
+        Client(client_info=self.client_info).create_table(table=table, exists_ok=True)
 
     def create_empty_dataset(self,
                              dataset_id: str = "",
