@@ -21,6 +21,8 @@ Example Airflow DAG that shows how to use DisplayVideo.
 import os
 
 from airflow import models
+from airflow.providers.google.cloud.operators.gcs_to_bigquery import GCSToBigQueryOperator
+from airflow.providers.google.marketing_platform.hooks.display_video import GoogleDisplayVideo360Hook
 from airflow.providers.google.marketing_platform.operators.display_video import (
     GoogleDisplayVideo360CreateReportOperator, GoogleDisplayVideo360DeleteReportOperator,
     GoogleDisplayVideo360DownloadLineItemsOperator, GoogleDisplayVideo360DownloadReportOperator,
@@ -35,6 +37,9 @@ from airflow.utils import dates
 BUCKET = os.environ.get("GMP_DISPLAY_VIDEO_BUCKET", "gs://test-display-video-bucket")
 ADVERTISER_ID = os.environ.get("GMP_ADVERTISER_ID", 1234567)
 OBJECT_NAME = os.environ.get("GMP_OBJECT_NAME", "files/report.csv")
+GMP_PARTNER_ID = os.environ.get("GMP_PARTNER_ID", 123)
+ENTITY_TYPE = os.environ.get("GMP_ENTITY_TYPE", "LineItem")
+ERF_SOURCE_OBJECT = GoogleDisplayVideo360Hook.erf_uri(GMP_PARTNER_ID, ENTITY_TYPE)
 
 REPORT = {
     "kind": "doubleclickbidmanager#query",
@@ -104,6 +109,16 @@ with models.DAG(
         report_id=report_id, task_id="delete_report"
     )
     # [END howto_google_display_video_deletequery_report_operator]
+
+    # [START howto_google_display_video_upload_multiple_entity_read_files_to_big_query]
+    upload_erf_to_bq = GCSToBigQueryOperator(
+        task_id='upload_erf_to_bq',
+        bucket=BUCKET,
+        source_objects=ERF_SOURCE_OBJECT,
+        destination_project_dataset_table='airflow_test.gcs_to_bq_table',
+        write_disposition='WRITE_TRUNCATE',
+        dag=dag)
+    # [END howto_google_display_video_upload_multiple_entity_read_files_to_big_query]
 
     # [START howto_google_display_video_download_line_items_operator]
     download_line_items = GoogleDisplayVideo360DownloadLineItemsOperator(
