@@ -267,7 +267,7 @@ RUN pip install --upgrade pip==${PIP_VERSION}
 # Install Google SDK
 ENV GCLOUD_HOME="/opt/gcloud" CLOUDSDK_PYTHON=python${PYTHON_MAJOR_MINOR_VERSION}
 
-RUN GCLOUD_VERSION="274.0.1" \
+RUN GCLOUD_VERSION="290.0.0" \
     && GCOUD_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_VERSION}-linux-x86_64.tar.gz" \
     && GCLOUD_TMP_FILE="/tmp/gcloud.tar.gz" \
     && export CLOUDSDK_CORE_DISABLE_PROMPTS=1 \
