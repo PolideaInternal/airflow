@@ -23,8 +23,8 @@ import mock
 
 from airflow.providers.google.cloud.operators.dataflow import (
     CheckJobRunning, DataflowCreateJavaJobOperator, DataflowCreatePythonJobOperator,
-    DataflowTemplatedJobStartOperator,
-    DataflowStartFlexTemplateOperator)
+    DataflowStartFlexTemplateOperator, DataflowTemplatedJobStartOperator,
+)
 from airflow.version import version
 
 TASK_ID = 'test-dataflow-operator'

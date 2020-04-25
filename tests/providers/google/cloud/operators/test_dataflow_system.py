@@ -25,9 +25,9 @@ import pytest
 import requests
 
 from airflow.providers.google.cloud.example_dags.example_dataflow_flex_template import (
-    BQ_FLEX_TEMPLATE_DATASET, DATAFLOW_FLEX_TEMPLATE_JOB_NAME, GCS_FLEX_TEMPLATE_TEMPLATE_PATH,
-    PUBSUB_FLEX_TEMPLATE_SUBSCRIPTION, PUBSUB_FLEX_TEMPLATE_TOPIC,
-    BQ_FLEX_TEMPLATE_LOCATION)
+    BQ_FLEX_TEMPLATE_DATASET, BQ_FLEX_TEMPLATE_LOCATION, DATAFLOW_FLEX_TEMPLATE_JOB_NAME,
+    GCS_FLEX_TEMPLATE_TEMPLATE_PATH, PUBSUB_FLEX_TEMPLATE_SUBSCRIPTION, PUBSUB_FLEX_TEMPLATE_TOPIC,
+)
 from tests.providers.google.cloud.utils.gcp_authenticator import GCP_DATAFLOW_KEY, GCP_GCS_TRANSFER_KEY
 from tests.test_utils.gcp_system_helpers import CLOUD_DAG_FOLDER, GoogleSystemTest, provide_gcp_context
 
