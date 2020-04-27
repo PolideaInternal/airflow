@@ -72,15 +72,8 @@ class CloudDataflowExampleDagFlexTemplateJavagSystemTest(GoogleSystemTest):
                     - name: gcr.io/cloud-builders/git
                       args: ['checkout', '$_EXAMPLE_COMMIT']
                       dir: 'repo_dir'
-                    - name: alpine
-                      entrypoint: /bin/sh
-                      dir: 'repo_dir/$_EXAMPLE_SUBDIR'
                     - name: maven
                       args: ["mvn", "clean", "package"]
-                      dir: 'repo_dir/$_EXAMPLE_SUBDIR'
-                    - name: alpine
-                      entrypoint: "/bin/sh"
-                      args: ["-c", "ls -lh target/*.jar"]
                       dir: 'repo_dir/$_EXAMPLE_SUBDIR'
                     - name: 'gcr.io/cloud-builders/docker'
                       args: ['build', '-t', '$_TEMPLATE_IMAGE', '.']
