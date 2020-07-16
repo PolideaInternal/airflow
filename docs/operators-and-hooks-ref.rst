@@ -615,7 +615,8 @@ Google
 Airflow has support for the `Google service <https://developer.google.com/>`__.
 
 All hooks are based on :class:`airflow.providers.google.common.hooks.base_google.GoogleBaseHook`. Some integration
-also use :mod:`airflow.providers.google.common.hooks.discovery_api`.
+also use :mod:`airflow.providers.google.common.hooks.discovery_api` and
+:mod:`airflow.providers.google.common.hooks.base_dataprep`.
 
 See the :doc:`GCP connection type <howto/connection/gcp>` documentation to
 configure connections to Google services.
@@ -709,6 +710,12 @@ These integrations allow you to perform various operations within the Google Clo
      -
      - :mod:`airflow.providers.google.cloud.hooks.dataflow`
      - :mod:`airflow.providers.google.cloud.operators.dataflow`
+     -
+
+   * - `Dataprep <https://cloud.google.com/dataprep/>`__
+     - :doc:`How to use <howto/operator/google/cloud/dataprep>`
+     - :mod:`airflow.providers.google.cloud.hooks.dataprep`
+     - :mod:`airflow.providers.google.cloud.operators.dataprep`
      -
 
    * - `Dataproc <https://cloud.google.com/dataproc/>`__
