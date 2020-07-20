@@ -341,7 +341,10 @@ class TestGoogleBaseHook(unittest.TestCase):
             key_path=None,
             keyfile_dict=None,
             scopes=self.instance.scopes,
-            delegate_to=None)
+            delegate_to=None,
+            target_principal=None,
+            delegates=None,
+        )
         self.assertEqual(('CREDENTIALS', 'PROJECT_ID'), result)
 
     @mock.patch(MODULE_NAME + '.get_credentials_and_project_id')
@@ -359,7 +362,9 @@ class TestGoogleBaseHook(unittest.TestCase):
             key_path='KEY_PATH.json',
             keyfile_dict=None,
             scopes=self.instance.scopes,
-            delegate_to=None
+            delegate_to=None,
+            target_principal=None,
+            delegates=None,
         )
         self.assertEqual((mock_credentials, 'PROJECT_ID'), result)
 
@@ -399,7 +404,9 @@ class TestGoogleBaseHook(unittest.TestCase):
             key_path=None,
             keyfile_dict=service_account,
             scopes=self.instance.scopes,
-            delegate_to=None
+            delegate_to=None,
+            target_principal=None,
+            delegates=None,
         )
         self.assertEqual((mock_credentials, 'PROJECT_ID'), result)
 
@@ -417,7 +424,9 @@ class TestGoogleBaseHook(unittest.TestCase):
             key_path=None,
             keyfile_dict=None,
             scopes=self.instance.scopes,
-            delegate_to="USER"
+            delegate_to="USER",
+            target_principal=None,
+            delegates=None,
         )
         self.assertEqual((mock_credentials, "PROJECT_ID"), result)
 
@@ -451,7 +460,9 @@ class TestGoogleBaseHook(unittest.TestCase):
             key_path=None,
             keyfile_dict=None,
             scopes=self.instance.scopes,
-            delegate_to=None
+            delegate_to=None,
+            target_principal=None,
+            delegates=None,
         )
         self.assertEqual(("CREDENTIALS", 'SECOND_PROJECT_ID'), result)
 
