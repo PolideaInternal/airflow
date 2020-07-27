@@ -42,12 +42,13 @@ class DataprepGetJobsForJobGroupOperator(BaseOperator):
 
     @apply_defaults
     def __init__(
-        self, job_id: int, dataprep_conn_id: str = "dataprep_conn_id", *args, **kwargs
+        self, job_id: int, *args, **kwargs
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.dataprep_conn_id = dataprep_conn_id
         self.job_id = job_id
 
     def execute(self, context: Dict):
-        hook = GoogleDataprepHook(dataprep_conn_id=self.dataprep_conn_id)
-        hook.get_jobs_for_job_group(job_id=self.job_id)
+        self.log.info("Fetching data for job with id: %d ...", self.job_id)
+        hook = GoogleDataprepHook()
+        response = hook.get_jobs_for_job_group(job_id=self.job_id)
+        return response

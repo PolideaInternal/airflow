@@ -18,18 +18,27 @@
 """
 This module contains Google Dataprep hook.
 """
+import os
 
 import requests
 from tenacity import retry, stop_after_attempt
 
-from airflow.providers.google.common.hooks.base_dataprep import DataprepBaseHook
+TOKEN = os.environ["DATAPREP_TOKEN"]
+URL = "https://api.clouddataprep.com/v4/jobGroups/"
 
 
-class GoogleDataprepHook(DataprepBaseHook):
+class GoogleDataprepHook:
     """
     Hook for connection with Dataprep API.
 
     """
+
+    def __init__(self) -> None:
+        self.headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {TOKEN}",
+        }
+        self.url = URL
 
     @retry(stop=stop_after_attempt(5))
     def get_jobs_for_job_group(self, job_id: int):
@@ -39,9 +48,7 @@ class GoogleDataprepHook(DataprepBaseHook):
         :param job_id The ID of the job that will be fetched.
         :type job_id: int
         """
-        url: str = self.url + f"{job_id}/jobs"
+        url: str = f"{self.url}{job_id}/jobs"
 
-        self.log.info("Fetching data for job with id: %d ...", job_id)
         response = requests.get(url, headers=self.headers)
         response.raise_for_status()
-        return response
