@@ -39,8 +39,8 @@ class GoogleDataprepHook:
             "Authorization": f"Bearer {TOKEN}",
         }
         self.url = URL
-        self.retry_no: int = 5
 
+    @retry(stop=stop_after_attempt(5))
     def get_jobs_for_job_group(self, job_id: int):
         """
         Get information about the batch jobs within a Cloud Dataprep job.
@@ -49,12 +49,7 @@ class GoogleDataprepHook:
         :type job_id: int
         """
 
-        @retry(stop=stop_after_attempt(self.retry_no))
-        def _do_task():
-
-            url: str = f"{self.url}{job_id}/jobs"
-
-            response = requests.get(url, headers=self.headers)
-            response.raise_for_status()
-
-        return _do_task()
+        url: str = f"{self.url}{job_id}/jobs"
+        response = requests.get(url, headers=self.headers)
+        response.raise_for_status()
+        return response.json()
