@@ -21,7 +21,7 @@ This module contains Google Dataprep hook.
 import os
 
 import requests
-from tenacity import retry, stop_after_attempt
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 TOKEN = os.environ["DATAPREP_TOKEN"]
 URL = "https://api.clouddataprep.com/v4/jobGroups/"
@@ -40,7 +40,7 @@ class GoogleDataprepHook:
         }
         self.url = URL
 
-    @retry(stop=stop_after_attempt(5))
+    @retry(stop=stop_after_attempt(1), wait=wait_exponential(multiplier=1, max=10))
     def get_jobs_for_job_group(self, job_id: int):
         """
         Get information about the batch jobs within a Cloud Dataprep job.
