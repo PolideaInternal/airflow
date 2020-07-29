@@ -40,7 +40,7 @@ class GoogleDataprepHook:
         }
         self.url = URL
 
-    @retry(stop=stop_after_attempt(1), wait=wait_exponential(multiplier=1, max=10))
+    @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=1, max=10))
     def get_jobs_for_job_group(self, job_id: int):
         """
         Get information about the batch jobs within a Cloud Dataprep job.
@@ -48,7 +48,6 @@ class GoogleDataprepHook:
         :param job_id The ID of the job that will be fetched.
         :type job_id: int
         """
-
         url: str = f"{self.url}{job_id}/jobs"
         response = requests.get(url, headers=self.headers)
         response.raise_for_status()
