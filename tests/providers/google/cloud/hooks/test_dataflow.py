@@ -84,13 +84,11 @@ TEST_PROJECT = 'test-project'
 TEST_JOB_ID = 'test-job-id'
 TEST_LOCATION = 'custom-location'
 DEFAULT_PY_INTERPRETER = 'python3'
-TEST_FLEX_PARAMETERS = {
-    "containerSpecGcsPath": "gs://test-bucket/test-file",
-    "jobName": 'test-job-name',
-    "parameters": {
-        "inputSubscription": 'test-subsription',
-        "outputTable": "test-project:test-dataset.streaming_beam_sql",
-    }
+GCS_HOOK_STRING = 'airflow.providers.google.cloud.operators.dataflow.{}'
+CONTAINER_SPEC_GCS_PATH = 'gs://test-bucket/test-file'
+FLEX_PARAMETERS = {
+    'inputSubscription': 'test-subsription',
+    'outputTable': 'test-project:test-dataset.streaming_beam_sql',
 }
 TEST_PROJECT_ID = 'test-project-id'
 
@@ -689,9 +687,9 @@ class TestDataflowTemplateHook(unittest.TestCase):
 
         on_new_job_id_callback = mock.MagicMock()
         result = self.dataflow_hook.start_flex_template(
-            body={
-                "launchParameter": TEST_FLEX_PARAMETERS
-            },
+            job_name=JOB_NAME,
+            container_spec_gcs_path=CONTAINER_SPEC_GCS_PATH,
+            parameters=FLEX_PARAMETERS,
             location=TEST_LOCATION,
             project_id=TEST_PROJECT_ID,
             on_new_job_id_callback=on_new_job_id_callback
@@ -699,8 +697,14 @@ class TestDataflowTemplateHook(unittest.TestCase):
         on_new_job_id_callback.assert_called_once_with(TEST_JOB_ID)
         launch_method.assert_called_once_with(
             projectId='test-project-id',
-            body={'launchParameter': TEST_FLEX_PARAMETERS},
-            location=TEST_LOCATION
+            location=TEST_LOCATION,
+            body={
+                "launchParameter": {
+                    'jobName': JOB_NAME,
+                    "containerSpecGcsPath": CONTAINER_SPEC_GCS_PATH,
+                    "parameters": FLEX_PARAMETERS,
+                },
+            },
         )
         mock_controller.assert_called_once_with(
             dataflow=mock_conn.return_value,

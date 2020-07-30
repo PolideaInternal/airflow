@@ -46,15 +46,11 @@ with models.DAG(
 ) as dag_flex_template:
     start_flex_template = DataflowStartFlexTemplateOperator(
         task_id="start_flex_template_java",
-        body={
-            "launchParameter": {
-                "containerSpecGcsPath": GCS_FLEX_TEMPLATE_TEMPLATE_PATH,
-                "jobName": DATAFLOW_FLEX_TEMPLATE_JOB_NAME,
-                "parameters": {
-                    "inputSubscription": PUBSUB_FLEX_TEMPLATE_SUBSCRIPTION,
-                    "outputTable": f"{GCP_PROJECT_ID}:{BQ_FLEX_TEMPLATE_DATASET}.streaming_beam_sql",
-                }
-            }
+        job_name=DATAFLOW_FLEX_TEMPLATE_JOB_NAME,
+        container_spec_gcs_path=GCS_FLEX_TEMPLATE_TEMPLATE_PATH,
+        parameters={
+            "inputSubscription": PUBSUB_FLEX_TEMPLATE_SUBSCRIPTION,
+            "outputTable": f"{GCP_PROJECT_ID}:{BQ_FLEX_TEMPLATE_DATASET}.streaming_beam_sql",
         },
         do_xcom_push=True,
         location=BQ_FLEX_TEMPLATE_LOCATION,

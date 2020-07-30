@@ -61,13 +61,10 @@ EXPECTED_ADDITIONAL_OPTIONS = {
 }
 POLL_SLEEP = 30
 GCS_HOOK_STRING = 'airflow.providers.google.cloud.operators.dataflow.{}'
-TEST_FLEX_PARAMETERS = {
-    "containerSpecGcsPath": "gs://test-bucket/test-file",
-    "jobName": 'test-job-name',
-    "parameters": {
-        "inputSubscription": 'test-subsription',
-        "outputTable": "test-project:test-dataset.streaming_beam_sql",
-    }
+CONTAINER_SPEC_GCS_PATH = 'gs://test-bucket/test-file'
+FLEX_PARAMETERS = {
+    'inputSubscription': 'test-subsription',
+    'outputTable': 'test-project:test-dataset.streaming_beam_sql',
 }
 TEST_LOCATION = 'custom-location'
 TEST_PROJECT_ID = 'test-project-id'
@@ -311,18 +308,18 @@ class TestDataflowStartFlexTemplateOperator(unittest.TestCase):
     def test_execute(self, mock_dataflow):
         start_flex_template = DataflowStartFlexTemplateOperator(
             task_id="start_flex_template_java",
-            body={
-                "launchParameter": TEST_FLEX_PARAMETERS
-            },
+            job_name=JOB_NAME,
+            container_spec_gcs_path=CONTAINER_SPEC_GCS_PATH,
+            parameters=FLEX_PARAMETERS,
             do_xcom_push=True,
             project_id=TEST_PROJECT_ID,
             location=TEST_LOCATION,
         )
         start_flex_template.execute(mock.MagicMock())
         mock_dataflow.return_value.start_flex_template.assert_called_once_with(
-            body={
-                "launchParameter": TEST_FLEX_PARAMETERS
-            },
+            job_name=JOB_NAME,
+            container_spec_gcs_path=CONTAINER_SPEC_GCS_PATH,
+            parameters=FLEX_PARAMETERS,
             location=TEST_LOCATION,
             project_id=TEST_PROJECT_ID,
             on_new_job_id_callback=mock.ANY
@@ -331,9 +328,9 @@ class TestDataflowStartFlexTemplateOperator(unittest.TestCase):
     def test_on_kill(self):
         start_flex_template = DataflowStartFlexTemplateOperator(
             task_id="start_flex_template_java",
-            body={
-                "launchParameter": TEST_FLEX_PARAMETERS
-            },
+            job_name=JOB_NAME,
+            container_spec_gcs_path=CONTAINER_SPEC_GCS_PATH,
+            parameters=FLEX_PARAMETERS,
             do_xcom_push=True,
             location=TEST_LOCATION,
             project_id=TEST_PROJECT_ID,
@@ -342,5 +339,5 @@ class TestDataflowStartFlexTemplateOperator(unittest.TestCase):
         start_flex_template.job_id = JOB_ID
         start_flex_template.on_kill()
         start_flex_template.hook.cancel_job.assert_called_once_with(
-            job_id='test-dataflow-pipeline-id', project_id=TEST_PROJECT_ID
+            job_id=JOB_ID, project_id=TEST_PROJECT_ID
         )

@@ -42,7 +42,6 @@ from airflow.utils.python_virtualenv import prepare_virtualenv
 # https://cloud.google.com/dataflow/pipelines/specifying-exec-params
 DEFAULT_DATAFLOW_LOCATION = 'us-central1'
 
-
 JOB_ID_PATTERN = re.compile(
     r'Submitted job: (?P<job_id_java>.*)|Created job with id: \[(?P<job_id_python>.*)\]'
 )
@@ -51,7 +50,6 @@ T = TypeVar("T", bound=Callable)  # pylint: disable=invalid-name
 
 
 def _fallback_variable_parameter(parameter_name: str, variable_key_name: str) -> Callable[[T], T]:
-
     def _wrapper(func: T) -> T:
         """
         Decorator that provides fallback for location from `region` key in `variables` parameters.
@@ -59,6 +57,7 @@ def _fallback_variable_parameter(parameter_name: str, variable_key_name: str) ->
         :param func: function to wrap
         :return: result of the function call
         """
+
         @functools.wraps(func)
         def inner_wrapper(self: "DataflowHook", *args, **kwargs):
             if args:
@@ -81,6 +80,7 @@ def _fallback_variable_parameter(parameter_name: str, variable_key_name: str) ->
                 kwargs['variables'] = copy_variables
 
             return func(self, *args, **kwargs)
+
         return cast(T, inner_wrapper)
 
     return _wrapper
@@ -144,6 +144,7 @@ class _DataflowJobsController(LoggingMixin):
     :param multiple_jobs: If set to true this task will be searched by name prefix (``name`` parameter),
         not by specific job ID, then actions will be performed on all matching jobs.
     """
+
     def __init__(
         self,
         dataflow: Any,
@@ -634,7 +635,9 @@ class DataflowHook(GoogleBaseHook):
     @GoogleBaseHook.fallback_to_default_project_id
     def start_flex_template(
         self,
-        body: Dict,
+        job_name: str,
+        container_spec_gcs_path: str,
+        parameters: Dict,
         location: str,
         project_id: str,
         on_new_job_id_callback: Optional[Callable[[str], None]] = None
@@ -642,7 +645,12 @@ class DataflowHook(GoogleBaseHook):
         """
         Starts flex templates with the Dataflow  pipeline.
 
-        :param body: The request body
+        :param job_name: The name of the job.
+        :type job_name: str
+        :param container_spec_gcs_path: The GCS path to a json serialized container spec.
+        :type container_spec_gcs_path: str
+        :param parameters: Parameters fot the template
+        :type parameters: dict
         :param location: The location of the Dataflow job (for example europe-west1)
         :type location: str
         :param project_id: The ID of the GCP project that owns the job.
@@ -654,8 +662,14 @@ class DataflowHook(GoogleBaseHook):
         service = self.get_conn()
         request = service.projects().locations().flexTemplates().launch(  # pylint: disable=no-member
             projectId=project_id,
-            body=body,
-            location=location
+            location=location,
+            body={
+                "launchParameter": {
+                    "jobName": job_name,
+                    "containerSpecGcsPath": container_spec_gcs_path,
+                    "parameters": parameters,
+                },
+            }
         )
         response = request.execute(num_retries=self.num_retries)
         job_id = response['job']['id']

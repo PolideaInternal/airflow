@@ -446,7 +446,9 @@ class DataflowStartFlexTemplateOperator(BaseOperator):
     @apply_defaults
     def __init__(
         self,
-        body: Dict,
+        job_name: str,
+        container_spec_gcs_path: str,
+        parameters: Dict,
         location: str,
         project_id: Optional[str] = None,
         gcp_conn_id: str = 'google_cloud_default',
@@ -455,7 +457,9 @@ class DataflowStartFlexTemplateOperator(BaseOperator):
         **kwargs
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.body = body
+        self.job_name = job_name
+        self.container_spec_gcs_path = container_spec_gcs_path
+        self.parameters = parameters
         self.location = location
         self.project_id = project_id
         self.gcp_conn_id = gcp_conn_id
@@ -473,7 +477,9 @@ class DataflowStartFlexTemplateOperator(BaseOperator):
             self.job_id = job_id
 
         job = self.hook.start_flex_template(
-            body=self.body,
+            job_name=self.job_name,
+            container_spec_gcs_path=self.container_spec_gcs_path,
+            parameters=self.parameters,
             location=self.location,
             project_id=self.project_id,
             on_new_job_id_callback=set_current_job_id,
