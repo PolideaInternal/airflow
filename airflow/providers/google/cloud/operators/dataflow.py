@@ -489,7 +489,8 @@ class DataflowStartFlexTemplateOperator(BaseOperator):
 
     def on_kill(self) -> None:
         self.log.info("On kill.")
-        if self.job_id:
+        if self.job_id and self.hook.is_job_dataflow_running(
+                name=self.job_name, project_id=self.project_id, location=self.location):
             self.hook.cancel_job(job_id=self.job_id, project_id=self.project_id)
 
 

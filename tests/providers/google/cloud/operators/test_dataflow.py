@@ -337,7 +337,39 @@ class TestDataflowStartFlexTemplateOperator(unittest.TestCase):
         )
         start_flex_template.hook = mock.MagicMock()
         start_flex_template.job_id = JOB_ID
+        start_flex_template.hook.is_job_dataflow_running.return_values = True
         start_flex_template.on_kill()
         start_flex_template.hook.cancel_job.assert_called_once_with(
             job_id=JOB_ID, project_id=TEST_PROJECT_ID
         )
+
+    def test_on_kill_no_job_id(self):
+        start_flex_template = DataflowStartFlexTemplateOperator(
+            task_id="start_flex_template_java",
+            job_name=JOB_NAME,
+            container_spec_gcs_path=CONTAINER_SPEC_GCS_PATH,
+            parameters=FLEX_PARAMETERS,
+            do_xcom_push=True,
+            location=TEST_LOCATION,
+            project_id=TEST_PROJECT_ID,
+        )
+        start_flex_template.hook = mock.MagicMock()
+        start_flex_template.hook.is_job_dataflow_running.return_values = True
+        start_flex_template.on_kill()
+        start_flex_template.hook.hook.cancel_job.assert_not_called()
+
+    def test_on_kill_no_running_job(self):
+        start_flex_template = DataflowStartFlexTemplateOperator(
+            task_id="start_flex_template_java",
+            job_name=JOB_NAME,
+            container_spec_gcs_path=CONTAINER_SPEC_GCS_PATH,
+            parameters=FLEX_PARAMETERS,
+            do_xcom_push=True,
+            location=TEST_LOCATION,
+            project_id=TEST_PROJECT_ID,
+        )
+        start_flex_template.hook = mock.MagicMock()
+        start_flex_template.job_id = JOB_ID
+        start_flex_template.hook.is_job_dataflow_running.return_values = False
+        start_flex_template.on_kill()
+        start_flex_template.hook.hook.cancel_job.assert_not_called()
