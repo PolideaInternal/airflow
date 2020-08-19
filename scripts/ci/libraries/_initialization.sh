@@ -214,9 +214,6 @@ function initialize_common_environment {
     # Version of Kubernetes to run
     export KUBERNETES_VERSION="${KUBERNETES_VERSION:=${DEFAULT_KUBERNETES_VERSION}}"
 
-    # folder with DAGs to embed into production image
-    export EMBEDDED_DAGS=${EMBEDDED_DAGS:="empty"}
-
     # Namespace where airflow is installed via helm
     export HELM_AIRFLOW_NAMESPACE="airflow"
 
