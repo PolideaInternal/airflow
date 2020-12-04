@@ -37,7 +37,6 @@ class _BeamRunner(LoggingMixin):
     ) -> None:
         super().__init__()
         self.log.info("Running command: %s", " ".join(shlex.quote(c) for c in cmd))
-        self.job_id: Optional[str] = None
         self._proc = subprocess.Popen(
             cmd,
             shell=False,

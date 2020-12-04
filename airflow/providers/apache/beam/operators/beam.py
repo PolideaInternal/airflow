@@ -390,7 +390,6 @@ class BeamRunJavaPipelineOperator(BaseOperator):
                         variables=pipeline_options,
                         jar=self.jar,
                         job_class=self.job_class,
-                        append_job_name=True,
                         on_new_job_id_callback=set_current_job_id,
                         project_id=self.project_id,
                     )
