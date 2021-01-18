@@ -16,15 +16,20 @@
 # specific language governing permissions and limitations
 # under the License.
 """This module contains Google Dataflow operators."""
-
 import copy
 import re
+from abc import ABCMeta
 from contextlib import ExitStack
 from enum import Enum
 from typing import Any, Dict, List, Optional, Sequence, Union
 
 from airflow.models import BaseOperator
-from airflow.providers.google.cloud.hooks.dataflow import DEFAULT_DATAFLOW_LOCATION, DataflowHook
+from airflow.providers.apache.beam.hooks.beam import BeamHook, BeamRunnerType
+from airflow.providers.google.cloud.hooks.dataflow import (
+    DEFAULT_DATAFLOW_LOCATION,
+    DataflowHook,
+    process_line_and_extract_dataflow_job_id_callback,
+)
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow.utils.decorators import apply_defaults
 from airflow.version import version
@@ -41,6 +46,64 @@ class CheckJobRunning(Enum):
     IgnoreJob = 1
     FinishIfRunning = 2
     WaitForRun = 3
+
+
+class DataflowConfiguration(metaclass=ABCMeta):
+    """Abstract class for Dataflow configuration to be passed to Beam operators"""
+
+    template_fields = ["job_name", "location"]
+
+    def __init__(
+        self,
+        *,
+        job_name: Optional[str] = "{{task.task_id}}",
+        append_job_name: bool = True,
+        project_id: Optional[str] = None,
+        location: Optional[str] = DEFAULT_DATAFLOW_LOCATION,
+        gcp_conn_id: str = "google_cloud_default",
+        delegate_to: Optional[str] = None,
+        poll_sleep: int = 10,
+        impersonation_chain: Optional[Union[str, Sequence[str]]] = None,
+        drain_pipeline: bool = False,
+        cancel_timeout: Optional[int] = 5 * 60,
+        wait_until_finished: Optional[bool] = None,
+    ) -> None:
+        self.job_name = job_name
+        self.append_job_name = append_job_name
+        self.project_id = project_id
+        self.location = location
+        self.gcp_conn_id = gcp_conn_id
+        self.delegate_to = delegate_to
+        self.poll_sleep = poll_sleep
+        self.impersonation_chain = impersonation_chain
+        self.drain_pipeline = drain_pipeline
+        self.cancel_timeout = cancel_timeout
+        self.wait_until_finished = wait_until_finished
+
+
+class DataflowPythonConfiguration(DataflowConfiguration):
+    """
+    Dataflow configuration that can be passed to
+    :py:class:`~airflow.providers.apache.beam.operators.beam.BeamRunPythonPipelineOperator`
+    """
+
+
+class DataflowJavaConfiguration(DataflowConfiguration):
+    """
+    Dataflow configuration that can be passed to
+    :py:class:`~airflow.providers.apache.beam.operators.beam.BeamRunJavaPipelineOperator`
+    """
+
+    def __init__(
+        self,
+        *,
+        multiple_jobs: Optional[bool] = None,
+        check_if_running: CheckJobRunning = CheckJobRunning.WaitForRun,
+        **kwargs,
+    ) -> None:
+        super().__init__(**kwargs)
+        self.multiple_jobs = multiple_jobs
+        self.check_if_running = check_if_running
 
 
 # pylint: disable=too-many-instance-attributes
@@ -261,62 +324,83 @@ class DataflowCreateJavaJobOperator(BaseOperator):
         self.cancel_timeout = cancel_timeout
         self.wait_until_finished = wait_until_finished
         self.job_id = None
-        self.hook = None
+        self.beam_hook: Optional[BeamHook] = None
+        self.dataflow_hook: Optional[DataflowHook] = None
 
     def execute(self, context):
-        self.hook = DataflowHook(
+        """Execute the Apache Beam Pipeline."""
+        self.beam_hook = BeamHook(runner=BeamRunnerType.DataflowRunner)
+        self.dataflow_hook = DataflowHook(
             gcp_conn_id=self.gcp_conn_id,
             delegate_to=self.delegate_to,
             poll_sleep=self.poll_sleep,
             cancel_timeout=self.cancel_timeout,
             wait_until_finished=self.wait_until_finished,
         )
-        dataflow_options = copy.copy(self.dataflow_default_options)
-        dataflow_options.update(self.options)
-        is_running = False
-        if self.check_if_running != CheckJobRunning.IgnoreJob:
-            is_running = self.hook.is_job_dataflow_running(  # type: ignore[attr-defined]
-                name=self.job_name,
-                variables=dataflow_options,
-                project_id=self.project_id,
-                location=self.location,
-            )
-            while is_running and self.check_if_running == CheckJobRunning.WaitForRun:
-                is_running = self.hook.is_job_dataflow_running(  # type: ignore[attr-defined]
-                    name=self.job_name,
-                    variables=dataflow_options,
-                    project_id=self.project_id,
-                    location=self.location,
-                )
+        job_name = self.dataflow_hook.build_dataflow_job_name(job_name=self.job_name)
+        pipeline_options = copy.deepcopy(self.dataflow_default_options)
 
-        if not is_running:
-            with ExitStack() as exit_stack:
-                if self.jar.lower().startswith("gs://"):
-                    gcs_hook = GCSHook(self.gcp_conn_id, self.delegate_to)
-                    tmp_gcs_file = exit_stack.enter_context(  # pylint: disable=no-member
-                        gcs_hook.provide_file(object_url=self.jar)
+        pipeline_options["jobName"] = self.job_name
+        pipeline_options["project"] = self.project_id or self.dataflow_hook.project_id
+        pipeline_options["region"] = self.location
+        pipeline_options.update(self.options)
+        pipeline_options.setdefault("labels", {}).update(
+            {"airflow-version": "v" + version.replace(".", "-").replace("+", "-")}
+        )
+        pipeline_options.update(self.options)
+
+        def set_current_job_id(job_id):
+            self.job_id = job_id
+
+        process_line_callback = process_line_and_extract_dataflow_job_id_callback(
+            on_new_job_id_callback=set_current_job_id
+        )
+
+        with ExitStack() as exit_stack:
+            if self.jar.lower().startswith("gs://"):
+                gcs_hook = GCSHook(self.gcp_conn_id, self.delegate_to)
+                tmp_gcs_file = exit_stack.enter_context(  # pylint: disable=no-member
+                    gcs_hook.provide_file(object_url=self.jar)
+                )
+                self.jar = tmp_gcs_file.name
+
+                is_running = False
+                if self.check_if_running != CheckJobRunning.IgnoreJob:
+                    is_running = (
+                        self.dataflow_hook.is_job_dataflow_running(  # pylint: disable=no-value-for-parameter
+                            name=self.job_name,
+                            variables=pipeline_options,
+                        )
                     )
-                    self.jar = tmp_gcs_file.name
+                    while is_running and self.check_if_running == CheckJobRunning.WaitForRun:
+                        # pylint: disable=no-value-for-parameter
+                        is_running = self.dataflow_hook.is_job_dataflow_running(
+                            name=self.job_name,
+                            variables=pipeline_options,
+                        )
+                if not is_running:
+                    pipeline_options["jobName"] = job_name
+                    self.beam_hook.start_java_pipeline(
+                        variables=pipeline_options,
+                        jar=self.jar,
+                        job_class=self.job_class,
+                        process_line_callback=process_line_callback,
+                    )
+                    self.dataflow_hook.wait_for_done(  # pylint: disable=no-value-for-parameter
+                        job_name=job_name,
+                        location=self.location,
+                        job_id=self.job_id,
+                        multiple_jobs=self.multiple_jobs,
+                    )
 
-                def set_current_job_id(job_id):
-                    self.job_id = job_id
-
-                self.hook.start_java_dataflow(  # type: ignore[attr-defined]
-                    job_name=self.job_name,
-                    variables=dataflow_options,
-                    jar=self.jar,
-                    job_class=self.job_class,
-                    append_job_name=True,
-                    multiple_jobs=self.multiple_jobs,
-                    on_new_job_id_callback=set_current_job_id,
-                    project_id=self.project_id,
-                    location=self.location,
-                )
+        return {"job_id": self.job_id}
 
     def on_kill(self) -> None:
         self.log.info("On kill.")
         if self.job_id:
-            self.hook.cancel_job(job_id=self.job_id, project_id=self.project_id)
+            self.dataflow_hook.cancel_job(
+                job_id=self.job_id, project_id=self.project_id or self.dataflow_hook.project_id
+            )
 
 
 # pylint: disable=too-many-instance-attributes
@@ -933,10 +1017,40 @@ class DataflowCreatePythonJobOperator(BaseOperator):
         self.cancel_timeout = cancel_timeout
         self.wait_until_finished = wait_until_finished
         self.job_id = None
-        self.hook: Optional[DataflowHook] = None
+        self.beam_hook: Optional[BeamHook] = None
+        self.dataflow_hook: Optional[DataflowHook] = None
 
     def execute(self, context):
         """Execute the python dataflow job."""
+        self.beam_hook = BeamHook(runner=BeamRunnerType.DataflowRunner)
+        self.dataflow_hook = DataflowHook(
+            gcp_conn_id=self.gcp_conn_id,
+            delegate_to=self.delegate_to,
+            poll_sleep=self.poll_sleep,
+            impersonation_chain=None,
+            drain_pipeline=self.drain_pipeline,
+            cancel_timeout=self.cancel_timeout,
+            wait_until_finished=self.wait_until_finished,
+        )
+
+        job_name = self.dataflow_hook.build_dataflow_job_name(job_name=self.job_name)
+        pipeline_options = self.dataflow_default_options.copy()
+        pipeline_options["job_name"] = job_name
+        pipeline_options["project"] = self.project_id or self.dataflow_hook.project_id
+        pipeline_options["region"] = self.location
+        pipeline_options.update(self.options)
+
+        # Convert argument names from lowerCamelCase to snake case.
+        camel_to_snake = lambda name: re.sub(r"[A-Z]", lambda x: "_" + x.group(0).lower(), name)
+        formatted_pipeline_options = {camel_to_snake(key): pipeline_options[key] for key in pipeline_options}
+
+        def set_current_job_id(job_id):
+            self.job_id = job_id
+
+        process_line_callback = process_line_and_extract_dataflow_job_id_callback(
+            on_new_job_id_callback=set_current_job_id
+        )
+
         with ExitStack() as exit_stack:
             if self.py_file.lower().startswith("gs://"):
                 gcs_hook = GCSHook(self.gcp_conn_id, self.delegate_to)
@@ -945,38 +1059,28 @@ class DataflowCreatePythonJobOperator(BaseOperator):
                 )
                 self.py_file = tmp_gcs_file.name
 
-            self.hook = DataflowHook(
-                gcp_conn_id=self.gcp_conn_id,
-                delegate_to=self.delegate_to,
-                poll_sleep=self.poll_sleep,
-                drain_pipeline=self.drain_pipeline,
-                cancel_timeout=self.cancel_timeout,
-                wait_until_finished=self.wait_until_finished,
-            )
-            dataflow_options = self.dataflow_default_options.copy()
-            dataflow_options.update(self.options)
-            # Convert argument names from lowerCamelCase to snake case.
-            camel_to_snake = lambda name: re.sub(r"[A-Z]", lambda x: "_" + x.group(0).lower(), name)
-            formatted_options = {camel_to_snake(key): dataflow_options[key] for key in dataflow_options}
-
-            def set_current_job_id(job_id):
-                self.job_id = job_id
-
-            self.hook.start_python_dataflow(  # type: ignore[attr-defined]
-                job_name=self.job_name,
-                variables=formatted_options,
-                dataflow=self.py_file,
+            self.beam_hook.start_python_pipeline(
+                variables=formatted_pipeline_options,
+                py_file=self.py_file,
                 py_options=self.py_options,
                 py_interpreter=self.py_interpreter,
                 py_requirements=self.py_requirements,
                 py_system_site_packages=self.py_system_site_packages,
-                on_new_job_id_callback=set_current_job_id,
-                project_id=self.project_id,
-                location=self.location,
+                process_line_callback=process_line_callback,
             )
-            return {"job_id": self.job_id}
+
+            self.dataflow_hook.wait_for_done(  # pylint: disable=no-value-for-parameter
+                job_name=job_name,
+                location=self.location,
+                job_id=self.job_id,
+                multiple_jobs=False,
+            )
+
+        return {"job_id": self.job_id}
 
     def on_kill(self) -> None:
         self.log.info("On kill.")
         if self.job_id:
-            self.hook.cancel_job(job_id=self.job_id, project_id=self.project_id)
+            self.dataflow_hook.cancel_job(
+                job_id=self.job_id, project_id=self.project_id or self.dataflow_hook.project_id
+            )
