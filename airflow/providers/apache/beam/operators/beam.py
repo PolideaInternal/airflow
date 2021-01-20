@@ -79,8 +79,10 @@ class BeamRunPythonPipelineOperator(BaseOperator):
         /some/local/file/path/to/your/python/pipeline/file. (templated)
     :type py_file: str
     :param runner: Runner on which pipeline will be run. By default "DirectRunner" is being used.
-        See:
-        https://beam.apache.org/documentation/runners/capability-matrix/
+        Other possible options: DataflowRunner, SparkRunner, FlinkRunner.
+        See: :class:`~providers.apache.beam.hooks.beam.BeamRunnerType`
+        See: https://beam.apache.org/documentation/runners/capability-matrix/
+
         If you use Dataflow runner check dedicated operator:
         :class:`~providers.google.cloud.operators.dataflow.DataflowCreatePythonJobOperator`
     :type runner: str
@@ -117,23 +119,16 @@ class BeamRunPythonPipelineOperator(BaseOperator):
         See virtualenv documentation for more information.
 
         This option is only relevant if the ``py_requirements`` parameter is not None.
-    :param project_id: (DataflowRunner) Optional,
-        the Google Cloud project ID in which to start a job.
-        If set to None or missing, the default project_id from the Google Cloud connection is used.
-    :type project_id: str
-    :param gcp_conn_id: (DataflowRunner) Optional.
-        The connection ID to use connecting to Google Cloud.
+    :param gcp_conn_id: Optional.
+        The connection ID to use connecting to Google Cloud Storage if pyfile is on GCS.
     :type gcp_conn_id: str
-    :param job_name: (DataflowRunner) Optional.
-        The 'job_name' to use when executing the DataFlow job (templated).
-        This ends up being set in the pipeline options, so any entry
-        with key ``'jobName'`` or ``'job_name'`` in ``options`` will be overwritten.
-    :type job_name: str
-    :param delegate_to: (DataflowRunner) Optional.
+    :param delegate_to:  Optional.
         The account to impersonate using domain-wide delegation of authority,
         if any. For this to work, the service account making the request must have
         domain-wide delegation enabled.
     :type delegate_to: str
+    :param dataflow_config: Dataflow configuration, used when runner type is set to DataflowRunner
+    :type dataflow_config: Union[dict, providers.google.cloud.operators.dataflow.DataflowPythonConfiguration]
     """
 
     template_fields = ["py_file", "runner", "pipeline_options", "default_pipeline_options", "dataflow_config"]
@@ -327,19 +322,14 @@ class BeamRunJavaPipelineOperator(BaseOperator):
 
         When defining labels (``labels`` option), you can also provide a dictionary.
     :type pipeline_options: dict
-    :param job_name: (DataflowRunner) The 'jobName' to use when executing the DataFlow job
-        (templated). This ends up being set in the pipeline pipeline_options, so any entry
-        with key ``'jobName'`` in ``pipeline_options`` will be overwritten.
-    :type job_name: str
-    :param project_id: (DataflowRunner) Optional, the Google Cloud project ID in which to start a job.
-        If set to None or missing, the default project_id from the Google Cloud connection is used.
-    :type project_id: str
-    :param gcp_conn_id: (DataflowRunner) The connection ID to use connecting to Google Cloud.
+    :param gcp_conn_id: The connection ID to use connecting to Google Cloud Storage if jar is on GCS
     :type gcp_conn_id: str
-    :param delegate_to: (DataflowRunner) The account to impersonate using domain-wide delegation of authority,
+    :param delegate_to: The account to impersonate using domain-wide delegation of authority,
         if any. For this to work, the service account making the request must have
         domain-wide delegation enabled.
     :type delegate_to: str
+    :param dataflow_config: Dataflow configuration, used when runner type is set to DataflowRunner
+    :type dataflow_config: Union[dict, providers.google.cloud.operators.dataflow.DataflowJavaConfiguration]
     """
 
     template_fields = [

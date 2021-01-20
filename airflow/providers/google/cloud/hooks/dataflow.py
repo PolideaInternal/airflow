@@ -51,9 +51,11 @@ def process_line_and_extract_dataflow_job_id_callback(
     on_new_job_id_callback: Optional[Callable[[str], None]]
 ) -> Callable[[str], None]:
     """
-    Returns extract job_id callback.
+    Returns callback which triggers function passed as `on_new_job_id_callback` when Dataflow job_id is found.
+    To be used for `process_line_callback` in
+    :py:class:`~airflow.providers.apache.beam.hooks.beam.BeamCommandRunner`
 
-    :param on_new_job_id_callback:
+    :param on_new_job_id_callback: Callback called when the job ID is known
     :type on_new_job_id_callback: callback
     """
 

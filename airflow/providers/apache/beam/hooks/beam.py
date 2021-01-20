@@ -153,6 +153,9 @@ class BeamHook(BaseHook):
 
     All the methods in the hook where project_id is used must be called with
     keyword arguments rather than positional.
+
+    :param runner: Runner type
+    :type runner: str
     """
 
     def __init__(
@@ -200,6 +203,7 @@ class BeamHook(BaseHook):
             If None, this defaults to the python3.
             To track python versions supported by beam and related
             issues check: https://issues.apache.org/jira/browse/BEAM-1251
+        :type py_interpreter: str
         :param py_requirements: Additional python package(s) to install.
             If a value is passed to this parameter, a new virtual environment has been created with
             additional packages installed.
@@ -211,7 +215,9 @@ class BeamHook(BaseHook):
             See virtualenv documentation for more information.
 
             This option is only relevant if the ``py_requirements`` parameter is not None.
-        :type py_interpreter: str
+        :type py_system_site_packages: bool
+        :param on_new_job_id_callback: Callback called when the job ID is known.
+        :type on_new_job_id_callback: callable
         """
         if "labels" in variables:
             variables["labels"] = [f"{key}={value}" for key, value in variables["labels"].items()]
