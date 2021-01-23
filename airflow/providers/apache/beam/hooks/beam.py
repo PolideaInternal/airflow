@@ -31,12 +31,20 @@ from airflow.utils.python_virtualenv import prepare_virtualenv
 
 
 class BeamRunnerType:
-    """Helper class for listing runner types."""
+    """
+    Helper class for listing runner types.
+    For more information about runners see:
+    https://beam.apache.org/documentation/
+    """
 
     DataflowRunner = "DataflowRunner"
     DirectRunner = "DirectRunner"
     SparkRunner = "SparkRunner"
     FlinkRunner = "FlinkRunner"
+    SamzaRunner = "SamzaRunner"
+    NemoRunner = "NemoRunner"
+    JetRunner = "JetRunner"
+    Twister2Runner = "Twister2Runner"
 
 
 def beam_options_to_args(options: dict) -> List[str]:

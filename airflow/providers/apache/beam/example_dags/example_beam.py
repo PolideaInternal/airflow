@@ -97,7 +97,6 @@ with models.DAG(
 
     start_java_pipeline_direct_runner = BeamRunJavaPipelineOperator(
         task_id="start_java_pipeline_direct_runner",
-        runner="DirectRunner",
         jar="/tmp/beam_wordcount_direct_runner_{{ ds_nodash }}.jar",
         pipeline_options={
             'output': '/tmp/start_java_pipeline_direct_runner',
