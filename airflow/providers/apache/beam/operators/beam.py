@@ -171,6 +171,11 @@ class BeamRunPythonPipelineOperator(BaseOperator):
         self.dataflow_hook: Optional[DataflowHook] = None
         self.dataflow_job_id: Optional[str] = None
 
+        if self.dataflow_config and self.runner.lower() != BeamRunnerType.DataflowRunner.lower():
+            self.log.warning(
+                "dataflow_config is defined but runner is different than DataflowRunner (%s)", self.runner
+            )
+
     def execute(self, context):
         """Execute the Apache Beam Pipeline."""
         self.beam_hook = BeamHook(runner=self.runner)
@@ -370,6 +375,11 @@ class BeamRunJavaPipelineOperator(BaseOperator):
         self.dataflow_hook: Optional[DataflowHook] = None
         self.beam_hook: Optional[BeamHook] = None
         self._dataflow_job_name: Optional[str] = None
+
+        if self.dataflow_config and self.runner.lower() != BeamRunnerType.DataflowRunner.lower():
+            self.log.warning(
+                "dataflow_config is defined but runner is different than DataflowRunner (%s)", self.runner
+            )
 
     def execute(self, context):
         """Execute the Apache Beam Pipeline."""
