@@ -170,7 +170,6 @@ class BeamRunPythonPipelineOperator(BaseOperator):
         self.beam_hook: Optional[BeamHook] = None
         self.dataflow_hook: Optional[DataflowHook] = None
         self.dataflow_job_id: Optional[str] = None
-        self._dataflow_job_name: Optional[str] = None
 
     def execute(self, context):
         """Execute the Apache Beam Pipeline."""
@@ -193,10 +192,10 @@ class BeamRunPythonPipelineOperator(BaseOperator):
             )
             self.dataflow_config.project_id = self.dataflow_config.project_id or self.dataflow_hook.project_id
 
-            self._dataflow_job_name = DataflowHook.build_dataflow_job_name(
+            dataflow_job_name = DataflowHook.build_dataflow_job_name(
                 self.dataflow_config.job_name, self.dataflow_config.append_job_name
             )
-            pipeline_options["job_name"] = self._dataflow_job_name
+            pipeline_options["job_name"] = dataflow_job_name
             pipeline_options["project"] = self.dataflow_config.project_id
             pipeline_options["region"] = self.dataflow_config.location
             pipeline_options.setdefault("labels", {}).update(
@@ -236,7 +235,7 @@ class BeamRunPythonPipelineOperator(BaseOperator):
 
             if self.runner.lower() == BeamRunnerType.DataflowRunner.lower():
                 self.dataflow_hook.wait_for_done(  # pylint: disable=no-value-for-parameter
-                    job_name=self._dataflow_job_name,
+                    job_name=dataflow_job_name,
                     location=self.dataflow_config.location,
                     job_id=self.dataflow_job_id,
                     multiple_jobs=False,
