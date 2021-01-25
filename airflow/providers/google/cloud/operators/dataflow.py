@@ -18,6 +18,7 @@
 """This module contains Google Dataflow operators."""
 import copy
 import re
+import warnings
 from contextlib import ExitStack
 from enum import Enum
 from typing import Any, Dict, List, Optional, Sequence, Union
@@ -365,6 +366,14 @@ class DataflowCreateJavaJobOperator(BaseOperator):
         wait_until_finished: Optional[bool] = None,
         **kwargs,
     ) -> None:
+        # TODO: Remove one day
+        warnings.warn(
+            "The `{cls}` operator is deprecated, please use "
+            "`providers.apache.beam.operators.beam.BeamRunJavaPipelineOperator` instead."
+            "".format(cls=self.__class__.__name__),
+            DeprecationWarning,
+            stacklevel=2,
+        )
         super().__init__(**kwargs)
 
         dataflow_default_options = dataflow_default_options or {}
@@ -1057,7 +1066,14 @@ class DataflowCreatePythonJobOperator(BaseOperator):
         wait_until_finished: Optional[bool] = None,
         **kwargs,
     ) -> None:
-
+        # TODO: Remove one day
+        warnings.warn(
+            "The `{cls}` operator is deprecated, please use "
+            "`providers.apache.beam.operators.beam.BeamRunPythonPipelineOperator` instead."
+            "".format(cls=self.__class__.__name__),
+            DeprecationWarning,
+            stacklevel=2,
+        )
         super().__init__(**kwargs)
 
         self.py_file = py_file
