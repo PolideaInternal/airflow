@@ -28,7 +28,7 @@ from airflow.providers.apache.beam.operators.beam import (
     BeamRunPythonPipelineOperator,
 )
 from airflow.providers.google.cloud.hooks.dataflow import DataflowJobStatus
-from airflow.providers.google.cloud.operators.dataflow import DataflowPythonConfiguration
+from airflow.providers.google.cloud.operators.dataflow import DataflowConfiguration
 from airflow.providers.google.cloud.sensors.dataflow import DataflowJobStatusSensor
 from airflow.providers.google.cloud.transfers.gcs_to_local import GCSToLocalFilesystemOperator
 from airflow.utils.dates import days_ago
@@ -231,7 +231,7 @@ with models.DAG(
         py_requirements=['apache-beam[gcp]==2.26.0'],
         py_interpreter='python3',
         py_system_site_packages=False,
-        dataflow_config=DataflowPythonConfiguration(
+        dataflow_config=DataflowConfiguration(
             job_name='{{task.task_id}}', project_id=GCP_PROJECT_ID, location="us-central1"
         ),
     )
@@ -285,7 +285,7 @@ with models.DAG(
         py_requirements=['apache-beam[gcp]==2.26.0'],
         py_interpreter='python3',
         py_system_site_packages=False,
-        dataflow_config=DataflowPythonConfiguration(
+        dataflow_config=DataflowConfiguration(
             job_name='{{task.task_id}}',
             project_id=GCP_PROJECT_ID,
             location="us-central1",

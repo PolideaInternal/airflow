@@ -27,11 +27,7 @@ from airflow.providers.google.cloud.hooks.dataflow import (
     process_line_and_extract_dataflow_job_id_callback,
 )
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
-from airflow.providers.google.cloud.operators.dataflow import (
-    CheckJobRunning,
-    DataflowJavaConfiguration,
-    DataflowPythonConfiguration,
-)
+from airflow.providers.google.cloud.operators.dataflow import CheckJobRunning, DataflowConfiguration
 from airflow.utils.decorators import apply_defaults
 from airflow.version import version
 
@@ -128,7 +124,7 @@ class BeamRunPythonPipelineOperator(BaseOperator):
         domain-wide delegation enabled.
     :type delegate_to: str
     :param dataflow_config: Dataflow configuration, used when runner type is set to DataflowRunner
-    :type dataflow_config: Union[dict, providers.google.cloud.operators.dataflow.DataflowPythonConfiguration]
+    :type dataflow_config: Union[dict, providers.google.cloud.operators.dataflow.DataflowConfiguration]
     """
 
     template_fields = ["py_file", "runner", "pipeline_options", "default_pipeline_options", "dataflow_config"]
@@ -148,7 +144,7 @@ class BeamRunPythonPipelineOperator(BaseOperator):
         py_system_site_packages: bool = False,
         gcp_conn_id: str = "google_cloud_default",
         delegate_to: Optional[str] = None,
-        dataflow_config: Optional[Union[DataflowPythonConfiguration, dict]] = None,
+        dataflow_config: Optional[Union[DataflowConfiguration, dict]] = None,
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
@@ -183,7 +179,7 @@ class BeamRunPythonPipelineOperator(BaseOperator):
         process_line_callback: Optional[Callable] = None
 
         if isinstance(self.dataflow_config, dict):
-            self.dataflow_config = DataflowPythonConfiguration(**self.dataflow_config)
+            self.dataflow_config = DataflowConfiguration(**self.dataflow_config)
 
         if self.runner.lower() == BeamRunnerType.DataflowRunner.lower():
             self.dataflow_hook = DataflowHook(
@@ -333,7 +329,7 @@ class BeamRunJavaPipelineOperator(BaseOperator):
         domain-wide delegation enabled.
     :type delegate_to: str
     :param dataflow_config: Dataflow configuration, used when runner type is set to DataflowRunner
-    :type dataflow_config: Union[dict, providers.google.cloud.operators.dataflow.DataflowJavaConfiguration]
+    :type dataflow_config: Union[dict, providers.google.cloud.operators.dataflow.DataflowConfiguration]
     """
 
     template_fields = [
@@ -358,7 +354,7 @@ class BeamRunJavaPipelineOperator(BaseOperator):
         pipeline_options: Optional[dict] = None,
         gcp_conn_id: str = "google_cloud_default",
         delegate_to: Optional[str] = None,
-        dataflow_config: Optional[Union[DataflowJavaConfiguration, dict]] = None,
+        dataflow_config: Optional[Union[DataflowConfiguration, dict]] = None,
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
@@ -388,7 +384,7 @@ class BeamRunJavaPipelineOperator(BaseOperator):
         process_line_callback: Optional[Callable] = None
 
         if isinstance(self.dataflow_config, dict):
-            self.dataflow_config = DataflowJavaConfiguration(**self.dataflow_config)
+            self.dataflow_config = DataflowConfiguration(**self.dataflow_config)
 
         if self.runner.lower() == BeamRunnerType.DataflowRunner.lower():
             self.dataflow_hook = DataflowHook(

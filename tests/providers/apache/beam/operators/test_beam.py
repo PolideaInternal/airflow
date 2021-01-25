@@ -22,10 +22,7 @@ from airflow.providers.apache.beam.operators.beam import (
     BeamRunJavaPipelineOperator,
     BeamRunPythonPipelineOperator,
 )
-from airflow.providers.google.cloud.operators.dataflow import (
-    DataflowJavaConfiguration,
-    DataflowPythonConfiguration,
-)
+from airflow.providers.google.cloud.operators.dataflow import DataflowConfiguration
 from airflow.version import version
 
 TASK_ID = 'test-beam-operator'
@@ -103,7 +100,7 @@ class TestBeamRunPythonPipelineOperator(unittest.TestCase):
         """Test DataflowHook is created and the right args are passed to
         start_python_dataflow.
         """
-        dataflow_config = DataflowPythonConfiguration()
+        dataflow_config = DataflowConfiguration()
         self.operator.runner = "DataflowRunner"
         self.operator.dataflow_config = dataflow_config
         gcs_provide_file = gcs_hook.return_value.provide_file
@@ -212,7 +209,7 @@ class TestBeamRunJavaPipelineOperator(unittest.TestCase):
         """Test DataflowHook is created and the right args are passed to
         start_java_dataflow.
         """
-        dataflow_config = DataflowJavaConfiguration()
+        dataflow_config = DataflowConfiguration()
         self.operator.runner = "DataflowRunner"
         self.operator.dataflow_config = dataflow_config
         gcs_provide_file = gcs_hook.return_value.provide_file
