@@ -763,7 +763,7 @@ class RefactorBackportPackages:
         copyfile(
             os.path.join(get_source_airflow_folder(), "airflow", "utils", "process_utils.py"),
             os.path.join(
-                get_target_providers_package_folder("google"), "common", "utils", "process_utils.py"
+                get_target_providers_package_folder("apache.beam"), "common", "utils", "process_utils.py"
             ),
         )
         (
