@@ -16,7 +16,6 @@
 # specific language governing permissions and limitations
 # under the License.
 """This module contains Apache Beam operators."""
-import re
 from contextlib import ExitStack
 from typing import Callable, List, Optional, Union
 
@@ -29,6 +28,7 @@ from airflow.providers.google.cloud.hooks.dataflow import (
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow.providers.google.cloud.operators.dataflow import CheckJobRunning, DataflowConfiguration
 from airflow.utils.decorators import apply_defaults
+from airflow.utils.helpers import convert_camel_to_snake
 from airflow.version import version
 
 
@@ -213,8 +213,9 @@ class BeamRunPythonPipelineOperator(BaseOperator):
         pipeline_options.update(self.pipeline_options)
 
         # Convert argument names from lowerCamelCase to snake case.
-        camel_to_snake = lambda name: re.sub(r"[A-Z]", lambda x: "_" + x.group(0).lower(), name)
-        formatted_pipeline_options = {camel_to_snake(key): pipeline_options[key] for key in pipeline_options}
+        formatted_pipeline_options = {
+            convert_camel_to_snake(key): pipeline_options[key] for key in pipeline_options
+        }
 
         with ExitStack() as exit_stack:
             if self.py_file.lower().startswith("gs://"):
