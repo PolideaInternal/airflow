@@ -128,7 +128,7 @@ class BeamRunPythonPipelineOperator(BaseOperator):
     """
 
     template_fields = ["py_file", "runner", "pipeline_options", "default_pipeline_options", "dataflow_config"]
-    template_fields_renderers = {'dataflow_config': 'json'}
+    template_fields_renderers = {'dataflow_config': 'json', 'pipeline_options': 'json'}
 
     @apply_defaults
     def __init__(
@@ -177,11 +177,12 @@ class BeamRunPythonPipelineOperator(BaseOperator):
         self.beam_hook = BeamHook(runner=self.runner)
         pipeline_options = self.default_pipeline_options.copy()
         process_line_callback: Optional[Callable] = None
+        is_dataflow = self.runner.lower() == BeamRunnerType.DataflowRunner.lower()
 
         if isinstance(self.dataflow_config, dict):
             self.dataflow_config = DataflowConfiguration(**self.dataflow_config)
 
-        if self.runner.lower() == BeamRunnerType.DataflowRunner.lower():
+        if is_dataflow:
             self.dataflow_hook = DataflowHook(
                 gcp_conn_id=self.dataflow_config.gcp_conn_id or self.gcp_conn_id,
                 delegate_to=self.dataflow_config.delegate_to or self.delegate_to,
@@ -235,7 +236,7 @@ class BeamRunPythonPipelineOperator(BaseOperator):
                 process_line_callback=process_line_callback,
             )
 
-            if self.runner.lower() == BeamRunnerType.DataflowRunner.lower():
+            if is_dataflow:
                 self.dataflow_hook.wait_for_done(  # pylint: disable=no-value-for-parameter
                     job_name=dataflow_job_name,
                     location=self.dataflow_config.location,
@@ -246,8 +247,8 @@ class BeamRunPythonPipelineOperator(BaseOperator):
         return {"dataflow_job_id": self.dataflow_job_id}
 
     def on_kill(self) -> None:
-        self.log.info("On kill.")
         if self.dataflow_hook and self.dataflow_job_id:
+            self.log.info('Dataflow job with id: `%s` was requested to be cancelled.', self.dataflow_job_id)
             self.dataflow_hook.cancel_job(
                 job_id=self.dataflow_job_id,
                 project_id=self.dataflow_config.project_id,
@@ -341,7 +342,7 @@ class BeamRunJavaPipelineOperator(BaseOperator):
         "default_pipeline_options",
         "dataflow_config",
     ]
-    template_fields_renderers = {'dataflow_config': 'json'}
+    template_fields_renderers = {'dataflow_config': 'json', 'pipeline_options': 'json'}
     ui_color = "#0273d4"
 
     @apply_defaults
@@ -383,11 +384,12 @@ class BeamRunJavaPipelineOperator(BaseOperator):
         self.beam_hook = BeamHook(runner=self.runner)
         pipeline_options = self.default_pipeline_options.copy()
         process_line_callback: Optional[Callable] = None
+        is_dataflow = self.runner.lower() == BeamRunnerType.DataflowRunner.lower()
 
         if isinstance(self.dataflow_config, dict):
             self.dataflow_config = DataflowConfiguration(**self.dataflow_config)
 
-        if self.runner.lower() == BeamRunnerType.DataflowRunner.lower():
+        if is_dataflow:
             self.dataflow_hook = DataflowHook(
                 gcp_conn_id=self.dataflow_config.gcp_conn_id or self.gcp_conn_id,
                 delegate_to=self.dataflow_config.delegate_to or self.delegate_to,
@@ -426,7 +428,7 @@ class BeamRunJavaPipelineOperator(BaseOperator):
                 )
                 self.jar = tmp_gcs_file.name
 
-            if self.runner.lower() == BeamRunnerType.DataflowRunner.lower():
+            if is_dataflow:
                 is_running = False
                 if self.dataflow_config.check_if_running != CheckJobRunning.IgnoreJob:
                     is_running = (
@@ -468,8 +470,8 @@ class BeamRunJavaPipelineOperator(BaseOperator):
         return {"dataflow_job_id": self.dataflow_job_id}
 
     def on_kill(self) -> None:
-        self.log.info("On kill.")
         if self.dataflow_hook and self.dataflow_job_id:
+            self.log.info('Dataflow job with id: `%s` was requested to be cancelled.', self.dataflow_job_id)
             self.dataflow_hook.cancel_job(
                 job_id=self.dataflow_job_id,
                 project_id=self.dataflow_config.project_id,
