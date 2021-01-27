@@ -745,17 +745,6 @@ class RefactorBackportPackages:
         def apache_beam_package_filter(node: LN, capture: Capture, filename: Filename) -> bool:
             return filename.startswith("./airflow/providers/apache/beam")
 
-        def pure_airflow_models_filter(node: LN, capture: Capture, filename: Filename) -> bool:
-            """Check if select is exactly [airflow, . , models]"""
-            return len(list(node.children[1].leaves())) == 3
-
-        def _contains_chain_in_import_filter(node: LN, capture: Capture, filename: Filename) -> bool:
-            if "module_import" in capture:
-                return bool("chain" in capture["module_import"].value) and filename.startswith(
-                    "./airflow/providers/apache/beam"
-                )
-            return False
-
         os.makedirs(
             os.path.join(get_target_providers_package_folder("apache.beam"), "common", "utils"), exist_ok=True
         )
