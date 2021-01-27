@@ -760,10 +760,21 @@ class RefactorBackportPackages:
                 get_target_providers_package_folder("apache.beam"), "common", "utils", "python_virtualenv.py"
             ),
         )
+        copyfile(
+            os.path.join(get_source_airflow_folder(), "airflow", "utils", "process_utils.py"),
+            os.path.join(
+                get_target_providers_package_folder("google"), "common", "utils", "process_utils.py"
+            ),
+        )
         (
             self.qry.select_module("airflow.utils.python_virtualenv")
             .filter(callback=apache_beam_package_filter)
             .rename("airflow.providers.apache.beam.common.utils.python_virtualenv")
+        )
+        (
+            self.qry.select_module("airflow.utils.process_utils")
+            .filter(callback=apache_beam_package_filter)
+            .rename("airflow.providers.apache.beam.common.utils.process_utils")
         )
 
     def refactor_odbc_package(self):
