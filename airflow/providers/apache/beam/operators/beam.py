@@ -449,11 +449,12 @@ class BeamRunJavaPipelineOperator(BaseOperator):
                         job_class=self.job_class,
                         process_line_callback=process_line_callback,
                     )
-                    self.dataflow_hook.wait_for_done(  # pylint: disable=no-value-for-parameter
+                    self.dataflow_hook.wait_for_done(
                         job_name=self._dataflow_job_name,
                         location=self.dataflow_config.location,
                         job_id=self.dataflow_job_id,
                         multiple_jobs=self.dataflow_config.multiple_jobs,
+                        project_id=self.dataflow_config.project_id,
                     )
 
             else:
