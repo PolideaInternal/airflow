@@ -116,7 +116,7 @@ class BeamRunPythonPipelineOperator(BaseOperator):
 
         This option is only relevant if the ``py_requirements`` parameter is not None.
     :param gcp_conn_id: Optional.
-        The connection ID to use connecting to Google Cloud Storage if pyfile is on GCS.
+        The connection ID to use connecting to Google Cloud Storage if python file is on GCS.
     :type gcp_conn_id: str
     :param delegate_to:  Optional.
         The account to impersonate using domain-wide delegation of authority,
