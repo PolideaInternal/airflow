@@ -432,12 +432,22 @@ class BeamRunJavaPipelineOperator(BaseOperator):
                 is_running = False
                 if self.dataflow_config.check_if_running != CheckJobRunning.IgnoreJob:
                     is_running = (
+                        # The reason for disable=no-value-for-parameter is that project_id parameter is
+                        # required but here is not passed, moreover it cannot be passed here.
+                        # This method is wrapped by @_fallback_to_project_id_from_variables decorator which
+                        # fallback project_id value from variables and raise error if project_id is
+                        # defined both in variables and as parameter (here is already defined in variables)
                         self.dataflow_hook.is_job_dataflow_running(  # pylint: disable=no-value-for-parameter
                             name=self.dataflow_config.job_name,
                             variables=pipeline_options,
                         )
                     )
                     while is_running and self.dataflow_config.check_if_running == CheckJobRunning.WaitForRun:
+                        # The reason for disable=no-value-for-parameter is that project_id parameter is
+                        # required but here is not passed, moreover it cannot be passed here.
+                        # This method is wrapped by @_fallback_to_project_id_from_variables decorator which
+                        # fallback project_id value from variables and raise error if project_id is
+                        # defined both in variables and as parameter (here is already defined in variables)
                         # pylint: disable=no-value-for-parameter
                         is_running = self.dataflow_hook.is_job_dataflow_running(
                             name=self.dataflow_config.job_name,
