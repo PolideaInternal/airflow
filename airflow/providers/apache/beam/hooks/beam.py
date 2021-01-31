@@ -149,7 +149,7 @@ class BeamCommandRunner(LoggingMixin):
         self.log.info("Process exited with return code: %s", self._proc.returncode)
 
         if self._proc.returncode != 0:
-            raise Exception(f"Apache Beam process failed with return code {self._proc.returncode}")
+            raise AirflowException(f"Apache Beam process failed with return code {self._proc.returncode}")
 
 
 class BeamHook(BaseHook):
