@@ -113,7 +113,7 @@ PIP package                             Version required
 ``google-cloud-language``               ``>=1.1.1,<2.0.0``
 ``google-cloud-logging``                ``>=1.14.0,<2.0.0``
 ``google-cloud-memcache``               ``>=0.2.0``
-``google-cloud-monitoring``             ``>=0.34.0,<2.0.0``
+``google-cloud-monitoring``             ``>=2.0.0,<3.0.0``
 ``google-cloud-os-login``               ``>=2.0.0,<3.0.0``
 ``google-cloud-pubsub``                 ``>=2.0.0,<3.0.0``
 ``google-cloud-redis``                  ``>=2.0.0,<3.0.0``
@@ -187,6 +187,9 @@ Changelog
 2.0.0
 .....
 
+Breaking changes
+~~~~~~~~~~~~~~~~
+
 Updated ``google-cloud-*`` libraries
 ````````````````````````````````````
 
@@ -209,6 +212,8 @@ that you should pay attention to.
 | `google-cloud-os-login <https://pypi.org/project/google-cloud-os-login>`_                           | ``>=1.0.0,<2.0.0``   | ``>=2.0.0,<3.0.0``  | `Upgrading google-cloud-os-login <https://github.com/googleapis/python-oslogin/blob/master/UPGRADING.md>`_                            |
 +-----------------------------------------------------------------------------------------------------+----------------------+---------------------+---------------------------------------------------------------------------------------------------------------------------------------+
 | `google-cloud-pubsub <https://pypi.org/project/google-cloud-pubsub>`_                               | ``>=1.0.0,<2.0.0``   | ``>=2.0.0,<3.0.0``  | `Upgrading google-cloud-pubsub <https://github.com/googleapis/python-pubsub/blob/master/UPGRADING.md>`_                               |
++-----------------------------------------------------------------------------------------------------+----------------------+---------------------+---------------------------------------------------------------------------------------------------------------------------------------+
+| `google-cloud-monitoring <https://pypi.org/project/google-cloud-monitoring>`_                       | ``>=0.34.0,<2.0.0``  | ``>=2.0.0,<3.0.0``  | `Upgrading google-cloud-monitoring <https://github.com/googleapis/python-monitoring/blob/master/UPGRADING.md)>`_                      |
 +-----------------------------------------------------------------------------------------------------+----------------------+---------------------+---------------------------------------------------------------------------------------------------------------------------------------+
 | `google-cloud-kms <https://pypi.org/project/google-cloud-kms>`_                                     | ``>=1.2.1,<2.0.0``   | ``>=2.0.0,<3.0.0``  | `Upgrading google-cloud-kms <https://github.com/googleapis/python-kms/blob/master/UPGRADING.md>`_                                     |
 +-----------------------------------------------------------------------------------------------------+----------------------+---------------------+---------------------------------------------------------------------------------------------------------------------------------------+
@@ -247,6 +252,30 @@ now the snake_case convention is used.
         role="OWNER",
     )
 
+
+Features
+~~~~~~~~
+
+* ``Add Google Cloud Workflows Operators (#13366)``
+* ``Replace 'google_cloud_storage_conn_id' by 'gcp_conn_id' when using 'GCSHook' (#13851)``
+* ``Add How To Guide for Dataflow (#13461)``
+* ``Generalize MLEngineStartTrainingJobOperator to custom images (#13318)``
+* ``Add Parquet data type to BaseSQLToGCSOperator (#13359)``
+* ``Add DataprocCreateWorkflowTemplateOperator (#13338)``
+* ``Add OracleToGCS Transfer (#13246)``
+* ``Add timeout option to gcs hook methods. (#13156)``
+* ``Add regional support to dataproc workflow template operators (#12907)``
+* ``Add project_id to client inside BigQuery hook update_table method (#13018)``
+
+Bug fixes
+~~~~~~~~~
+
+* ``Decode Remote Google Logs (#13115)``
+* ``Fix and improve GCP BigTable hook and system test (#13896)``
+* ``updated Google DV360 Hook to fix SDF issue (#13703)``
+* ``Fix insert_all method of BigQueryHook to support tables without schema (#13138)``
+* ``Fix Google BigQueryHook method get_schema() (#13136)``
+* ``Fix Data Catalog operators (#13096)``
 
 
 1.0.0
