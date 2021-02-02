@@ -111,7 +111,7 @@ class BeamCommandRunner(LoggingMixin):
         if fd not in (self._proc.stdout, self._proc.stderr):
             raise Exception("No data in stderr or in stdout.")
 
-        fd_to_log = {self._proc.stderr: self.log.warnings, self._proc.stdout, self.log.info}
+        fd_to_log = {self._proc.stderr: self.log.warning, self._proc.stdout: self.log.info}
         func_log = fd_to_log[fd]
 
         while True:
